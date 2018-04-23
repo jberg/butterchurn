@@ -31,7 +31,6 @@ export default class Renderer {
     this.blendStartTime = 0;
     this.blendProgress = 0;
     this.blendDuration = 0;
-    this.blendTime = 2.7;
 
     this.width = opts.width || 1200;
     this.height = opts.height || 900;
@@ -257,11 +256,11 @@ export default class Renderer {
     }
   }
 
-  loadPreset (preset) {
+  loadPreset (preset, blendTime) {
     this.randomizeBlendPattern();
     this.blending = true;
     this.blendStartTime = this.time;
-    this.blendDuration = this.blendTime;
+    this.blendDuration = blendTime;
     this.blendProgress = 0;
 
     const tmpEquationRunner = this.prevPresetEquationRunner;

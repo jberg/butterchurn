@@ -130,7 +130,7 @@
         startRenderer();
       }
 
-      function nextPreset() {
+      function nextPreset(blendTime = 5.7) {
         presetIndexHist.push(presetIndex);
 
         var numPresets = presetKeys.length;
@@ -140,11 +140,11 @@
           presetIndex = (presetIndex + 1) % numPresets;
         }
 
-        visualizer.loadPreset(presets[presetKeys[presetIndex]]);
+        visualizer.loadPreset(presets[presetKeys[presetIndex]], blendTime);
         $('#presetSelect').val(presetIndex);
       }
 
-      function prevPreset() {
+      function prevPreset(blendTime = 5.7) {
         var numPresets = presetKeys.length;
         if (presetIndexHist.length > 0) {
           presetIndex = presetIndexHist.pop();
@@ -152,7 +152,7 @@
           presetIndex = ((presetIndex - 1) + numPresets) % numPresets;
         }
 
-        visualizer.loadPreset(presets[presetKeys[presetIndex]]);
+        visualizer.loadPreset(presets[presetKeys[presetIndex]], blendTime);
         $('#presetSelect').val(presetIndex);
       }
 
@@ -163,22 +163,24 @@
         }
 
         if (presetCycle) {
-          cycleInterval = setInterval(() => nextPreset(), presetCycleLength);
+          cycleInterval = setInterval(() => nextPreset(2.7), presetCycleLength);
         }
       }
 
       $(document).keydown((e) => {
-        if (e.which === 39) {
+        if (e.which === 32 || e.which === 39) {
           nextPreset();
-        } else if (e.which === 37) {
+        } else if (e.which === 8 || e.which === 37) {
           prevPreset();
+        } else if (e.which === 72) {
+          nextPreset(0);
         }
       });
 
       $('#presetSelect').change((evt) => {
         presetIndexHist.push(presetIndex);
         presetIndex = parseInt($('#presetSelect').val());
-        visualizer.loadPreset(presets[presetKeys[presetIndex]]);
+        visualizer.loadPreset(presets[presetKeys[presetIndex]], 5.7);
       });
 
       $('#presetCycle').change(() => {
@@ -244,8 +246,8 @@
           width: 800,
           height: 600,
         });
-        nextPreset();
-        cycleInterval = setInterval(() => nextPreset(), presetCycleLength);
+        nextPreset(0);
+        cycleInterval = setInterval(() => nextPreset(2.7), presetCycleLength);
       }
 
       initPlayer();

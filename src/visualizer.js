@@ -25,8 +25,8 @@ export default class Visualizer {
     this.audio.disconnectAudio(audioNode);
   }
 
-  loadPreset (preset) {
-    this.renderer.loadPreset(preset);
+  loadPreset (preset, blendTime) {
+    this.renderer.loadPreset(preset, blendTime);
   }
 
   setRendererSize (width, height) {
