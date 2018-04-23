@@ -1,0 +1,50 @@
+{
+  "name": "butterchurn",
+  "version": "2.1.0",
+  "description": "Butterchurn is a WebGL implementation of the Milkdrop Visualizer",
+  "main": "lib/butterchurn.min.js",
+  "unpkg": "lib/butterchurn.min.js",
+  "files": [
+    "lib/butterchurn.min.js"
+  ],
+  "scripts": {
+    "build": "webpack --config config/webpack.config.js --env prod",
+    "dev": "webpack --config config/webpack.config.js --progress --colors --watch --env dev"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jberg/butterchurn.git"
+  },
+  "keywords": [
+    "music visualization",
+    "visualizer",
+    "webgl",
+    "webaudio"
+  ],
+  "author": "Jordan Berg <jordannealberg@gmail.com>",
+  "license": "MIT",
+  "homepage": "https://butterchurnviz.com",
+  "dependencies": {
+    "babel-runtime": "^6.26.0",
+    "ecma-proposal-math-extensions": "0.0.2",
+    "lodash": "^4.17.4"
+  },
+  "devDependencies": {
+    "babel": "^6.23.0",
+    "babel-core": "^6.26.0",
+    "babel-eslint": "^8.2.1",
+    "babel-loader": "^7.1.2",
+    "babel-plugin-add-module-exports": "^0.2.1",
+    "babel-plugin-transform-runtime": "^6.23.0",
+    "babel-preset-env": "^1.6.1",
+    "eslint": "^4.17.0",
+    "eslint-config-airbnb": "^16.1.0",
+    "eslint-loader": "^1.9.0",
+    "eslint-plugin-import": "^2.8.0",
+    "eslint-plugin-jsx-a11y": "^6.0.3",
+    "eslint-plugin-react": "^7.6.1",
+    "uglifyjs-webpack-plugin": "^1.1.8",
+    "webpack": "^3.10.0",
+    "yargs": "^11.0.0"
+  }
+}

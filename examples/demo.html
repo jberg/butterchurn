@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Butterchurn Demo</title>
+  <meta name="description" content="Butterchurn Demo Example">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- <script type="text/javascript" src="../lib/butterchurn.js"></script> -->
+  <script type="text/javascript" src="https://unpkg.com/butterchurn"></script>
+  <script type="text/javascript" src="https://unpkg.com/butterchurn-presets"></script>
+  <script type="text/javascript" src="https://unpkg.com/butterchurn-presets/lib/butterchurnPresetsExtra.min.js"></script>
+  <script
+    src="https://code.jquery.com/jquery-3.1.1.min.js"
+    integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
+    crossorigin="anonymous"></script>
+
+  <style>
+    #canvas:-moz-full-screen {
+      width: 100%;
+      height: 100%;
+    }
+    #canvas:-webkit-full-screen {
+      width: 100%;
+      height: 100%;
+    }
+    #canvas:-ms-fullscreen {
+      width: 100%;
+      height: 100%;
+    }
+    #canvas:fullscreen {
+      width: 100%;
+      height: 100%;
+    }
+
+    #presetSelect {
+      max-width: 300px;
+    }
+
+    #presetCycleLength {
+      width: 50px;
+    }
+  </style>
+  <link rel="stylesheet" href="https://unpkg.com/normalize.css/normalize.css" />
+
+  <script>
+    $(function() {
+      var visualizer = null;
+      var rendering = false;
+      var audioContext = null;
+      var sourceNode = null;
+      var delayedAudible = null;
+      var cycleInterval = null;
+      var presets = {};
+      var presetKeys = [];
+      var presetIndexHist = [];
+      var presetIndex = 0;
+      var presetCycle = true;
+      var presetCycleLength = 15000;
+      var presetRandom = true;
+      var canvas = document.getElementById('canvas');
+
+      function connectToAudioAnalyzer(sourceNode) {
+        if(delayedAudible) {
+          delayedAudible.disconnect();
+        }
+
+        delayedAudible = audioContext.createDelay();
+        delayedAudible.delayTime.value = 0.26;
+
+        sourceNode.connect(delayedAudible)
+        delayedAudible.connect(audioContext.destination);
+
+        visualizer.connectAudio(delayedAudible);
+      }
+
+      function startRenderer() {
+        requestAnimationFrame(() => startRenderer());
+        visualizer.render();
+      }
+
+      function playBufferSource(buffer) {
+        if (!rendering) {
+          rendering = true;
+          startRenderer();
+        }
+
+        if (sourceNode) {
+          sourceNode.disconnect();
+        }
+
+        sourceNode = audioContext.createBufferSource();
+        sourceNode.buffer = buffer;
+        connectToAudioAnalyzer(sourceNode);
+
+        sourceNode.start(0);
+      }
+
+      function loadLocalFiles(files, index = 0) {
+        var reader = new FileReader();
+        reader.onload = (event) => {
+          audioContext.decodeAudioData(
+            event.target.result,
+            (buf) => {
+              playBufferSource(buf);
+
+              setTimeout(() => {
+                if (files.length > index + 1) {
+                  loadLocalFiles(files, index + 1);
+                } else {
+                  sourceNode.disconnect();
+                  sourceNode = null;
+                  $("#audioSelectWrapper").css('display', 'block');
+                }
+              }, buf.duration * 1000);
+            }
+          );
+        };
+
+        var file = files[index];
+        reader.readAsArrayBuffer(file);
+      }
+
+      function connectMicAudio(sourceNode, audioContext) {
+        var gainNode = audioContext.createGain();
+        gainNode.gain.value = 1.25;
+        sourceNode.connect(gainNode);
+
+        visualizer.connectAudio(gainNode);
+        startRenderer();
+      }
+
+      function nextPreset() {
+        presetIndexHist.push(presetIndex);
+
+        var numPresets = presetKeys.length;
+        if (presetRandom) {
+          presetIndex = Math.floor(Math.random() * presetKeys.length);
+        } else {
+          presetIndex = (presetIndex + 1) % numPresets;
+        }
+
+        visualizer.loadPreset(presets[presetKeys[presetIndex]]);
+        $('#presetSelect').val(presetIndex);
+      }
+
+      function prevPreset() {
+        var numPresets = presetKeys.length;
+        if (presetIndexHist.length > 0) {
+          presetIndex = presetIndexHist.pop();
+        } else {
+          presetIndex = ((presetIndex - 1) + numPresets) % numPresets;
+        }
+
+        visualizer.loadPreset(presets[presetKeys[presetIndex]]);
+        $('#presetSelect').val(presetIndex);
+      }
+
+      function restartCycleInterval() {
+        if (cycleInterval) {
+          clearInterval(cycleInterval);
+          cycleInterval = null;
+        }
+
+        if (presetCycle) {
+          cycleInterval = setInterval(() => nextPreset(), presetCycleLength);
+        }
+      }
+
+      $(document).keydown((e) => {
+        if (e.which === 39) {
+          nextPreset();
+        } else if (e.which === 37) {
+          prevPreset();
+        }
+      });
+
+      $('#presetSelect').change((evt) => {
+        presetIndexHist.push(presetIndex);
+        presetIndex = parseInt($('#presetSelect').val());
+        visualizer.loadPreset(presets[presetKeys[presetIndex]]);
+      });
+
+      $('#presetCycle').change(() => {
+        presetCycle = $('#presetCycle').is(':checked');
+        restartCycleInterval();
+      });
+
+      $('#presetCycleLength').change((evt) => {
+        presetCycleLength = parseInt($('#presetCycleLength').val() * 1000);
+        restartCycleInterval();
+      });
+
+      $('#presetRandom').change(() => {
+        presetRandom = $('#presetRandom').is(':checked');
+      });
+
+      $("#localFileBut").click(function() {
+        $("#audioSelectWrapper").css('display', 'none');
+
+        var fileSelector = $('<input type="file" accept="audio/*" multiple />');
+
+        fileSelector[0].onchange = function(event) {
+          loadLocalFiles(fileSelector[0].files);
+        }
+
+        fileSelector.click();
+      });
+
+      $("#micSelect").click(() => {
+        $("#audioSelectWrapper").css('display', 'none');
+
+        navigator.getUserMedia({ audio: true }, (stream) => {
+          var micSourceNode = audioContext.createMediaStreamSource(stream);
+          connectMicAudio(micSourceNode, audioContext);
+        }, (err) => {
+          console.log('Error getting audio stream from getUserMedia');
+        });
+      });
+
+      function initPlayer() {
+        audioContext = new AudioContext();
+
+        presets = {};
+        if (window.butterchurnPresets) {
+          Object.assign(presets, butterchurnPresets.getPresets());
+        }
+        if (window.butterchurnPresetsExtra) {
+          Object.assign(presets, butterchurnPresetsExtra.getPresets());
+        }
+        presets = _(presets).toPairs().sortBy(([k, v]) => k.toLowerCase()).fromPairs().value();
+        presetKeys = _.keys(presets);
+        presetIndex = Math.floor(Math.random() * presetKeys.length);
+
+        var presetSelect = document.getElementById('presetSelect');
+        for(var i = 0; i < presetKeys.length; i++) {
+            var opt = document.createElement('option');
+            opt.innerHTML = presetKeys[i].substring(0,60) + (presetKeys[i].length > 60 ? '...' : '');
+            opt.value = i;
+            presetSelect.appendChild(opt);
+        }
+
+        visualizer = butterchurn.createVisualizer(audioContext, canvas , {
+          width: 800,
+          height: 600,
+        });
+        nextPreset();
+        cycleInterval = setInterval(() => nextPreset(), presetCycleLength);
+      }
+
+      initPlayer();
+    });
+  </script>
+</head>
+<body>
+  <div id="mainWrapper">
+    <div id="audioSelectWrapper">
+      <div id="localFileBut">
+        <span>Load local files</span>
+      </div>
+      <div id="micSelect">
+        <span>Use Mic</span>
+      </div>
+    </div>
+    <div id="presetControls">
+      <div>Preset: <select id="presetSelect"></select></div>
+      <div>Cycle: <input type="checkbox" id="presetCycle" checked></input>
+                  <input type="number" id="presetCycleLength"step="1" value="15" min="1"></input></div>
+      <div>Random: <input type="checkbox" id="presetRandom" checked></input></div>
+    </div>
+    <canvas id='canvas' width='800' height='600'>
+    </canvas>
+  </div>
+</body>
+</html>

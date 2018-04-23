@@ -1,0 +1,791 @@
+import _ from 'lodash';
+import AudioLevels from '../audio/audioLevels';
+
+import blankPreset from '../blankPreset';
+import PresetEquationRunner from '../equations/presetEquationRunner';
+import BasicWaveform from './waves/basicWaveform';
+import CustomWaveform from './waves/customWaveform';
+import CustomShape from './shapes/customShape';
+import Border from './sprites/border';
+import DarkenCenter from './sprites/darkenCenter';
+import MotionVectors from './motionVectors/motionVectors';
+import WarpShader from './shaders/warp';
+import CompShader from './shaders/comp';
+import BlurShader from './shaders/blur/blur';
+import Noise from '../noise/noise';
+import Utils from '../utils';
+
+export default class Renderer {
+  constructor (gl, audio, opts) {
+    this.gl = gl;
+    this.audio = audio;
+
+    this.frameNum = 0;
+    this.fps = 30;
+    this.time = 0;
+    this.presetTime = 0;
+    this.lastTime = performance.now();
+    this.timeHist = [0];
+    this.timeHistMax = 120;
+    this.blending = false;
+    this.blendStartTime = 0;
+    this.blendProgress = 0;
+    this.blendDuration = 0;
+    this.blendTime = 2.7;
+
+    this.width = opts.width || 1200;
+    this.height = opts.height || 900;
+    this.mesh_width = opts.mesh_width || 32;
+    this.mesh_height = opts.mesh_height || 24;
+    this.texsizeX = this.width;
+    this.texsizeY = this.height;
+    this.aspectx = (this.texsizeY > this.texsizeX) ? this.texsizeX / this.texsizeY : 1;
+    this.aspecty = (this.texsizeX > this.texsizeY) ? this.texsizeY / this.texsizeX : 1;
+    this.invAspectx = 1.0 / this.aspectx;
+    this.invAspecty = 1.0 / this.aspecty;
+
+    this.qs = _.map(_.range(1, 33), (x) => `q${x}`);
+    this.ts = _.map(_.range(1, 9), (x) => `t${x}`);
+
+    this.blurRatios = [
+      [0.5, 0.25],
+      [0.125, 0.125],
+      [0.0625, 0.0625]
+    ];
+
+    this.lastAudioTime = performance.now();
+    this.audioLevels = new AudioLevels(this.audio);
+
+    this.prevFrameBuffer = this.gl.createFramebuffer();
+    this.targetFrameBuffer = this.gl.createFramebuffer();
+    this.prevTexture = this.gl.createTexture();
+    this.targetTexture = this.gl.createTexture();
+
+    this.anisoExt = (
+      this.gl.getExtension('EXT_texture_filter_anisotropic') ||
+      this.gl.getExtension('MOZ_EXT_texture_filter_anisotropic') ||
+      this.gl.getExtension('WEBKIT_EXT_texture_filter_anisotropic')
+    );
+
+    this.bindFrameBufferTexture(this.prevFrameBuffer, this.prevTexture);
+    this.bindFrameBufferTexture(this.targetFrameBuffer, this.targetTexture);
+
+    const params = {
+      texsizeX: this.texsizeX,
+      texsizeY: this.texsizeY,
+      mesh_width: this.mesh_width,
+      mesh_height: this.mesh_height,
+      aspectx: this.aspectx,
+      aspecty: this.aspecty,
+    };
+    this.noise = new Noise(gl);
+    this.warpShader = new WarpShader(gl, this.noise, params);
+    this.compShader = new CompShader(gl, this.noise, params);
+    this.prevWarpShader = new WarpShader(gl, this.noise, params);
+    this.prevCompShader = new CompShader(gl, this.noise, params);
+    this.numBlurPasses = 0;
+    this.blurShader1 = new BlurShader(0, this.blurRatios, gl, params);
+    this.blurShader2 = new BlurShader(1, this.blurRatios, gl, params);
+    this.blurShader3 = new BlurShader(2, this.blurRatios, gl, params);
+    this.blurTexture1 = this.blurShader1.blurVerticalTexture;
+    this.blurTexture2 = this.blurShader2.blurVerticalTexture;
+    this.blurTexture3 = this.blurShader3.blurVerticalTexture;
+    this.basicWaveform = new BasicWaveform(gl, params);
+    this.customWaveforms = _.map(_.range(4), (i) => new CustomWaveform(i, gl, params));
+    this.customShapes = _.map(_.range(4), (i) => new CustomShape(i, gl, params));
+    this.darkenCenter = new DarkenCenter(gl, params);
+    this.innerBorder = new Border(gl, params);
+    this.outerBorder = new Border(gl, params);
+    this.motionVectors = new MotionVectors(gl, params);
+
+    this.warpUVs = new Float32Array((this.mesh_width + 1) * (this.mesh_height + 1) * 2);
+    this.warpColor = new Float32Array((this.mesh_width + 1) * (this.mesh_height + 1) * 4);
+
+    this.gl.clearColor(0, 0, 0, 1);
+
+    this.blankPreset = blankPreset;
+
+    this.preset = blankPreset;
+    this.prevPreset = this.preset;
+    this.presetEquationRunner = new PresetEquationRunner(this.preset, params);
+    this.prevPresetEquationRunner = new PresetEquationRunner(this.prevPreset, params);
+  }
+
+  static getHighestBlur (t) {
+    if (/sampler_blur3/.test(t)) {
+      return 3;
+    } else if (/sampler_blur2/.test(t)) {
+      return 2;
+    } else if (/sampler_blur1/.test(t)) {
+      return 1;
+    }
+
+    return 0;
+  }
+
+  genPlasma (x0, x1, y0, y1, dt) {
+    const midx = Math.floor((x0 + x1) / 2);
+    const midy = Math.floor((y0 + y1) / 2);
+    let t00 = this.vertInfoC[(y0 * (this.mesh_width + 1)) + x0];
+    let t01 = this.vertInfoC[(y0 * (this.mesh_width + 1)) + x1];
+    let t10 = this.vertInfoC[(y1 * (this.mesh_width + 1)) + x0];
+    let t11 = this.vertInfoC[(y1 * (this.mesh_width + 1)) + x1];
+
+    if ((y1 - y0) >= 2) {
+      if (x0 === 0) {
+        this.vertInfoC[(midy * (this.mesh_width + 1)) + x0] =
+          (0.5 * (t00 + t10)) + (((Math.random() * 2) - 1) * dt * this.aspecty);
+      }
+      this.vertInfoC[(midy * (this.mesh_width + 1)) + x1] =
+        (0.5 * (t01 + t11)) + (((Math.random() * 2) - 1) * dt * this.aspecty);
+    }
+    if ((x1 - x0) >= 2) {
+      if (y0 === 0) {
+        this.vertInfoC[(y0 * (this.mesh_width + 1)) + midx] =
+          (0.5 * (t00 + t01)) + (((Math.random() * 2) - 1) * dt * this.aspectx);
+      }
+      this.vertInfoC[(y1 * (this.mesh_width + 1)) + midx] =
+        (0.5 * (t10 + t11)) + (((Math.random() * 2) - 1) * dt * this.aspectx);
+    }
+
+    if ((y1 - y0) >= 2 && (x1 - x0) >= 2) {
+      t00 = this.vertInfoC[(midy * (this.mesh_width + 1)) + x0];
+      t01 = this.vertInfoC[(midy * (this.mesh_width + 1)) + x1];
+      t10 = this.vertInfoC[(y0 * (this.mesh_width + 1)) + midx];
+      t11 = this.vertInfoC[(y1 * (this.mesh_width + 1)) + midx];
+      this.vertInfoC[(midy * (this.mesh_width + 1)) + midx] =
+        (0.25 * (t10 + t11 + t00 + t01)) + (((Math.random() * 2) - 1) * dt);
+
+      this.genPlasma(x0, midx, y0, midy, dt * 0.5);
+      this.genPlasma(midx, x1, y0, midy, dt * 0.5);
+      this.genPlasma(x0, midx, midy, y1, dt * 0.5);
+      this.genPlasma(midx, x1, midy, y1, dt * 0.5);
+    }
+  }
+
+  randomizeBlendPattern () {
+    this.vertInfoA = new Float32Array((this.mesh_width + 1) * (this.mesh_height + 1));
+    this.vertInfoC = new Float32Array((this.mesh_width + 1) * (this.mesh_height + 1));
+
+    const mixType = 1 + Math.floor(Math.random() * 3);
+    if (mixType === 0) {
+      let nVert = 0;
+      for (let y = 0; y <= this.mesh_height; y++) {
+        for (let x = 0; x <= this.mesh_width; x++) {
+          this.vertInfoA[nVert] = 1;
+          this.vertInfoC[nVert] = 0;
+          nVert += 1;
+        }
+      }
+    } else if (mixType === 1) {
+      const ang = Math.random() * 6.28;
+      const vx = Math.cos(ang);
+      const vy = Math.sin(ang);
+      const band = 0.1 + (0.2 * Math.random());
+      const invBand = 1.0 / band;
+
+      let nVert = 0;
+      for (let y = 0; y <= this.mesh_height; y++) {
+        const fy = (y / this.mesh_height) * this.aspecty;
+        for (let x = 0; x <= this.mesh_width; x++) {
+          const fx = (x / this.mesh_width) * this.aspectx;
+
+          let t = ((fx - 0.5) * vx) + ((fy - 0.5) * vy) + 0.5;
+          t = ((t - 0.5) / Math.sqrt(2)) + 0.5;
+
+          this.vertInfoA[nVert] = invBand * (1 + band);
+          this.vertInfoC[nVert] = -invBand + (invBand * t);
+          nVert += 1;
+        }
+      }
+    } else if (mixType === 2) {
+      const band = 0.12 + (0.13 * Math.random());
+      const invBand = 1.0 / band;
+
+      this.vertInfoC[0] = Math.random();
+      this.vertInfoC[this.mesh_width] = Math.random();
+      this.vertInfoC[this.mesh_height * (this.mesh_width + 1)] = Math.random();
+      this.vertInfoC[(this.mesh_height * (this.mesh_width + 1)) + this.mesh_width] = Math.random();
+      this.genPlasma(0, this.mesh_width, 0, this.mesh_height, 0.25);
+
+      let minc = this.vertInfoC[0];
+      let maxc = this.vertInfoC[0];
+
+      let nVert = 0;
+      for (let y = 0; y <= this.mesh_height; y++) {
+        for (let x = 0; x <= this.mesh_width; x++) {
+          if (minc > this.vertInfoC[nVert]) {
+            minc = this.vertInfoC[nVert];
+          }
+          if (maxc < this.vertInfoC[nVert]) {
+            maxc = this.vertInfoC[nVert];
+          }
+          nVert += 1;
+        }
+      }
+
+      const mult = 1.0 / (maxc - minc);
+      nVert = 0;
+      for (let y = 0; y <= this.mesh_height; y++) {
+        for (let x = 0; x <= this.mesh_width; x++) {
+          const t = (this.vertInfoC[nVert] - minc) * mult;
+          this.vertInfoA[nVert] = invBand * (1 + band);
+          this.vertInfoC[nVert] = -invBand + (invBand * t);
+          nVert += 1;
+        }
+      }
+    } else if (mixType === 3) {
+      const band = 0.02 + (0.14 * Math.random()) + (0.34 * Math.random());
+      const invBand = 1.0 / band;
+      const dir = ((Math.floor(Math.random() * 2) * 2) - 1);
+
+      let nVert = 0;
+      for (let y = 0; y <= this.mesh_height; y++) {
+        const dy = ((y / this.mesh_height) - 0.5) * this.aspecty;
+        for (let x = 0; x <= this.mesh_width; x++) {
+          const dx = ((x / this.mesh_width) - 0.5) * this.aspectx;
+          let t = Math.sqrt((dx * dx) + (dy * dy)) * 1.41421;
+          if (dir === -1) {
+            t = 1 - t;
+          }
+
+          this.vertInfoA[nVert] = invBand * (1 + band);
+          this.vertInfoC[nVert] = -invBand + (invBand * t);
+          nVert += 1;
+        }
+      }
+    }
+  }
+
+  loadPreset (preset) {
+    this.randomizeBlendPattern();
+    this.blending = true;
+    this.blendStartTime = this.time;
+    this.blendDuration = this.blendTime;
+    this.blendProgress = 0;
+
+    const tmpEquationRunner = this.prevPresetEquationRunner;
+    this.prevPresetEquationRunner = this.presetEquationRunner;
+    this.presetEquationRunner = tmpEquationRunner;
+
+    this.prevPreset = this.preset;
+    this.preset = preset;
+    this.preset.baseVals.old_wave_mode = this.prevPreset.baseVals.wave_mode;
+
+    this.presetTime = this.time;
+    this.presetEquationRunner.updatePreset(this.preset);
+
+    const tmpWarpShader = this.prevWarpShader;
+    this.prevWarpShader = this.warpShader;
+    this.warpShader = tmpWarpShader;
+
+    const tmpCompShader = this.prevCompShader;
+    this.prevCompShader = this.compShader;
+    this.compShader = tmpCompShader;
+
+    const warpText = this.preset.warp.trim();
+    const compText = this.preset.comp.trim();
+
+    this.warpShader.updateShader(warpText);
+    this.compShader.updateShader(compText);
+
+    if (warpText.length === 0) {
+      this.numBlurPasses = 0;
+    } else {
+      this.numBlurPasses = Renderer.getHighestBlur(warpText);
+    }
+
+    if (compText.length !== 0) {
+      this.numBlurPasses = Math.max(this.numBlurPasses, Renderer.getHighestBlur(compText));
+    }
+  }
+
+  setRendererSize (width, height) {
+    this.width = width;
+    this.height = height;
+    this.texsizeX = width;
+    this.texsizeY = height;
+    this.aspectx = (this.texsizeY > this.texsizeX) ? this.texsizeX / this.texsizeY : 1;
+    this.aspecty = (this.texsizeX > this.texsizeY) ? this.texsizeY / this.texsizeX : 1;
+
+    this.bindFrameBufferTexture(this.prevFrameBuffer, this.prevTexture);
+    this.bindFrameBufferTexture(this.targetFrameBuffer, this.targetTexture);
+
+    this.updateGlobals();
+  }
+
+  updateGlobals () {
+    const params = {
+      texsizeX: this.texsizeX,
+      texsizeY: this.texsizeY,
+      mesh_width: this.mesh_width,
+      mesh_height: this.mesh_height,
+      aspectx: this.aspectx,
+      aspecty: this.aspecty,
+    };
+    this.presetEquationRunner.updateGlobals(params);
+    this.prevPresetEquationRunner.updateGlobals(params);
+    this.warpShader.updateGlobals(params);
+    this.prevWarpShader.updateGlobals(params);
+    this.compShader.updateGlobals(params);
+    this.prevCompShader.updateGlobals(params);
+    this.blurShader1.updateGlobals(params);
+    this.blurShader2.updateGlobals(params);
+    this.blurShader3.updateGlobals(params);
+    this.basicWaveform.updateGlobals(params);
+    _.forEach(this.customWaveforms, (wave) => wave.updateGlobals(params));
+    _.forEach(this.customShapes, (shape) => shape.updateGlobals(params));
+    this.darkenCenter.updateGlobals(params);
+    this.innerBorder.updateGlobals(params);
+    this.outerBorder.updateGlobals(params);
+    this.motionVectors.updateGlobals(params);
+
+    this.warpUVs = new Float32Array((this.mesh_width + 1) * (this.mesh_height + 1) * 2);
+    this.warpColor = new Float32Array((this.mesh_width + 1) * (this.mesh_height + 1) * 4);
+  }
+
+  calcTimeAndFPS () {
+    const newTime = performance.now();
+    let elapsed = (newTime - this.lastTime) / 1000.0;
+    if (elapsed > 1.0 || elapsed < 0.0 || this.frame < 2) {
+      elapsed = 1.0 / 30.0;
+    }
+
+    this.lastTime = newTime;
+    this.time += 1.0 / this.fps;
+
+    if (this.blending) {
+      this.blendProgress = (this.time - this.blendStartTime) / this.blendDuration;
+      if (this.blendProgress > 1.0) {
+        this.blending = false;
+      }
+    }
+
+    const newHistTime = this.timeHist[this.timeHist.length - 1] + elapsed;
+    this.timeHist.push(newHistTime);
+    if (this.timeHist.length > this.timeHistMax) {
+      this.timeHist.shift();
+    }
+
+    const newFPS = this.timeHist.length / (newHistTime - this.timeHist[0]);
+    if (Math.abs(newFPS - this.fps) > 3.0 && this.frame > this.timeHistMax) {
+      this.fps = newFPS;
+    } else {
+      const damping = 0.93;
+      this.fps = (damping * this.fps) + ((1.0 - damping) * newFPS);
+    }
+  }
+
+  runPixelEquations (preset, mdVSFrame, mdVSUserKeys, runVertEQs, blending) {
+    const gridX = this.mesh_width;
+    const gridZ = this.mesh_height;
+
+    const gridX1 = gridX + 1;
+    const gridZ1 = gridZ + 1;
+
+    const warpTimeV = this.time * mdVSFrame.warpanimspeed;
+    const warpScaleInv = 1.0 / mdVSFrame.warpscale;
+
+    const warpf0 = 11.68 + (4.0 * Math.cos((warpTimeV * 1.413) + 10));
+    const warpf1 = 8.77 + (3.0 * Math.cos((warpTimeV * 1.113) + 7));
+    const warpf2 = 10.54 + (3.0 * Math.cos((warpTimeV * 1.233) + 3));
+    const warpf3 = 11.49 + (4.0 * Math.cos((warpTimeV * 0.933) + 5));
+
+    const texelOffsetX = 0.0 / this.texsizeX;
+    const texelOffsetY = 0.0 / this.texsizeY;
+
+    const aspectx = this.aspectx;
+    const aspecty = this.aspecty;
+
+    let mdVSVertex = _.clone(mdVSFrame);
+    const repairKeys = mdVSVertex.rkeys || [];
+    const repairMap = {};
+    for (let i = 0; i < repairKeys.length; i++) {
+      const k = repairKeys[i];
+      if (!_.includes(mdVSUserKeys, k) && !_.includes(this.qs, k)) {
+        repairMap[k] = mdVSVertex[k];
+      }
+    }
+
+    let offset = 0;
+    let offsetColor = 0;
+    for (let iz = 0; iz < gridZ1; iz++) {
+      for (let ix = 0; ix < gridX1; ix++) {
+        const x = ((ix / gridX) * 2.0) - 1.0;
+        const y = ((iz / gridZ) * 2.0) - 1.0;
+        const rad = Math.sqrt((x * x * aspectx * aspectx) + (y * y * aspecty * aspecty));
+
+        if (runVertEQs) {
+          let ang;
+          if (iz === gridZ / 2 && ix === gridX / 2) {
+            ang = 0;
+          } else {
+            ang = Utils.atan2(y * aspecty, x * aspectx);
+          }
+
+          mdVSVertex.x = ((x * 0.5 * aspectx) + 0.5);
+          mdVSVertex.y = ((y * -0.5 * aspecty) + 0.5);
+          mdVSVertex.rad = rad;
+          mdVSVertex.ang = ang;
+
+          /*
+          mdVSVertex.zoom = mdVSFrame.zoom;
+          mdVSVertex.zoomexp = mdVSFrame.zoomexp;
+          mdVSVertex.rot = mdVSFrame.rot;
+          mdVSVertex.warp = mdVSFrame.warp;
+          mdVSVertex.cx = mdVSFrame.cx;
+          mdVSVertex.cy = mdVSFrame.cy;
+          mdVSVertex.dx = mdVSFrame.dx;
+          mdVSVertex.dy = mdVSFrame.dy;
+          mdVSVertex.sx = mdVSFrame.sx;
+          mdVSVertex.sy = mdVSFrame.sy;
+          */
+
+          mdVSVertex = Utils.repairPerVertexEQs(mdVSVertex, repairMap);
+
+          mdVSVertex = preset.pixel_eqs(mdVSVertex);
+        }
+
+        const warp = mdVSVertex.warp;
+        const zoom = mdVSVertex.zoom;
+        const zoomExp = mdVSVertex.zoomexp;
+        const cx = mdVSVertex.cx;
+        const cy = mdVSVertex.cy;
+        const sx = mdVSVertex.sx;
+        const sy = mdVSVertex.sy;
+        const dx = mdVSVertex.dx;
+        const dy = mdVSVertex.dy;
+        const rot = mdVSVertex.rot;
+
+        const zoom2V = zoom ** (zoomExp ** ((rad * 2.0) - 1.0));
+        const zoom2Inv = 1.0 / zoom2V;
+
+        let u = (x * 0.5 * aspectx * zoom2Inv) + 0.5;
+        let v = (-y * 0.5 * aspecty * zoom2Inv) + 0.5;
+
+        u = ((u - cx) / sx) + cx;
+        v = ((v - cy) / sy) + cy;
+
+        if (warp > 0.001) {
+          u += warp * 0.0035 * Math.sin((warpTimeV * 0.333) +
+                                        (warpScaleInv * ((x * warpf0) - (y * warpf3))));
+          v += warp * 0.0035 * Math.cos((warpTimeV * 0.375) -
+                                        (warpScaleInv * ((x * warpf2) + (y * warpf1))));
+          u += warp * 0.0035 * Math.cos((warpTimeV * 0.753) -
+                                        (warpScaleInv * ((x * warpf1) - (y * warpf2))));
+          v += warp * 0.0035 * Math.sin((warpTimeV * 0.825) +
+                                        (warpScaleInv * ((x * warpf0) + (y * warpf3))));
+        }
+
+        const u2 = u - cx;
+        const v2 = v - cy;
+
+        const cosRot = Math.cos(rot);
+        const sinRot = Math.sin(rot);
+        u = ((u2 * cosRot) - (v2 * sinRot)) + cx;
+        v = (u2 * sinRot) + (v2 * cosRot) + cy;
+
+        u -= dx;
+        v -= dy;
+
+        u = ((u - 0.5) / aspectx) + 0.5;
+        v = ((v - 0.5) / aspecty) + 0.5;
+
+        u += texelOffsetX;
+        v += texelOffsetY;
+
+        if (!blending) {
+          this.warpUVs[offset] = u;
+          this.warpUVs[offset + 1] = v;
+
+          this.warpColor[offsetColor + 0] = 1;
+          this.warpColor[offsetColor + 1] = 1;
+          this.warpColor[offsetColor + 2] = 1;
+          this.warpColor[offsetColor + 3] = 1;
+        } else {
+          let mix2 = (this.vertInfoA[offset / 2] * this.blendProgress) + this.vertInfoC[offset / 2];
+          mix2 = Math.clamp(mix2, 0, 1);
+
+          this.warpUVs[offset] = (this.warpUVs[offset] * mix2) + (u * (1 - mix2));
+          this.warpUVs[offset + 1] = (this.warpUVs[offset + 1] * mix2) + (v * (1 - mix2));
+
+          this.warpColor[offsetColor + 0] = 1;
+          this.warpColor[offsetColor + 1] = 1;
+          this.warpColor[offsetColor + 2] = 1;
+          this.warpColor[offsetColor + 3] = mix2;
+        }
+
+        offset += 2;
+        offsetColor += 4;
+      }
+    }
+  }
+
+  static mixFrameEquations (blendProgress, mdVSFrame, mdVSFramePrev) {
+    const mix = 0.5 - (0.5 * Math.cos(blendProgress * 3.1415926535898));
+    const mix2 = 1 - mix;
+    const snapPoint = 0.5;
+
+    const mixedFrame = _.clone(mdVSFrame);
+
+    mixedFrame.decay = (mix * mdVSFrame.decay) + (mix2 * mdVSFramePrev.decay);
+    mixedFrame.wave_a = (mix * mdVSFrame.wave_a) + (mix2 * mdVSFramePrev.wave_a);
+    mixedFrame.wave_r = (mix * mdVSFrame.wave_r) + (mix2 * mdVSFramePrev.wave_r);
+    mixedFrame.wave_g = (mix * mdVSFrame.wave_g) + (mix2 * mdVSFramePrev.wave_g);
+    mixedFrame.wave_b = (mix * mdVSFrame.wave_b) + (mix2 * mdVSFramePrev.wave_b);
+    mixedFrame.wave_x = (mix * mdVSFrame.wave_x) + (mix2 * mdVSFramePrev.wave_x);
+    mixedFrame.wave_y = (mix * mdVSFrame.wave_y) + (mix2 * mdVSFramePrev.wave_y);
+    mixedFrame.wave_mystery = (mix * mdVSFrame.wave_mystery) + (mix2 * mdVSFramePrev.wave_mystery);
+    mixedFrame.ob_size = (mix * mdVSFrame.ob_size) + (mix2 * mdVSFramePrev.ob_size);
+    mixedFrame.ob_r = (mix * mdVSFrame.ob_r) + (mix2 * mdVSFramePrev.ob_r);
+    mixedFrame.ob_g = (mix * mdVSFrame.ob_g) + (mix2 * mdVSFramePrev.ob_g);
+    mixedFrame.ob_b = (mix * mdVSFrame.ob_b) + (mix2 * mdVSFramePrev.ob_b);
+    mixedFrame.ob_a = (mix * mdVSFrame.ob_a) + (mix2 * mdVSFramePrev.ob_a);
+    mixedFrame.ib_size = (mix * mdVSFrame.ib_size) + (mix2 * mdVSFramePrev.ib_size);
+    mixedFrame.ib_r = (mix * mdVSFrame.ib_r) + (mix2 * mdVSFramePrev.ib_r);
+    mixedFrame.ib_g = (mix * mdVSFrame.ib_g) + (mix2 * mdVSFramePrev.ib_g);
+    mixedFrame.ib_b = (mix * mdVSFrame.ib_b) + (mix2 * mdVSFramePrev.ib_b);
+    mixedFrame.ib_a = (mix * mdVSFrame.ib_a) + (mix2 * mdVSFramePrev.ib_a);
+    mixedFrame.mv_x = (mix * mdVSFrame.mv_x) + (mix2 * mdVSFramePrev.mv_x);
+    mixedFrame.mv_y = (mix * mdVSFrame.mv_y) + (mix2 * mdVSFramePrev.mv_y);
+    mixedFrame.mv_dx = (mix * mdVSFrame.mv_dx) + (mix2 * mdVSFramePrev.mv_dx);
+    mixedFrame.mv_dy = (mix * mdVSFrame.mv_dy) + (mix2 * mdVSFramePrev.mv_dy);
+    mixedFrame.mv_l = (mix * mdVSFrame.mv_l) + (mix2 * mdVSFramePrev.mv_l);
+    mixedFrame.mv_r = (mix * mdVSFrame.mv_r) + (mix2 * mdVSFramePrev.mv_r);
+    mixedFrame.mv_g = (mix * mdVSFrame.mv_g) + (mix2 * mdVSFramePrev.mv_g);
+    mixedFrame.mv_b = (mix * mdVSFrame.mv_b) + (mix2 * mdVSFramePrev.mv_b);
+    mixedFrame.mv_a = (mix * mdVSFrame.mv_a) + (mix2 * mdVSFramePrev.mv_a);
+    mixedFrame.echo_zoom = (mix * mdVSFrame.echo_zoom) + (mix2 * mdVSFramePrev.echo_zoom);
+    mixedFrame.echo_alpha = (mix * mdVSFrame.echo_alpha) + (mix2 * mdVSFramePrev.echo_alpha);
+    mixedFrame.echo_orient = (mix * mdVSFrame.echo_orient) + (mix2 * mdVSFramePrev.echo_orient);
+    mixedFrame.wave_dots = (mix < snapPoint) ? mdVSFramePrev.wave_dots : mdVSFrame.wave_dots;
+    mixedFrame.wave_thick = (mix < snapPoint) ? mdVSFramePrev.wave_thick : mdVSFrame.wave_thick;
+    mixedFrame.additivewave = (mix < snapPoint) ? mdVSFramePrev.additivewave :
+                                                  mdVSFrame.additivewave;
+    mixedFrame.wave_brighten = (mix < snapPoint) ? mdVSFramePrev.wave_brighten :
+                                                   mdVSFrame.wave_brighten;
+    mixedFrame.darken_center = (mix < snapPoint) ? mdVSFramePrev.darken_center :
+                                                   mdVSFrame.darken_center;
+    mixedFrame.gammaadj = (mix < snapPoint) ? mdVSFramePrev.gammaadj : mdVSFrame.gammaadj;
+    mixedFrame.wrap = (mix < snapPoint) ? mdVSFramePrev.wrap : mdVSFrame.wrap;
+    mixedFrame.invert = (mix < snapPoint) ? mdVSFramePrev.invert : mdVSFrame.invert;
+    mixedFrame.brighten = (mix < snapPoint) ? mdVSFramePrev.brighten : mdVSFrame.brighten;
+    mixedFrame.darken = (mix < snapPoint) ? mdVSFramePrev.darken : mdVSFrame.darken;
+    mixedFrame.solarize = (mix < snapPoint) ? mdVSFramePrev.brighten : mdVSFrame.solarize;
+    mixedFrame.b1n = (mix * (mdVSFrame.b1n || 0)) + (mix2 * (mdVSFramePrev.b1n || 0));
+    mixedFrame.b2n = (mix * (mdVSFrame.b2n || 0)) + (mix2 * (mdVSFramePrev.b2n || 0));
+    mixedFrame.b3n = (mix * (mdVSFrame.b3n || 0)) + (mix2 * (mdVSFramePrev.b3n || 0));
+    mixedFrame.b1x = (mix * (mdVSFrame.b1x || 1)) + (mix2 * (mdVSFramePrev.b1x || 1));
+    mixedFrame.b2x = (mix * (mdVSFrame.b2x || 1)) + (mix2 * (mdVSFramePrev.b2x || 1));
+    mixedFrame.b3x = (mix * (mdVSFrame.b3x || 1)) + (mix2 * (mdVSFramePrev.b3x || 1));
+    mixedFrame.b1ed = (mix * (mdVSFrame.b1ed || 0)) + (mix2 * (mdVSFramePrev.b1ed || 0));
+
+    return mixedFrame;
+  }
+
+  bindFrambufferAndSetViewport (fb, width, height) {
+    this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, fb);
+    this.gl.viewport(0, 0, width, height);
+  }
+
+  bindFrameBufferTexture (targetFrameBuffer, targetTexture) {
+    this.gl.bindTexture(this.gl.TEXTURE_2D, targetTexture);
+
+    this.gl.pixelStorei(this.gl.UNPACK_ALIGNMENT, 1);
+    this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA,
+                       this.texsizeX, this.texsizeY, 0,
+                       this.gl.RGBA, this.gl.UNSIGNED_BYTE,
+                       new Uint8Array(this.texsizeX * this.texsizeY * 4));
+
+    this.gl.generateMipmap(this.gl.TEXTURE_2D);
+
+    this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_S, this.gl.CLAMP_TO_EDGE);
+    this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_WRAP_T, this.gl.CLAMP_TO_EDGE);
+    this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER,
+                                              this.gl.LINEAR_MIPMAP_LINEAR);
+    this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.LINEAR);
+    if (this.anisoExt) {
+      const max = this.gl.getParameter(this.anisoExt.MAX_TEXTURE_MAX_ANISOTROPY_EXT);
+      this.gl.texParameterf(this.gl.TEXTURE_2D, this.anisoExt.TEXTURE_MAX_ANISOTROPY_EXT, max);
+    }
+
+    this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, targetFrameBuffer);
+    this.gl.framebufferTexture2D(this.gl.FRAMEBUFFER, this.gl.COLOR_ATTACHMENT0,
+                                 this.gl.TEXTURE_2D, targetTexture, 0);
+  }
+
+  render () {
+    this.audio.sampleAudio();
+
+    const audioTime = performance.now();
+    const audioDiff = audioTime - this.lastAudioTime;
+    if (audioDiff > 30) {
+      this.audioLevels.updateAudioLevels(audioDiff, this.frameNum);
+      this.lastAudioTime = audioTime;
+    }
+
+    this.calcTimeAndFPS();
+    this.frameNum += 1;
+
+    const globalVars = {
+      frame: this.frameNum,
+      time: this.time,
+      fps: this.fps,
+      bass: this.audioLevels.bass,
+      bass_att: this.audioLevels.bass_att,
+      mid: this.audioLevels.mid,
+      mid_att: this.audioLevels.mid_att,
+      treb: this.audioLevels.treb,
+      treb_att: this.audioLevels.treb_att,
+      meshx: this.mesh_width,
+      meshy: this.mesh_height,
+      aspectx: this.invAspectx,
+      aspecty: this.invAspecty,
+      pixelsx: this.texsizeX,
+      pixelsy: this.texsizeY,
+    };
+
+    this.presetEquationRunner.runFrameEquations(globalVars);
+    const mdVSFrame = this.presetEquationRunner.mdVSFrame;
+    const mdVSUserKeys = this.presetEquationRunner.mdVSUserKeys;
+    this.runPixelEquations(this.presetEquationRunner.preset,
+                           mdVSFrame,
+                           mdVSUserKeys,
+                           this.presetEquationRunner.runVertEQs,
+                           false);
+
+    let mdVSFrameMixed;
+    if (this.blending) {
+      this.prevPresetEquationRunner.runFrameEquations(globalVars);
+      this.runPixelEquations(this.prevPresetEquationRunner.preset,
+                             this.prevPresetEquationRunner.mdVSFrame,
+                             this.prevPresetEquationRunner.mdVSUserKeys,
+                             this.prevPresetEquationRunner.runVertEQs,
+                             true);
+
+      mdVSFrameMixed = Renderer.mixFrameEquations(this.blendProgress,
+                                                  mdVSFrame,
+                                                  this.prevPresetEquationRunner.mdVSFrame);
+    } else {
+      mdVSFrameMixed = mdVSFrame;
+    }
+
+    const swapTexture = this.targetTexture;
+    this.targetTexture = this.prevTexture;
+    this.prevTexture = swapTexture;
+
+    const swapFrameBuffer = this.targetFrameBuffer;
+    this.targetFrameBuffer = this.prevFrameBuffer;
+    this.prevFrameBuffer = swapFrameBuffer;
+
+    this.gl.bindTexture(this.gl.TEXTURE_2D, this.prevTexture);
+    this.gl.generateMipmap(this.gl.TEXTURE_2D);
+
+    this.bindFrambufferAndSetViewport(this.targetFrameBuffer, this.texsizeX, this.texsizeY);
+
+    this.gl.clear(this.gl.COLOR_BUFFER_BIT);
+    this.gl.enable(this.gl.BLEND);
+    this.gl.blendEquation(this.gl.FUNC_ADD);
+    this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
+
+    if (!this.blending) {
+      this.warpShader.renderQuadTexture(false, this.prevTexture,
+                                        this.blurTexture1, this.blurTexture2, this.blurTexture3,
+                                        mdVSFrame, this.warpUVs, this.warpColor);
+    } else {
+      this.prevWarpShader.renderQuadTexture(false, this.prevTexture,
+                                            this.blurTexture1, this.blurTexture2,
+                                            this.blurTexture3,
+                                            this.prevPresetEquationRunner.mdVSFrame,
+                                            this.warpUVs, this.warpColor);
+
+      this.warpShader.renderQuadTexture(true, this.prevTexture,
+                                        this.blurTexture1, this.blurTexture2, this.blurTexture3,
+                                        mdVSFrameMixed, this.warpUVs, this.warpColor);
+    }
+
+    if (this.numBlurPasses > 0) {
+      this.blurShader1.renderBlurTexture(this.targetTexture, mdVSFrame);
+
+      if (this.numBlurPasses > 1) {
+        this.blurShader2.renderBlurTexture(this.blurTexture1, mdVSFrame);
+
+        if (this.numBlurPasses > 2) {
+          this.blurShader3.renderBlurTexture(this.blurTexture2, mdVSFrame);
+        }
+      }
+
+      // rebind target texture framebuffer
+      this.bindFrambufferAndSetViewport(this.targetFrameBuffer, this.texsizeX, this.texsizeY);
+    }
+
+    this.motionVectors.drawMotionVectors(mdVSFrameMixed, this.warpUVs);
+
+    if (this.preset.shapes && this.preset.shapes.length > 0) {
+      _.forEach(this.customShapes, (shape, i) => {
+        shape.drawCustomShape(this.blending, this.blendProgress, globalVars,
+                              this.presetEquationRunner,
+                              this.preset.shapes[i],
+                              this.prevPresetEquationRunner,
+                              _.get(this.prevPreset, `shapes[${i}]`),
+                              this.prevTexture);
+      });
+    }
+
+    if (this.preset.waves && this.preset.waves.length > 0) {
+      _.forEach(this.customWaveforms, (waveform, i) => {
+        waveform.drawCustomWaveform(this.blending, this.blendProgress,
+                                    this.audio.timeArrayL,
+                                    this.audio.timeArrayR,
+                                    this.audio.freqArrayL,
+                                    this.audio.freqArrayR,
+                                    globalVars,
+                                    this.presetEquationRunner,
+                                    this.preset.waves[i],
+                                    this.prevPresetEquationRunner,
+                                    _.get(this.prevPreset, `waves[${i}]`));
+      });
+    }
+
+    this.basicWaveform.drawBasicWaveform(this.blending, this.blendProgress,
+                                         this.audio.timeArrayL,
+                                         this.audio.timeArrayR,
+                                         mdVSFrameMixed);
+
+    this.darkenCenter.drawDarkenCenter(mdVSFrameMixed);
+
+    const outerColor = [
+      mdVSFrameMixed.ob_r, mdVSFrameMixed.ob_g, mdVSFrameMixed.ob_b, mdVSFrameMixed.ob_a
+    ];
+    this.outerBorder.drawBorder(outerColor, mdVSFrameMixed.ob_size, 0);
+
+    const innerColor = [
+      mdVSFrameMixed.ib_r, mdVSFrameMixed.ib_g, mdVSFrameMixed.ib_b, mdVSFrameMixed.ib_a
+    ];
+    this.innerBorder.drawBorder(innerColor, mdVSFrameMixed.ib_size, mdVSFrameMixed.ob_size);
+
+    this.bindFrambufferAndSetViewport(null, this.width, this.height);
+
+    this.gl.clear(this.gl.COLOR_BUFFER_BIT);
+    this.gl.enable(this.gl.BLEND);
+    this.gl.blendEquation(this.gl.FUNC_ADD);
+    this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
+
+    if (!this.blending) {
+      this.compShader.renderQuadTexture(false, this.targetTexture,
+                                        this.blurTexture1, this.blurTexture2, this.blurTexture3,
+                                        mdVSFrame, this.warpColor);
+    } else {
+      this.prevCompShader.renderQuadTexture(false, this.targetTexture,
+                                            this.blurTexture1,
+                                            this.blurTexture2,
+                                            this.blurTexture3,
+                                            this.prevPresetEquationRunner.mdVSFrame,
+                                            this.warpColor);
+
+      this.compShader.renderQuadTexture(true, this.targetTexture,
+                                        this.blurTexture1, this.blurTexture2, this.blurTexture3,
+                                        mdVSFrameMixed, this.warpColor);
+    }
+  }
+}
