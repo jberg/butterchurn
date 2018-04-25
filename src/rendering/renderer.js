@@ -313,6 +313,20 @@ export default class Renderer {
     this.updateGlobals();
   }
 
+  setRendererAndTextureSize (width, height, textureWidth, textureHeight) {
+    this.width = width;
+    this.height = height;
+    this.texsizeX = textureWidth;
+    this.texsizeY = textureHeight;
+    this.aspectx = (this.texsizeY > this.texsizeX) ? this.texsizeX / this.texsizeY : 1;
+    this.aspecty = (this.texsizeX > this.texsizeY) ? this.texsizeY / this.texsizeX : 1;
+
+    this.bindFrameBufferTexture(this.prevFrameBuffer, this.prevTexture);
+    this.bindFrameBufferTexture(this.targetFrameBuffer, this.targetTexture);
+
+    this.updateGlobals();
+  }
+
   updateGlobals () {
     const params = {
       texsizeX: this.texsizeX,

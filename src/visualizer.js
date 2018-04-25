@@ -33,6 +33,10 @@ export default class Visualizer {
     this.renderer.setRendererSize(width, height);
   }
 
+  setRendererAndTextureSize (width, height, textureWidth, textureHeight) {
+    this.renderer.setRendererAndTextureSize(width, height, textureWidth, textureHeight);
+  }
+
   render () {
     this.renderer.render();
   }
