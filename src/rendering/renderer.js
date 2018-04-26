@@ -11,6 +11,7 @@ import DarkenCenter from './sprites/darkenCenter';
 import MotionVectors from './motionVectors/motionVectors';
 import WarpShader from './shaders/warp';
 import CompShader from './shaders/comp';
+import OutputShader from './shaders/output';
 import BlurShader from './shaders/blur/blur';
 import Noise from '../noise/noise';
 import Utils from '../utils';
@@ -60,6 +61,9 @@ export default class Renderer {
     this.prevTexture = this.gl.createTexture();
     this.targetTexture = this.gl.createTexture();
 
+    this.compFrameBuffer = this.gl.createFramebuffer();
+    this.compTexture = this.gl.createTexture();
+
     this.anisoExt = (
       this.gl.getExtension('EXT_texture_filter_anisotropic') ||
       this.gl.getExtension('MOZ_EXT_texture_filter_anisotropic') ||
@@ -68,6 +72,7 @@ export default class Renderer {
 
     this.bindFrameBufferTexture(this.prevFrameBuffer, this.prevTexture);
     this.bindFrameBufferTexture(this.targetFrameBuffer, this.targetTexture);
+    this.bindFrameBufferTexture(this.compFrameBuffer, this.compTexture);
 
     const params = {
       texsizeX: this.texsizeX,
@@ -80,6 +85,7 @@ export default class Renderer {
     this.noise = new Noise(gl);
     this.warpShader = new WarpShader(gl, this.noise, params);
     this.compShader = new CompShader(gl, this.noise, params);
+    this.outputShader = new OutputShader(gl, params);
     this.prevWarpShader = new WarpShader(gl, this.noise, params);
     this.prevCompShader = new CompShader(gl, this.noise, params);
     this.numBlurPasses = 0;
@@ -309,6 +315,7 @@ export default class Renderer {
 
     this.bindFrameBufferTexture(this.prevFrameBuffer, this.prevTexture);
     this.bindFrameBufferTexture(this.targetFrameBuffer, this.targetTexture);
+    this.bindFrameBufferTexture(this.compFrameBuffer, this.compTexture);
 
     this.updateGlobals();
   }
@@ -323,6 +330,7 @@ export default class Renderer {
 
     this.bindFrameBufferTexture(this.prevFrameBuffer, this.prevTexture);
     this.bindFrameBufferTexture(this.targetFrameBuffer, this.targetTexture);
+    this.bindFrameBufferTexture(this.compFrameBuffer, this.compTexture);
 
     this.updateGlobals();
   }
@@ -342,6 +350,7 @@ export default class Renderer {
     this.prevWarpShader.updateGlobals(params);
     this.compShader.updateGlobals(params);
     this.prevCompShader.updateGlobals(params);
+    this.outputShader.updateGlobals(params);
     this.blurShader1.updateGlobals(params);
     this.blurShader2.updateGlobals(params);
     this.blurShader3.updateGlobals(params);
@@ -777,7 +786,8 @@ export default class Renderer {
     ];
     this.innerBorder.drawBorder(innerColor, mdVSFrameMixed.ib_size, mdVSFrameMixed.ob_size);
 
-    this.bindFrambufferAndSetViewport(null, this.width, this.height);
+
+    this.bindFrambufferAndSetViewport(this.compFrameBuffer, this.texsizeX, this.texsizeY);
 
     this.gl.clear(this.gl.COLOR_BUFFER_BIT);
     this.gl.enable(this.gl.BLEND);
@@ -800,5 +810,8 @@ export default class Renderer {
                                         this.blurTexture1, this.blurTexture2, this.blurTexture3,
                                         mdVSFrameMixed, this.warpColor);
     }
+
+    this.bindFrambufferAndSetViewport(null, this.width, this.height);
+    this.outputShader.renderQuadTexture(this.compTexture);
   }
 }
