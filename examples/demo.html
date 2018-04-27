@@ -245,6 +245,8 @@
         visualizer = butterchurn.createVisualizer(audioContext, canvas , {
           width: 800,
           height: 600,
+          pixelRatio: window.devicePixelRatio || 1,
+          textureRatio: 1,
         });
         nextPreset(0);
         cycleInterval = setInterval(() => nextPreset(2.7), presetCycleLength);

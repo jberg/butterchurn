@@ -7,7 +7,7 @@ export default class Visualizer {
 
     const gl = canvas.getContext('webgl2', {
       alpha: false,
-      antialias: true,
+      antialias: false,
       depth: false,
       stencil: false,
       premultipliedAlpha: false,
@@ -29,12 +29,8 @@ export default class Visualizer {
     this.renderer.loadPreset(preset, blendTime);
   }
 
-  setRendererSize (width, height) {
-    this.renderer.setRendererSize(width, height);
-  }
-
-  setRendererAndTextureSize (width, height, textureWidth, textureHeight) {
-    this.renderer.setRendererAndTextureSize(width, height, textureWidth, textureHeight);
+  setRendererSize (width, height, opts = {}) {
+    this.renderer.setRendererSize(width, height, opts);
   }
 
   render () {

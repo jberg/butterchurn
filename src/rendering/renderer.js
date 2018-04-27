@@ -37,8 +37,10 @@ export default class Renderer {
     this.height = opts.height || 900;
     this.mesh_width = opts.mesh_width || 32;
     this.mesh_height = opts.mesh_height || 24;
-    this.texsizeX = this.width;
-    this.texsizeY = this.height;
+    this.pixelRatio = opts.pixelRatio || 1;
+    this.textureRatio = opts.textureRatio || 1;
+    this.texsizeX = this.width * this.pixelRatio * this.textureRatio;
+    this.texsizeY = this.height * this.pixelRatio * this.textureRatio;
     this.aspectx = (this.texsizeY > this.texsizeX) ? this.texsizeX / this.texsizeY : 1;
     this.aspecty = (this.texsizeX > this.texsizeY) ? this.texsizeY / this.texsizeX : 1;
     this.invAspectx = 1.0 / this.aspectx;
@@ -305,26 +307,15 @@ export default class Renderer {
     }
   }
 
-  setRendererSize (width, height) {
+  setRendererSize (width, height, opts) {
     this.width = width;
     this.height = height;
-    this.texsizeX = width;
-    this.texsizeY = height;
-    this.aspectx = (this.texsizeY > this.texsizeX) ? this.texsizeX / this.texsizeY : 1;
-    this.aspecty = (this.texsizeX > this.texsizeY) ? this.texsizeY / this.texsizeX : 1;
-
-    this.bindFrameBufferTexture(this.prevFrameBuffer, this.prevTexture);
-    this.bindFrameBufferTexture(this.targetFrameBuffer, this.targetTexture);
-    this.bindFrameBufferTexture(this.compFrameBuffer, this.compTexture);
-
-    this.updateGlobals();
-  }
-
-  setRendererAndTextureSize (width, height, textureWidth, textureHeight) {
-    this.width = width;
-    this.height = height;
-    this.texsizeX = textureWidth;
-    this.texsizeY = textureHeight;
+    this.mesh_width = opts.mesh_width || this.mesh_width;
+    this.mesh_height = opts.mesh_height || this.mesh_height;
+    this.pixelRatio = opts.pixelRatio || this.pixelRatio;
+    this.textureRatio = opts.textureRatio || this.textureRatio;
+    this.texsizeX = width * this.pixelRatio * this.textureRatio;
+    this.texsizeY = height * this.pixelRatio * this.textureRatio;
     this.aspectx = (this.texsizeY > this.texsizeX) ? this.texsizeX / this.texsizeY : 1;
     this.aspecty = (this.texsizeX > this.texsizeY) ? this.texsizeY / this.texsizeX : 1;
 
@@ -810,6 +801,9 @@ export default class Renderer {
                                         this.blurTexture1, this.blurTexture2, this.blurTexture3,
                                         mdVSFrameMixed, this.warpColor);
     }
+
+    this.gl.bindTexture(this.gl.TEXTURE_2D, this.compTexture);
+    this.gl.generateMipmap(this.gl.TEXTURE_2D);
 
     this.bindFrambufferAndSetViewport(null, this.width, this.height);
     this.outputShader.renderQuadTexture(this.compTexture);
