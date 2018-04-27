@@ -77,6 +77,8 @@ export default class Renderer {
     this.bindFrameBufferTexture(this.compFrameBuffer, this.compTexture);
 
     const params = {
+      pixelRatio: this.pixelRatio,
+      textureRatio: this.textureRatio,
       texsizeX: this.texsizeX,
       texsizeY: this.texsizeY,
       mesh_width: this.mesh_width,
@@ -328,6 +330,8 @@ export default class Renderer {
 
   updateGlobals () {
     const params = {
+      pixelRatio: this.pixelRatio,
+      textureRatio: this.textureRatio,
       texsizeX: this.texsizeX,
       texsizeY: this.texsizeY,
       mesh_width: this.mesh_width,
