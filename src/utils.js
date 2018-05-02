@@ -18,4 +18,8 @@ export default class Utils {
     }
     return a;
   }
+
+  static cloneVars (vars) {
+    return _.clone(vars);
+  }
 }

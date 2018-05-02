@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import Utils from '../../utils';
 import ShaderUtils from '../shaders/shaderUtils';
 
 export default class CustomShape {
@@ -166,7 +167,7 @@ export default class CustomShape {
         this.gl.samplerParameteri(this.mainSampler, this.gl.TEXTURE_WRAP_S, wrapping);
         this.gl.samplerParameteri(this.mainSampler, this.gl.TEXTURE_WRAP_T, wrapping);
 
-        let mdVSShape = _.clone(currPresetEquationRunner.mdVSShapes[this.index]);
+        let mdVSShape = Utils.cloneVars(currPresetEquationRunner.mdVSShapes[this.index]);
         const mdVSTInit = currPresetEquationRunner.mdVSTShapeInits[this.index];
 
         const repairKeys = mdVSShape.rkeys || [];
@@ -196,7 +197,7 @@ export default class CustomShape {
 
         mdVSShape = _.extend(mdVSShape, currPresetEquationRunner.mdVSFrameMapShapes[this.index]);
 
-        const mdVSShapeBaseVals = _.clone(mdVSShape);
+        const mdVSShapeBaseVals = Utils.cloneVars(mdVSShape);
 
         let numInst = mdVSShape.num_inst || 1;
         numInst = Math.clamp(numInst, 1, 1024);

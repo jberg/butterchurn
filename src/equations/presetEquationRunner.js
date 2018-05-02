@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import Utils from '../utils';
 
 export default class PresetEquationRunner {
   constructor (preset, opts) {
@@ -79,8 +80,8 @@ export default class PresetEquationRunner {
 
     const nonUserKeys = _.concat(this.qs, this.ts, _.keys(this.mdVS));
 
-    const origBaseVals = _.omit(_.clone(this.mdVS), this.qs);
-    this.mdVS = this.preset.init_eqs(_.clone(this.mdVS));
+    const origBaseVals = _.omit(Utils.cloneVars(this.mdVS), this.qs);
+    this.mdVS = this.preset.init_eqs(Utils.cloneVars(this.mdVS));
 
     // Only qs can be written during init
     this.mdVS = _.extend(this.mdVS, origBaseVals);
@@ -88,7 +89,7 @@ export default class PresetEquationRunner {
     // qs need to be initialized to there init values every frame
     this.mdVSQInit = _.pick(this.mdVS, this.qs);
 
-    this.mdVSFrame = this.preset.frame_eqs(_.clone(this.mdVS));
+    this.mdVSFrame = this.preset.frame_eqs(Utils.cloneVars(this.mdVS));
 
     // user vars need to be copied between frames
     this.mdVSUserKeys = _.keys(_.omit(this.mdVS, nonUserKeys));
@@ -201,8 +202,8 @@ export default class PresetEquationRunner {
     this.time = globalVars.time;
     this.fps = globalVars.fps;
 
-    this.mdVS = _.extend(_.clone(this.mdVS), globalVars);
-    this.mdVSFrame = _.clone(this.mdVS);
+    this.mdVS = _.extend(Utils.cloneVars(this.mdVS), globalVars);
+    this.mdVSFrame = Utils.cloneVars(this.mdVS);
     this.mdVSFrame.time = this.time;
     this.mdVSFrame.x = 0;
     this.mdVSFrame.y = 0;

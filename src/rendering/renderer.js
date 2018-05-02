@@ -414,7 +414,7 @@ export default class Renderer {
     const aspectx = this.aspectx;
     const aspecty = this.aspecty;
 
-    let mdVSVertex = _.clone(mdVSFrame);
+    let mdVSVertex = Utils.cloneVars(mdVSFrame);
     const repairKeys = mdVSVertex.rkeys || [];
     const repairMap = {};
     for (let i = 0; i < repairKeys.length; i++) {
@@ -543,7 +543,7 @@ export default class Renderer {
     const mix2 = 1 - mix;
     const snapPoint = 0.5;
 
-    const mixedFrame = _.clone(mdVSFrame);
+    const mixedFrame = Utils.cloneVars(mdVSFrame);
 
     mixedFrame.decay = (mix * mdVSFrame.decay) + (mix2 * mdVSFramePrev.decay);
     mixedFrame.wave_a = (mix * mdVSFrame.wave_a) + (mix2 * mdVSFramePrev.wave_a);

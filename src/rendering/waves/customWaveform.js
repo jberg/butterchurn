@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import Utils from '../../utils';
 import ShaderUtils from '../shaders/shaderUtils';
 import WaveUtils from './waveUtils';
 
@@ -94,7 +95,7 @@ export default class CustomWaveform {
   generateWaveform (timeArrayL, timeArrayR, freqArrayL, freqArrayR,
                     globalVars, presetEquationRunner, waveEqs, alphaMult) {
     if (waveEqs.baseVals.enabled === 1 && timeArrayL.length > 0) {
-      let mdVSWave = _.clone(presetEquationRunner.mdVSWaves[this.index]);
+      let mdVSWave = Utils.cloneVars(presetEquationRunner.mdVSWaves[this.index]);
       const mdVSTInit = presetEquationRunner.mdVSTWaveInits[this.index];
 
       const repairKeys = mdVSWave.rkeys || [];
