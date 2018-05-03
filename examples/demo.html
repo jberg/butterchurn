@@ -97,6 +97,8 @@
       }
 
       function loadLocalFiles(files, index = 0) {
+        audioContext.resume();
+
         var reader = new FileReader();
         reader.onload = (event) => {
           audioContext.decodeAudioData(
@@ -122,6 +124,8 @@
       }
 
       function connectMicAudio(sourceNode, audioContext) {
+        audioContext.resume();
+
         var gainNode = audioContext.createGain();
         gainNode.gain.value = 1.25;
         sourceNode.connect(gainNode);
