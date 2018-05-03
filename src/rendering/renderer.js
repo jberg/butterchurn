@@ -48,6 +48,13 @@ export default class Renderer {
 
     this.qs = _.map(_.range(1, 33), (x) => `q${x}`);
     this.ts = _.map(_.range(1, 9), (x) => `t${x}`);
+    this.regs = _.map(_.range(0, 100), (x) => {
+      if (x < 10) {
+        return `reg0${x}`;
+      }
+      return `reg${x}`;
+    });
+    this.regVars = {};
 
     this.blurRatios = [
       [0.5, 0.25],
@@ -644,7 +651,7 @@ export default class Renderer {
     this.calcTimeAndFPS();
     this.frameNum += 1;
 
-    const globalVars = {
+    let globalVars = {
       frame: this.frameNum,
       time: this.time,
       fps: this.fps,
@@ -660,7 +667,10 @@ export default class Renderer {
       aspecty: this.invAspecty,
       pixelsx: this.texsizeX,
       pixelsy: this.texsizeY,
+      megabuf: this.presetEquationRunner.megabuf,
+      gmegabuf: this.presetEquationRunner.gmegabuf,
     };
+    globalVars = _.assign(globalVars, this.regVars);
 
     this.presetEquationRunner.runFrameEquations(globalVars);
     const mdVSFrame = this.presetEquationRunner.mdVSFrame;
@@ -670,6 +680,9 @@ export default class Renderer {
                            mdVSUserKeys,
                            this.presetEquationRunner.runVertEQs,
                            false);
+
+    this.regVars = _.pick(mdVSFrame, this.regs);
+    globalVars = _.assign(globalVars, this.regVars);
 
     let mdVSFrameMixed;
     if (this.blending) {
@@ -746,6 +759,8 @@ export default class Renderer {
                               this.prevPresetEquationRunner,
                               _.get(this.prevPreset, `shapes[${i}]`),
                               this.prevTexture);
+        this.regVars = _.pick(mdVSFrame, this.regs);
+        globalVars = _.assign(globalVars, this.regVars);
       });
     }
 
@@ -761,6 +776,8 @@ export default class Renderer {
                                     this.preset.waves[i],
                                     this.prevPresetEquationRunner,
                                     _.get(this.prevPreset, `waves[${i}]`));
+        this.regVars = _.pick(mdVSFrame, this.regs);
+        globalVars = _.assign(globalVars, this.regVars);
       });
     }
 

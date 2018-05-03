@@ -16,6 +16,14 @@ export default class PresetEquationRunner {
 
     this.qs = _.map(_.range(1, 33), (x) => `q${x}`);
     this.ts = _.map(_.range(1, 9), (x) => `t${x}`);
+    this.regs = _.map(_.range(0, 100), (x) => {
+      if (x < 10) {
+        return `reg0${x}`;
+      }
+      return `reg${x}`;
+    });
+    this.megabuf = new Array(1048576).fill(0);
+    this.gmegabuf = new Array(1048576).fill(0);
 
     this.frameNum = 0;
     this.time = 0;
@@ -50,6 +58,8 @@ export default class PresetEquationRunner {
       mid_att: 1,
       treb: 1,
       treb_att: 1,
+      megabuf: this.megabuf,
+      gmegabuf: this.gmegabuf,
     };
     this.mdVSBaseKeys = _.keys(mdVSBase);
 
@@ -78,9 +88,11 @@ export default class PresetEquationRunner {
     this.mdVS.pixelsx = this.texsizeX;
     this.mdVS.pixelsy = this.texsizeY;
 
-    const nonUserKeys = _.concat(this.qs, this.ts, _.keys(this.mdVS));
+    const nonUserKeys = _.concat(this.qs, this.ts, this.regs,
+                                 _.keys(this.mdVS), ['megabuf', 'gmegabuf']);
 
-    const origBaseVals = _.omit(Utils.cloneVars(this.mdVS), this.qs);
+    const origBaseVals = _.omit(Utils.cloneVars(this.mdVS),
+                                _.concat(this.qs, this.regs, ['megabuf', 'gmegabuf']));
     this.mdVS = this.preset.init_eqs(Utils.cloneVars(this.mdVS));
 
     // Only qs can be written during init
