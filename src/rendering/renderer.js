@@ -681,7 +681,7 @@ export default class Renderer {
                            this.presetEquationRunner.runVertEQs,
                            false);
 
-    this.regVars = _.pick(mdVSFrame, this.regs);
+    this.regVars = _.assign(this.regVars, _.pick(mdVSFrame, this.regs));
     globalVars = _.assign(globalVars, this.regVars);
 
     let mdVSFrameMixed;
@@ -759,7 +759,7 @@ export default class Renderer {
                               this.prevPresetEquationRunner,
                               _.get(this.prevPreset, `shapes[${i}]`),
                               this.prevTexture);
-        this.regVars = _.pick(mdVSFrame, this.regs);
+        this.regVars = _.assign(this.regVars, _.pick(shape.mdVSShapeFrame, this.regs));
         globalVars = _.assign(globalVars, this.regVars);
       });
     }
@@ -776,7 +776,7 @@ export default class Renderer {
                                     this.preset.waves[i],
                                     this.prevPresetEquationRunner,
                                     _.get(this.prevPreset, `waves[${i}]`));
-        this.regVars = _.pick(mdVSFrame, this.regs);
+        this.regVars = _.assign(this.regVars, _.pick(waveform.mdVSWaveFrame, this.regs));
         globalVars = _.assign(globalVars, this.regVars);
       });
     }
