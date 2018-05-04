@@ -8,4 +8,16 @@ export default class Butterchurn {
   }
 }
 
+export function isVisualizerSupported () {
+  const canvas = document.createElement('canvas');
+  let gl;
+  try {
+    gl = canvas.getContext('webgl2');
+  } catch (x) {
+    gl = null;
+  }
+
+  return !!gl;
+}
+
 module.exports = Butterchurn;
