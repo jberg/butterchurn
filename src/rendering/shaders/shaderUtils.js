@@ -1,3 +1,6 @@
+const lineMatcher = /uniform sampler2D sampler_(?:.+?);/g;
+const samplerMatcher = /uniform sampler2D sampler_(.+?);/;
+
 export default class ShaderUtils {
   static getShaderParts (t) {
     const sbIndex = t.indexOf('shader_body');
@@ -20,5 +23,20 @@ export default class ShaderUtils {
       return 'mediump';
     }
     return 'lowp';
+  }
+
+  static getUserSamplers (text) {
+    const samplers = {};
+    const lineMatches = text.match(lineMatcher);
+    if (lineMatches && lineMatches.length > 0) {
+      for (let i = 0; i < lineMatches.length; i++) {
+        const samplerMatches = lineMatches[i].match(samplerMatcher);
+        if (samplerMatches && samplerMatches.length > 0) {
+          const sampler = samplerMatches[1];
+          samplers[sampler] = true;
+        }
+      }
+    }
+    return samplers;
   }
 }

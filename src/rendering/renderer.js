@@ -14,6 +14,7 @@ import CompShader from './shaders/comp';
 import OutputShader from './shaders/output';
 import BlurShader from './shaders/blur/blur';
 import Noise from '../noise/noise';
+import ImageTextures from '../image/imageTextures';
 import Utils from '../utils';
 
 export default class Renderer {
@@ -94,11 +95,12 @@ export default class Renderer {
       aspecty: this.aspecty,
     };
     this.noise = new Noise(gl);
-    this.warpShader = new WarpShader(gl, this.noise, params);
-    this.compShader = new CompShader(gl, this.noise, params);
+    this.image = new ImageTextures(gl);
+    this.warpShader = new WarpShader(gl, this.noise, this.image, params);
+    this.compShader = new CompShader(gl, this.noise, this.image, params);
     this.outputShader = new OutputShader(gl, params);
-    this.prevWarpShader = new WarpShader(gl, this.noise, params);
-    this.prevCompShader = new CompShader(gl, this.noise, params);
+    this.prevWarpShader = new WarpShader(gl, this.noise, this.image, params);
+    this.prevCompShader = new CompShader(gl, this.noise, this.image, params);
     this.numBlurPasses = 0;
     this.blurShader1 = new BlurShader(0, this.blurRatios, gl, params);
     this.blurShader2 = new BlurShader(1, this.blurRatios, gl, params);

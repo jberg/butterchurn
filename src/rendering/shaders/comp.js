@@ -2,9 +2,10 @@ import _ from 'lodash';
 import ShaderUtils from './shaderUtils';
 
 export default class CompShader {
-  constructor (gl, noise, opts = {}) {
+  constructor (gl, noise, image, opts = {}) {
     this.gl = gl;
     this.noise = noise;
+    this.image = image;
 
     this.texsizeX = opts.texsizeX;
     this.texsizeY = opts.texsizeY;
@@ -144,6 +145,10 @@ export default class CompShader {
     }
     fragShaderText = _.replace(fragShaderText, /texture2D/g, 'texture');
     fragShaderText = _.replace(fragShaderText, /texture3D/g, 'texture');
+
+    this.userTextures = _.assign({
+      lichen: false,
+    }, ShaderUtils.getUserSamplers(fragShaderHeaderText));
 
     this.shaderProgram = this.gl.createProgram();
 
@@ -397,6 +402,10 @@ export default class CompShader {
     this.roamCosLoc = this.gl.getUniformLocation(this.shaderProgram, 'roam_cos');
     this.slowRoamSinLoc = this.gl.getUniformLocation(this.shaderProgram, 'slow_roam_sin');
     this.roamSinLoc = this.gl.getUniformLocation(this.shaderProgram, 'roam_sin');
+
+    if (this.userTextures.lichen) {
+      this.textureLichen = this.gl.getUniformLocation(this.shaderProgram, 'sampler_lichen');
+    }
   }
 
   updateShader (shaderText) {
@@ -569,6 +578,12 @@ export default class CompShader {
     this.gl.activeTexture(this.gl.TEXTURE14);
     this.gl.bindTexture(this.gl.TEXTURE_3D, this.noise.noiseTexVolHQ);
     this.gl.uniform1i(this.noiseVolHQLoc, 14);
+
+    if (this.userTextures.lichen) {
+      this.gl.activeTexture(this.gl.TEXTURE15);
+      this.gl.bindTexture(this.gl.TEXTURE_2D, this.image.lichenTex);
+      this.gl.uniform1i(this.textureLichen, 15);
+    }
 
     this.gl.uniform1f(this.timeLoc, mdVSFrame.time);
     this.gl.uniform1f(this.gammaAdjLoc, mdVSFrame.gammaadj);
