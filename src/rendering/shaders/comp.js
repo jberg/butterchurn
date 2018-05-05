@@ -193,6 +193,7 @@ export default class CompShader {
                                       uniform sampler2D sampler_noise_lq_lite;
                                       uniform sampler2D sampler_noise_mq;
                                       uniform sampler2D sampler_noise_hq;
+                                      uniform sampler2D sampler_pw_noise_lq;
                                       uniform sampler3D sampler_noisevol_lq;
                                       uniform sampler3D sampler_noisevol_hq;
 
@@ -332,6 +333,7 @@ export default class CompShader {
     this.noiseMQLoc = this.gl.getUniformLocation(this.shaderProgram, 'sampler_noise_mq');
     this.noiseHQLoc = this.gl.getUniformLocation(this.shaderProgram, 'sampler_noise_hq');
     this.noiseLQLiteLoc = this.gl.getUniformLocation(this.shaderProgram, 'sampler_noise_lq_lite');
+    this.noisePointLQLoc = this.gl.getUniformLocation(this.shaderProgram, 'sampler_pw_noise_lq');
     this.noiseVolLQLoc = this.gl.getUniformLocation(this.shaderProgram, 'sampler_noisevol_lq');
     this.noiseVolHQLoc = this.gl.getUniformLocation(this.shaderProgram, 'sampler_noisevol_hq');
     this.timeLoc = this.gl.getUniformLocation(this.shaderProgram, 'time');
@@ -556,12 +558,17 @@ export default class CompShader {
     this.gl.uniform1i(this.noiseLQLiteLoc, 11);
 
     this.gl.activeTexture(this.gl.TEXTURE12);
-    this.gl.bindTexture(this.gl.TEXTURE_3D, this.noise.noiseTexVolLQ);
-    this.gl.uniform1i(this.noiseVolLQLoc, 12);
+    this.gl.bindTexture(this.gl.TEXTURE_2D, this.noise.noiseTexLQ);
+    this.gl.bindSampler(12, this.noise.noiseTexPointLQ);
+    this.gl.uniform1i(this.noisePointLQLoc, 12);
 
     this.gl.activeTexture(this.gl.TEXTURE13);
+    this.gl.bindTexture(this.gl.TEXTURE_3D, this.noise.noiseTexVolLQ);
+    this.gl.uniform1i(this.noiseVolLQLoc, 13);
+
+    this.gl.activeTexture(this.gl.TEXTURE14);
     this.gl.bindTexture(this.gl.TEXTURE_3D, this.noise.noiseTexVolHQ);
-    this.gl.uniform1i(this.noiseVolHQLoc, 13);
+    this.gl.uniform1i(this.noiseVolHQLoc, 14);
 
     this.gl.uniform1f(this.timeLoc, mdVSFrame.time);
     this.gl.uniform1f(this.gammaAdjLoc, mdVSFrame.gammaadj);
