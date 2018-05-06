@@ -44,4 +44,14 @@ export default class ImageTextures {
       this.gl.texParameterf(this.gl.TEXTURE_2D, this.anisoExt.TEXTURE_MAX_ANISOTROPY_EXT, max);
     }
   }
+
+  getTexture (sampler) {
+    if (sampler === 'lichen') {
+      return this.lichenTex;
+    } else if (sampler === 'cloud') {
+      return this.cloudTex;
+    }
+
+    return this.lichenTex;
+  }
 }

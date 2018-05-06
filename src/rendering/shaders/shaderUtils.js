@@ -26,14 +26,14 @@ export default class ShaderUtils {
   }
 
   static getUserSamplers (text) {
-    const samplers = {};
+    const samplers = [];
     const lineMatches = text.match(lineMatcher);
     if (lineMatches && lineMatches.length > 0) {
       for (let i = 0; i < lineMatches.length; i++) {
         const samplerMatches = lineMatches[i].match(samplerMatcher);
         if (samplerMatches && samplerMatches.length > 0) {
           const sampler = samplerMatches[1];
-          samplers[sampler] = true;
+          samplers.push({ sampler });
         }
       }
     }

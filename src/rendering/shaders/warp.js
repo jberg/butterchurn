@@ -127,9 +127,7 @@ export default class WarpShader {
     fragShaderText = _.replace(fragShaderText, /texture2D/g, 'texture');
     fragShaderText = _.replace(fragShaderText, /texture3D/g, 'texture');
 
-    this.userTextures = _.assign({
-      lichen: false,
-    }, ShaderUtils.getUserSamplers(fragShaderHeaderText));
+    this.userTextures = ShaderUtils.getUserSamplers(fragShaderHeaderText);
 
     this.shaderProgram = this.gl.createProgram();
 
@@ -355,8 +353,10 @@ export default class WarpShader {
     this.slowRoamSinLoc = this.gl.getUniformLocation(this.shaderProgram, 'slow_roam_sin');
     this.roamSinLoc = this.gl.getUniformLocation(this.shaderProgram, 'roam_sin');
 
-    if (this.userTextures.lichen) {
-      this.textureLichen = this.gl.getUniformLocation(this.shaderProgram, 'sampler_lichen');
+    for (let i = 0; i < this.userTextures.length; i++) {
+      const userTexture = this.userTextures[i];
+      userTexture.textureLoc =
+        this.gl.getUniformLocation(this.shaderProgram, `sampler_${userTexture.sampler}`);
     }
   }
 
@@ -513,10 +513,11 @@ export default class WarpShader {
     this.gl.bindTexture(this.gl.TEXTURE_3D, this.noise.noiseTexVolHQ);
     this.gl.uniform1i(this.noiseVolHQLoc, 14);
 
-    if (this.userTextures.lichen) {
-      this.gl.activeTexture(this.gl.TEXTURE15);
-      this.gl.bindTexture(this.gl.TEXTURE_2D, this.image.lichenTex);
-      this.gl.uniform1i(this.textureLichen, 15);
+    for (let i = 0; i < this.userTextures.length; i++) {
+      const userTexture = this.userTextures[i];
+      this.gl.activeTexture(this.gl.TEXTURE15 + i);
+      this.gl.bindTexture(this.gl.TEXTURE_2D, this.image.getTexture(userTexture.sampler));
+      this.gl.uniform1i(userTexture.textureLoc, 15 + i);
     }
 
     this.gl.uniform1f(this.decayLoc, mdVSFrame.decay);
