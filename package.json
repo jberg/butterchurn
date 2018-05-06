@@ -5,7 +5,8 @@
   "main": "lib/butterchurn.min.js",
   "unpkg": "lib/butterchurn.min.js",
   "files": [
-    "lib/butterchurn.min.js"
+    "lib/butterchurn.min.js",
+    "lib/isSupported.js"
   ],
   "scripts": {
     "build": "webpack --config config/webpack.config.js --env prod",
