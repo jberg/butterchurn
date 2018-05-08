@@ -252,7 +252,7 @@ export default class CustomShape {
           const borderG = mdVSShapeFrame.border_g;
           const borderB = mdVSShapeFrame.border_b;
           const borderA = mdVSShapeFrame.border_a;
-          this.borderColor = [borderR, borderG, borderB, borderA];
+          this.borderColor = [borderR, borderG, borderB, borderA * alphaMult];
 
           const thickoutline = mdVSShapeFrame.thickoutline;
 
@@ -274,7 +274,7 @@ export default class CustomShape {
           this.colors[0] = r;
           this.colors[1] = g;
           this.colors[2] = b;
-          this.colors[3] = a;
+          this.colors[3] = a * alphaMult;
 
           if (isTextured) {
             this.uvs[0] = 0.5;
