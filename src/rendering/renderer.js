@@ -492,7 +492,7 @@ export default class Renderer {
         u = ((u - cx) / sx) + cx;
         v = ((v - cy) / sy) + cy;
 
-        if (warp > 0.001) {
+        if (warp !== 0) {
           u += warp * 0.0035 * Math.sin((warpTimeV * 0.333) +
                                         (warpScaleInv * ((x * warpf0) - (y * warpf3))));
           v += warp * 0.0035 * Math.cos((warpTimeV * 0.375) -
