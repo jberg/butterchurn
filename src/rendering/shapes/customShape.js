@@ -262,10 +262,10 @@ export default class CustomShape {
 
           const additive = mdVSShapeFrame.additive;
 
-          const isTextured = textured > 0;
-          const hasBorder = borderA > 0;
-          const isBorderThick = thickoutline > 0;
-          const isAdditive = additive > 0;
+          const hasBorder = this.borderColor[3] > 0;
+          const isTextured = Math.abs(textured) >= 1;
+          const isBorderThick = Math.abs(thickoutline) >= 1;
+          const isAdditive = Math.abs(additive) >= 1;
 
           this.positions[0] = x;
           this.positions[1] = y;
