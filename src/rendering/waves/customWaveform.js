@@ -94,7 +94,7 @@ export default class CustomWaveform {
 
   generateWaveform (timeArrayL, timeArrayR, freqArrayL, freqArrayR,
                     globalVars, presetEquationRunner, waveEqs, alphaMult) {
-    if (waveEqs.baseVals.enabled === 1 && timeArrayL.length > 0) {
+    if (waveEqs.baseVals.enabled !== 0 && timeArrayL.length > 0) {
       let mdVSWave = Utils.cloneVars(presetEquationRunner.mdVSWaves[this.index]);
       const mdVSTInit = presetEquationRunner.mdVSTWaveInits[this.index];
 
@@ -154,14 +154,15 @@ export default class CustomWaveform {
 
       this.samples -= sep;
 
-      if (this.samples >= 2 || (usedots && this.samples >= 1)) {
-        const scale = ((spectrum > 0.0) ? 0.15 : 0.004) * scaling * waveScale;
-        const pointsLeft = (spectrum > 0.0) ? freqArrayL : timeArrayL;
-        const pointsRight = (spectrum > 0.0) ? freqArrayR : timeArrayR;
+      if (this.samples >= 2 || (usedots !== 0 && this.samples >= 1)) {
+        const useSpectrum = (spectrum !== 0);
+        const scale = (useSpectrum ? 0.15 : 0.004) * scaling * waveScale;
+        const pointsLeft = useSpectrum ? freqArrayL : timeArrayL;
+        const pointsRight = useSpectrum ? freqArrayR : timeArrayR;
 
-        const j0 = (spectrum > 0.0) ? 0 : Math.floor(((maxSamples - this.samples) / 2) - (sep / 2));
-        const j1 = (spectrum > 0.0) ? 0 : Math.floor(((maxSamples - this.samples) / 2) + (sep / 2));
-        const t = (spectrum > 0.0) ? ((maxSamples - sep) / this.samples) : 1;
+        const j0 = useSpectrum ? 0 : Math.floor(((maxSamples - this.samples) / 2) - (sep / 2));
+        const j1 = useSpectrum ? 0 : Math.floor(((maxSamples - this.samples) / 2) + (sep / 2));
+        const t = useSpectrum ? ((maxSamples - sep) / this.samples) : 1;
         const mix1 = (smoothing * 0.98) ** 0.5;
         const mix2 = 1 - mix1;
 
@@ -266,11 +267,14 @@ export default class CustomWaveform {
                                                alphaMult)) {
         this.gl.useProgram(this.shaderProgram);
 
+        const waveUseDots = (this.mdVSWaveFrame.usedots !== 0);
+        const waveThick = (this.mdVSWaveFrame.thick !== 0);
+        const waveAdditive = (this.mdVSWaveFrame.additive !== 0);
+
         let positions;
         let colors;
         let numVerts;
-        const usedots = this.mdVSWaveFrame.usedots;
-        if (usedots === 0) {
+        if (!waveUseDots) {
           positions = this.smoothedPositions;
           colors = this.smoothedColors;
           numVerts = (this.samples * 2) - 1;
@@ -293,27 +297,26 @@ export default class CustomWaveform {
         this.gl.enableVertexAttribArray(this.aColorLocation);
 
         let instances = 1;
-        const thick = this.mdVSWaveFrame.thick;
-        if (usedots > 0.0) {
-          if (thick > 0.0) {
+        if (waveUseDots) {
+          if (waveThick) {
             this.gl.uniform1f(this.sizeLoc, 2 + (this.texsizeX >= 1024 ? 1 : 0));
           } else {
             this.gl.uniform1f(this.sizeLoc, 1 + (this.texsizeX >= 1024 ? 1 : 0));
           }
         } else {
           this.gl.uniform1f(this.sizeLoc, 1);
-          if (thick > 0.0) {
+          if (waveThick) {
             instances = 4;
           }
         }
 
-        if (this.mdVSWaveFrame.additive > 0) {
+        if (waveAdditive) {
           this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE);
         } else {
           this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
         }
 
-        const drawMode = (usedots > 0) ? this.gl.POINTS : this.gl.LINE_STRIP;
+        const drawMode = waveUseDots ? this.gl.POINTS : this.gl.LINE_STRIP;
 
         // TODO: use drawArraysInstanced
         for (let i = 0; i < instances; i++) {

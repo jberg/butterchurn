@@ -115,7 +115,7 @@ export default class CompShader {
     let fragShaderHeaderText;
     if (shaderText.length === 0) {
       fragShaderText = `float orient_horiz = mod(echo_orientation, 2.0);
-                        float orient_x = (orient_horiz > 0.0) ? -1.0 : 1.0;
+                        float orient_x = (orient_horiz != 0.0) ? -1.0 : 1.0;
                         float orient_y = (echo_orientation >= 2.0) ? -1.0 : 1.0;
                         vec2 uv_echo = ((uv - 0.5) *
                                         (1.0 / echo_zoom) *
@@ -133,10 +133,10 @@ export default class CompShader {
                           ret *= (1.0 - fShader) + (fShader * hue_shader);
                         }
 
-                        if(brighten > 0) ret = sqrt(ret);
-                        if(darken > 0) ret = ret*ret;
-                        if(solarize > 0) ret = ret * (1.0 - ret) * 4.0;
-                        if(invert > 0) ret = 1.0 - ret;`;
+                        if(brighten != 0) ret = sqrt(ret);
+                        if(darken != 0) ret = ret*ret;
+                        if(solarize != 0) ret = ret * (1.0 - ret) * 4.0;
+                        if(invert != 0) ret = 1.0 - ret;`;
       fragShaderHeaderText = '';
     } else {
       const shaderParts = ShaderUtils.getShaderParts(shaderText);
@@ -509,7 +509,7 @@ export default class CompShader {
     this.gl.vertexAttribPointer(this.compColorLocation, 4, this.gl.FLOAT, false, 0, 0);
     this.gl.enableVertexAttribArray(this.compColorLocation);
 
-    const wrapping = (mdVSFrame.wrap > 0) ? this.gl.REPEAT : this.gl.CLAMP_TO_EDGE;
+    const wrapping = (mdVSFrame.wrap !== 0) ? this.gl.REPEAT : this.gl.CLAMP_TO_EDGE;
     this.gl.samplerParameteri(this.mainSampler, this.gl.TEXTURE_WRAP_S, wrapping);
     this.gl.samplerParameteri(this.mainSampler, this.gl.TEXTURE_WRAP_T, wrapping);
 

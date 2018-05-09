@@ -443,7 +443,7 @@ export default class WarpShader {
     this.gl.vertexAttribPointer(this.warpColorLocation, 4, this.gl.FLOAT, false, 0, 0);
     this.gl.enableVertexAttribArray(this.warpColorLocation);
 
-    const wrapping = (mdVSFrame.wrap > 0) ? this.gl.REPEAT : this.gl.CLAMP_TO_EDGE;
+    const wrapping = (mdVSFrame.wrap !== 0) ? this.gl.REPEAT : this.gl.CLAMP_TO_EDGE;
     this.gl.samplerParameteri(this.mainSampler, this.gl.TEXTURE_WRAP_S, wrapping);
     this.gl.samplerParameteri(this.mainSampler, this.gl.TEXTURE_WRAP_T, wrapping);
 

@@ -83,7 +83,7 @@ export default class CustomShape {
   }
 
   drawDarkenCenter (mdVSFrame) {
-    if (mdVSFrame.darken_center > 0) {
+    if (mdVSFrame.darken_center !== 0) {
       this.gl.useProgram(this.shaderProgram);
 
       this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.positionVertexBuf);

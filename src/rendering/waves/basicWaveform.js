@@ -404,7 +404,7 @@ export default class BasicWaveform {
       let g = Math.clamp(mdVSFrame.wave_g, 0, 1);
       let b = Math.clamp(mdVSFrame.wave_b, 0, 1);
 
-      if (mdVSFrame.wave_brighten > 0) {
+      if (mdVSFrame.wave_brighten !== 0) {
         const maxc = Math.max(r, g, b);
         if (maxc > 0.01) {
           r /= maxc;
@@ -534,17 +534,17 @@ export default class BasicWaveform {
       this.gl.uniform4fv(this.colorLoc, this.color);
 
       let instances = 1;
-      if (mdVSFrame.wave_thick > 0 || mdVSFrame.wave_dots > 0) {
+      if (mdVSFrame.wave_thick !== 0 || mdVSFrame.wave_dots !== 0) {
         instances = 4;
       }
 
-      if (mdVSFrame.additivewave > 0) {
+      if (mdVSFrame.additivewave !== 0) {
         this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE);
       } else {
         this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
       }
 
-      const drawMode = (mdVSFrame.wave_dots > 0) ? this.gl.POINTS : this.gl.LINE_STRIP;
+      const drawMode = (mdVSFrame.wave_dots !== 0) ? this.gl.POINTS : this.gl.LINE_STRIP;
 
       // TODO: use drawArraysInstanced
       for (let i = 0; i < instances; i++) {

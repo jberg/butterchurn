@@ -78,7 +78,7 @@ export default class CustomShape {
                                       in vec2 vUv;
                                       out vec4 fragColor;
                                       void main(void) {
-                                        if (uTextured > 0.0) {
+                                        if (uTextured != 0.0) {
                                           fragColor = texture(uTexture, vUv) * vColor;
                                         } else {
                                           fragColor = vColor;
@@ -159,11 +159,11 @@ export default class CustomShape {
       const currPresetEquationRunner = (rep === 0) ? presetEquationRunner :
                                                      prevPresetEquationRunner;
       const currShapeEqs = (rep === 0) ? shapeEqs : prevShapeEqs;
-      if (currShapeEqs && currShapeEqs.baseVals.enabled === 1) {
+      if (currShapeEqs && currShapeEqs.baseVals.enabled !== 0) {
         this.setupShapeBuffers();
 
         const mdVSFrame = currPresetEquationRunner.mdVSFrame;
-        const wrapping = (mdVSFrame.wrap > 0) ? this.gl.REPEAT : this.gl.CLAMP_TO_EDGE;
+        const wrapping = (mdVSFrame.wrap !== 0) ? this.gl.REPEAT : this.gl.CLAMP_TO_EDGE;
         this.gl.samplerParameteri(this.mainSampler, this.gl.TEXTURE_WRAP_S, wrapping);
         this.gl.samplerParameteri(this.mainSampler, this.gl.TEXTURE_WRAP_T, wrapping);
 
