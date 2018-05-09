@@ -368,9 +368,9 @@ export default class WarpShader {
     let blurMin1 = mdVSFrame.b1n || 0;
     let blurMin2 = mdVSFrame.b2n || 0;
     let blurMin3 = mdVSFrame.b3n || 0;
-    let blurMax1 = mdVSFrame.b1x || 1;
-    let blurMax2 = mdVSFrame.b2x || 1;
-    let blurMax3 = mdVSFrame.b3x || 1;
+    let blurMax1 = _.get(mdVSFrame, 'b1x', 1);
+    let blurMax2 = _.get(mdVSFrame, 'b2x', 1);
+    let blurMax3 = _.get(mdVSFrame, 'b3x', 1);
 
     const fMinDist = 0.1;
     if ((blurMax1 - blurMin1) < fMinDist) {

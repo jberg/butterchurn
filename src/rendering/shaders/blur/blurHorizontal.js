@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import ShaderUtils from '../shaderUtils';
 
 export default class BlurHorizontal {
@@ -122,7 +123,7 @@ export default class BlurHorizontal {
     this.gl.uniform4fv(this.texsizeLocation, [
       srcTexsize[0], srcTexsize[1], 1.0 / srcTexsize[0], 1.0 / srcTexsize[1]
     ]);
-    this.gl.uniform1f(this.scaleLoc, mdVSFrame.b1x || 1);
+    this.gl.uniform1f(this.scaleLoc, _.get(mdVSFrame, 'b1x', 1));
     this.gl.uniform1f(this.biasLoc, mdVSFrame.b1n || 0);
     this.gl.uniform4fv(this.wsLoc, this.ws);
     this.gl.uniform4fv(this.dsLocation, this.ds);

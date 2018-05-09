@@ -199,7 +199,7 @@ export default class CustomShape {
 
         const mdVSShapeBaseVals = Utils.cloneVars(mdVSShape);
 
-        let numInst = mdVSShape.num_inst || 1;
+        let numInst = _.get(mdVSShape, 'num_inst', 1);
         numInst = Math.clamp(numInst, 1, 1024);
         for (let j = 0; j < numInst; j++) {
           mdVSShape = CustomShape.repairPerVertexEQs(mdVSShape, repairMap);

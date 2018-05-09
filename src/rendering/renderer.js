@@ -601,10 +601,14 @@ export default class Renderer {
     mixedFrame.b1n = (mix * (mdVSFrame.b1n || 0)) + (mix2 * (mdVSFramePrev.b1n || 0));
     mixedFrame.b2n = (mix * (mdVSFrame.b2n || 0)) + (mix2 * (mdVSFramePrev.b2n || 0));
     mixedFrame.b3n = (mix * (mdVSFrame.b3n || 0)) + (mix2 * (mdVSFramePrev.b3n || 0));
-    mixedFrame.b1x = (mix * (mdVSFrame.b1x || 1)) + (mix2 * (mdVSFramePrev.b1x || 1));
-    mixedFrame.b2x = (mix * (mdVSFrame.b2x || 1)) + (mix2 * (mdVSFramePrev.b2x || 1));
-    mixedFrame.b3x = (mix * (mdVSFrame.b3x || 1)) + (mix2 * (mdVSFramePrev.b3x || 1));
-    mixedFrame.b1ed = (mix * (mdVSFrame.b1ed || 0)) + (mix2 * (mdVSFramePrev.b1ed || 0));
+    mixedFrame.b1x = (mix * (_.get(mdVSFrame, 'b1x', 1))) +
+                     (mix2 * (_.get(mdVSFramePrev, 'b1x', 1)));
+    mixedFrame.b2x = (mix * (_.get(mdVSFrame, 'b2x', 1))) +
+                     (mix2 * (_.get(mdVSFramePrev, 'b2x', 1)));
+    mixedFrame.b3x = (mix * (_.get(mdVSFrame, 'b3x', 1))) +
+                     (mix2 * (_.get(mdVSFramePrev, 'b3x', 1)));
+    mixedFrame.b1ed = (mix * (_.get(mdVSFrame, 'b1ed', 0.25))) +
+                      (mix2 * (_.get(mdVSFramePrev, 'b1ed', 0.25)));
 
     return mixedFrame;
   }
