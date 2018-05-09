@@ -40,12 +40,7 @@ window.div = function div(x, y) {
   if (y === 0) {
     return 0;
   }
-  var z = x / y;
-  if (!isFiniteNumber(z)) {
-    // probably dont need this after checking for y = 0
-    return 0;
-  }
-  return z;
+  return x / y;
 }
 
 window.mod = function mod(x, y) {
