@@ -1,9 +1,9 @@
-import _ from 'lodash';
 import ShaderUtils from '../shaderUtils';
 
 export default class BlurHorizontal {
-  constructor (gl) {
+  constructor (gl, blurLevel) {
     this.gl = gl;
+    this.blurLevel = blurLevel;
 
     const w = [4.0, 3.8, 3.5, 2.9, 1.9, 1.2, 0.7, 0.3];
     const w1H = w[0] + w[1];
@@ -106,7 +106,30 @@ export default class BlurHorizontal {
     this.wdivLoc = this.gl.getUniformLocation(this.shaderProgram, 'wdiv');
   }
 
-  renderQuadTexture (texture, mdVSFrame, srcTexsize) {
+  getScaleAndBias (blurMins, blurMaxs) {
+    const scale = [1, 1, 1];
+    const bias = [0, 0, 0];
+
+    let tempMin;
+    let tempMax;
+    scale[0] = 1.0 / (blurMaxs[0] - blurMins[0]);
+    bias[0] = -blurMins[0] * scale[0];
+    tempMin = (blurMins[1] - blurMins[0]) / (blurMaxs[0] - blurMins[0]);
+    tempMax = (blurMaxs[1] - blurMins[0]) / (blurMaxs[0] - blurMins[0]);
+    scale[1] = 1.0 / (tempMax - tempMin);
+    bias[1] = -tempMin * scale[1];
+    tempMin = (blurMins[2] - blurMins[1]) / (blurMaxs[1] - blurMins[1]);
+    tempMax = (blurMaxs[2] - blurMins[1]) / (blurMaxs[1] - blurMins[1]);
+    scale[2] = 1.0 / (tempMax - tempMin);
+    bias[2] = -tempMin * scale[2];
+
+    return {
+      scale: scale[this.blurLevel],
+      bias: bias[this.blurLevel],
+    };
+  }
+
+  renderQuadTexture (texture, mdVSFrame, blurMins, blurMaxs, srcTexsize) {
     this.gl.useProgram(this.shaderProgram);
 
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.vertexBuf);
@@ -120,11 +143,13 @@ export default class BlurHorizontal {
 
     this.gl.uniform1i(this.textureLoc, 0);
 
+    const { scale, bias } = this.getScaleAndBias(blurMins, blurMaxs);
+
     this.gl.uniform4fv(this.texsizeLocation, [
       srcTexsize[0], srcTexsize[1], 1.0 / srcTexsize[0], 1.0 / srcTexsize[1]
     ]);
-    this.gl.uniform1f(this.scaleLoc, _.get(mdVSFrame, 'b1x', 1));
-    this.gl.uniform1f(this.biasLoc, mdVSFrame.b1n || 0);
+    this.gl.uniform1f(this.scaleLoc, scale);
+    this.gl.uniform1f(this.biasLoc, bias);
     this.gl.uniform4fv(this.wsLoc, this.ws);
     this.gl.uniform4fv(this.dsLocation, this.ds);
     this.gl.uniform1f(this.wdivLoc, this.wDiv);

@@ -24,8 +24,8 @@ export default class BlurShader {
 
     this.setupFrameBufferTextures();
 
-    this.blurHorizontal = new BlurHorizontal(gl, opts);
-    this.blurVertical = new BlurVertical(gl, opts);
+    this.blurHorizontal = new BlurHorizontal(gl, this.blurLevel, opts);
+    this.blurVertical = new BlurVertical(gl, this.blurLevel, opts);
   }
 
   updateGlobals (opts) {
@@ -91,9 +91,10 @@ export default class BlurShader {
                                  this.gl.TEXTURE_2D, targetTexture, 0);
   }
 
-  renderBlurTexture (prevTexture, mdVSFrame) {
+  renderBlurTexture (prevTexture, mdVSFrame, blurMins, blurMaxs) {
     this.bindFrambufferAndSetViewport(this.blurHorizontalFrameBuffer, this.horizontalTexsizes[1]);
-    this.blurHorizontal.renderQuadTexture(prevTexture, mdVSFrame, this.horizontalTexsizes[0]);
+    this.blurHorizontal.renderQuadTexture(prevTexture, mdVSFrame, blurMins, blurMaxs,
+                                          this.horizontalTexsizes[0]);
 
     this.gl.bindTexture(this.gl.TEXTURE_2D, this.blurHorizontalTexture);
     this.gl.generateMipmap(this.gl.TEXTURE_2D);

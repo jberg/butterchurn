@@ -2,8 +2,9 @@ import _ from 'lodash';
 import ShaderUtils from '../shaderUtils';
 
 export default class BlurVertical {
-  constructor (gl) {
+  constructor (gl, blurLevel) {
     this.gl = gl;
+    this.blurLevel = blurLevel;
 
     const w = [4.0, 3.8, 3.5, 2.9, 1.9, 1.2, 0.7, 0.3];
     const w1V = w[0] + w[1] + w[2] + w[3];

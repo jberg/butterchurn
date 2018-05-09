@@ -613,6 +613,41 @@ export default class Renderer {
     return mixedFrame;
   }
 
+  static getBlurValues (mdVSFrame) {
+    let blurMin1 = mdVSFrame.b1n || 0;
+    let blurMin2 = mdVSFrame.b2n || 0;
+    let blurMin3 = mdVSFrame.b3n || 0;
+    let blurMax1 = _.get(mdVSFrame, 'b1x', 1);
+    let blurMax2 = _.get(mdVSFrame, 'b2x', 1);
+    let blurMax3 = _.get(mdVSFrame, 'b3x', 1);
+
+    const fMinDist = 0.1;
+    if ((blurMax1 - blurMin1) < fMinDist) {
+      const avg = (blurMin1 + blurMax1) * 0.5;
+      blurMin1 = avg - (fMinDist * 0.5);
+      blurMax1 = avg - (fMinDist * 0.5);
+    }
+    blurMax2 = Math.min(blurMax1, blurMax2);
+    blurMin2 = Math.max(blurMin1, blurMin2);
+    if (blurMax2 - blurMin2 < fMinDist) {
+      const avg = (blurMin2 + blurMax2) * 0.5;
+      blurMin2 = avg - (fMinDist * 0.5);
+      blurMax2 = avg - (fMinDist * 0.5);
+    }
+    blurMax3 = Math.min(blurMax2, blurMax3);
+    blurMin3 = Math.max(blurMin2, blurMin3);
+    if (blurMax3 - blurMin3 < fMinDist) {
+      const avg = (blurMin3 + blurMax3) * 0.5;
+      blurMin3 = avg - (fMinDist * 0.5);
+      blurMax3 = avg - (fMinDist * 0.5);
+    }
+
+    return {
+      blurMins: [blurMin1, blurMin2, blurMin3],
+      blurMaxs: [blurMax1, blurMax2, blurMax3],
+    };
+  }
+
   bindFrambufferAndSetViewport (fb, width, height) {
     this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, fb);
     this.gl.viewport(0, 0, width, height);
@@ -724,30 +759,34 @@ export default class Renderer {
     this.gl.blendEquation(this.gl.FUNC_ADD);
     this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
 
+    const { blurMins, blurMaxs } = Renderer.getBlurValues(mdVSFrameMixed);
+
     if (!this.blending) {
       this.warpShader.renderQuadTexture(false, this.prevTexture,
                                         this.blurTexture1, this.blurTexture2, this.blurTexture3,
+                                        blurMins, blurMaxs,
                                         mdVSFrame, this.warpUVs, this.warpColor);
     } else {
       this.prevWarpShader.renderQuadTexture(false, this.prevTexture,
                                             this.blurTexture1, this.blurTexture2,
-                                            this.blurTexture3,
+                                            this.blurTexture3, blurMins, blurMaxs,
                                             this.prevPresetEquationRunner.mdVSFrame,
                                             this.warpUVs, this.warpColor);
 
       this.warpShader.renderQuadTexture(true, this.prevTexture,
                                         this.blurTexture1, this.blurTexture2, this.blurTexture3,
+                                        blurMins, blurMaxs,
                                         mdVSFrameMixed, this.warpUVs, this.warpColor);
     }
 
     if (this.numBlurPasses > 0) {
-      this.blurShader1.renderBlurTexture(this.targetTexture, mdVSFrame);
+      this.blurShader1.renderBlurTexture(this.targetTexture, mdVSFrame, blurMins, blurMaxs);
 
       if (this.numBlurPasses > 1) {
-        this.blurShader2.renderBlurTexture(this.blurTexture1, mdVSFrame);
+        this.blurShader2.renderBlurTexture(this.blurTexture1, mdVSFrame, blurMins, blurMaxs);
 
         if (this.numBlurPasses > 2) {
-          this.blurShader3.renderBlurTexture(this.blurTexture2, mdVSFrame);
+          this.blurShader3.renderBlurTexture(this.blurTexture2, mdVSFrame, blurMins, blurMaxs);
         }
       }
 
@@ -815,17 +854,18 @@ export default class Renderer {
     if (!this.blending) {
       this.compShader.renderQuadTexture(false, this.targetTexture,
                                         this.blurTexture1, this.blurTexture2, this.blurTexture3,
+                                        blurMins, blurMaxs,
                                         mdVSFrame, this.warpColor);
     } else {
       this.prevCompShader.renderQuadTexture(false, this.targetTexture,
-                                            this.blurTexture1,
-                                            this.blurTexture2,
-                                            this.blurTexture3,
+                                            this.blurTexture1, this.blurTexture2, this.blurTexture3,
+                                            blurMins, blurMaxs,
                                             this.prevPresetEquationRunner.mdVSFrame,
                                             this.warpColor);
 
       this.compShader.renderQuadTexture(true, this.targetTexture,
                                         this.blurTexture1, this.blurTexture2, this.blurTexture3,
+                                        blurMins, blurMaxs,
                                         mdVSFrameMixed, this.warpColor);
     }
 

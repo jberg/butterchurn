@@ -412,36 +412,13 @@ export default class CompShader {
     this.createShader(shaderText);
   }
 
-  bindBlurVals (mdVSFrame) {
-    let blurMin1 = mdVSFrame.b1n || 0;
-    let blurMin2 = mdVSFrame.b2n || 0;
-    let blurMin3 = mdVSFrame.b3n || 0;
-    let blurMax1 = _.get(mdVSFrame, 'b1x', 1);
-    let blurMax2 = _.get(mdVSFrame, 'b2x', 1);
-    let blurMax3 = _.get(mdVSFrame, 'b3x', 1);
-
-    const fMinDist = 0.1;
-    if ((blurMax1 - blurMin1) < fMinDist) {
-      const avg = (blurMin1 + blurMax1) * 0.5;
-      // Milkdrop sets both of these to the same val, but I think
-      // it is supposed to separate them by fMinDist
-      blurMin1 = avg - (fMinDist * 0.5);
-      blurMax1 = avg + (fMinDist * 0.5);
-    }
-    blurMax2 = Math.min(blurMax1, blurMax2);
-    blurMin2 = Math.max(blurMin1, blurMin2);
-    if (blurMax2 - blurMin2 < fMinDist) {
-      const avg = (blurMin2 + blurMax2) * 0.5;
-      blurMin2 = avg - (fMinDist * 0.5);
-      blurMax2 = avg + (fMinDist * 0.5);
-    }
-    blurMax3 = Math.min(blurMax2, blurMax3);
-    blurMin3 = Math.max(blurMin2, blurMin3);
-    if (blurMax3 - blurMin3 < fMinDist) {
-      const avg = (blurMin3 + blurMax3) * 0.5;
-      blurMin3 = avg - (fMinDist * 0.5);
-      blurMax3 = avg + (fMinDist * 0.5);
-    }
+  bindBlurVals (blurMins, blurMaxs) {
+    const blurMin1 = blurMins[0];
+    const blurMin2 = blurMins[1];
+    const blurMin3 = blurMins[2];
+    const blurMax1 = blurMaxs[0];
+    const blurMax2 = blurMaxs[1];
+    const blurMax3 = blurMaxs[2];
 
     const scale1 = blurMax1 - blurMin1;
     const bias1 = blurMin1;
@@ -488,8 +465,8 @@ export default class CompShader {
     /* eslint-enable max-len */
   }
 
-  renderQuadTexture (blending, texture, blurTexture1, blurTexture2, blurTexture3, mdVSFrame,
-                     warpColor) {
+  renderQuadTexture (blending, texture, blurTexture1, blurTexture2, blurTexture3,
+                     blurMins, blurMaxs, mdVSFrame, warpColor) {
     this.generateHueBase(mdVSFrame);
 
     this.gl.useProgram(this.shaderProgram);
@@ -674,7 +651,7 @@ export default class CompShader {
       0.5 + (0.5 * Math.sin(mdVSFrame.time * 20.0))
     ]);
 
-    this.bindBlurVals(mdVSFrame);
+    this.bindBlurVals(blurMins, blurMaxs);
 
     if (blending) {
       this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
