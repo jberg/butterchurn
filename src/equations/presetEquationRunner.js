@@ -122,7 +122,7 @@ export default class PresetEquationRunner {
       for (let i = 0; i < this.preset.shapes.length; i++) {
         const shape = this.preset.shapes[i];
         const baseVals = shape.baseVals;
-        if (baseVals.enabled !== 0) {
+        if (_.get(baseVals, 'enabled', 0) !== 0) {
           let mdVSShape = _.extend(_.clone(baseVals), baseVars);
           mdVSShape.frame = this.frameNum;
           mdVSShape.fps = 45;
@@ -161,7 +161,7 @@ export default class PresetEquationRunner {
       for (let i = 0; i < this.preset.waves.length; i++) {
         const wave = this.preset.waves[i];
         const baseVals = wave.baseVals;
-        if (baseVals.enabled !== 0) {
+        if (_.get(baseVals, 'enabled', 0) !== 0) {
           let mdVSWave = _.extend(_.clone(baseVals), baseVars);
           mdVSWave.frame = this.frameNum;
           mdVSWave.fps = 45;

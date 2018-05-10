@@ -94,7 +94,7 @@ export default class CustomWaveform {
 
   generateWaveform (timeArrayL, timeArrayR, freqArrayL, freqArrayR,
                     globalVars, presetEquationRunner, waveEqs, alphaMult) {
-    if (waveEqs.baseVals.enabled !== 0 && timeArrayL.length > 0) {
+    if (_.get(waveEqs, 'baseVals.enabled', 0) !== 0 && timeArrayL.length > 0) {
       let mdVSWave = Utils.cloneVars(presetEquationRunner.mdVSWaves[this.index]);
       const mdVSTInit = presetEquationRunner.mdVSTWaveInits[this.index];
 

@@ -159,7 +159,7 @@ export default class CustomShape {
       const currPresetEquationRunner = (rep === 0) ? presetEquationRunner :
                                                      prevPresetEquationRunner;
       const currShapeEqs = (rep === 0) ? shapeEqs : prevShapeEqs;
-      if (currShapeEqs && currShapeEqs.baseVals.enabled !== 0) {
+      if (_.get(currShapeEqs, 'baseVals.enabled', 0) !== 0) {
         this.setupShapeBuffers();
 
         const mdVSFrame = currPresetEquationRunner.mdVSFrame;
