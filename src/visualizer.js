@@ -29,6 +29,10 @@ export default class Visualizer {
     this.renderer.loadPreset(preset, blendTime);
   }
 
+  loadExtraImages (imageData) {
+    this.renderer.loadExtraImages(imageData);
+  }
+
   setRendererSize (width, height, opts = {}) {
     this.renderer.setRendererSize(width, height, opts);
   }

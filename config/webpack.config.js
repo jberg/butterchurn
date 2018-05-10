@@ -10,19 +10,22 @@ const nodeRoot = path.join(__dirname, '..', 'node_modules');
 const outputPath = path.join(__dirname, '..', 'lib');
 
 let plugins = [];
-let outputFile = 'butterchurn';
+let outputFile = '[name]';
 
 if (env === 'prod') {
   outputFile += '.min';
 }
 
 let config = {
-  entry: srcRoot + '/index.js',
+  entry: {
+    butterchurn: srcRoot + '/index.js',
+    butterchurnExtraImages: srcRoot + '/image/extraImageTextures.js',
+  },
   devtool: 'source-map',
   output: {
     path: outputPath,
     filename: outputFile + '.js',
-    library: 'butterchurn',
+    library: '[name]',
     libraryTarget: 'umd',
     umdNamedDefine: true
   },

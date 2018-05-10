@@ -318,6 +318,10 @@ export default class Renderer {
     }
   }
 
+  loadExtraImages (imageData) {
+    this.image.loadExtraImages(imageData);
+  }
+
   setRendererSize (width, height, opts) {
     this.width = width;
     this.height = height;
