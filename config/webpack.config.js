@@ -20,6 +20,7 @@ let config = {
   entry: {
     butterchurn: srcRoot + '/index.js',
     butterchurnExtraImages: srcRoot + '/image/extraImageTextures.js',
+    butterchurnIsSupported: srcRoot + '/isSupported.js',
   },
   devtool: 'source-map',
   output: {
@@ -75,49 +76,4 @@ if (env === 'prod') {
   );
 }
 
-let isSupportedConfig = {
-  entry: srcRoot + '/isSupported.js',
-  devtool: 'source-map',
-  output: {
-    path: outputPath,
-    filename: 'isSupported.js',
-    library: 'butterchurnIsSupported',
-    libraryTarget: 'umd',
-    umdNamedDefine: true
-  },
-  module: {
-    rules: [
-      {
-        test: /(\.js)$/,
-        exclude: /node_modules/,
-        use: {
-          loader: 'babel-loader?cacheDirectory',
-          options: {
-            plugins: ['add-module-exports', 'transform-runtime'],
-            presets: ['env']
-          }
-        }
-      },
-      {
-        test: /(\.js)$/,
-        exclude: /node_modules/,
-        use: {
-          loader: 'eslint-loader'
-        },
-        enforce: 'pre'
-      },
-    ]
-  },
-  resolve: {
-    modules: [srcRoot, nodeRoot],
-    extensions: ['.js']
-  },
-  plugins: []
-};
-
-
-if (env === 'prod') {
-  module.exports = [config, isSupportedConfig];
-} else {
-  module.exports = config;
-}
+module.exports = config;
