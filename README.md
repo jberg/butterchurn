@@ -5,7 +5,7 @@ Butterchurn is a WebGL implementation of the Milkdrop Visualizer
 
 ## [Try it out](https://butterchurnviz.com)
 
-[![Screenshot of Webamp](https://butterchurnviz.com/static/img/preview.png)](https://butterchurnviz.com)
+[![Screenshot of Butterchurn](https://butterchurnviz.com/static/img/preview.png)](https://butterchurnviz.com)
 
 
 ## Usage
@@ -38,7 +38,7 @@ visualizer.connectAudio(audioNode);
 const presets = butterchurnPresets.getPresets();
 const preset = presets['Flexi, martin + geiss - dedicated to the sherwin maxawow'];
 
-visualizer.loadPreset(preset);
+visualizer.loadPreset(preset, 0.0); // 2nd argument is the number of seconds to blend presets
 
 // resize visualizer
 
@@ -52,8 +52,9 @@ visualizer.render();
 
 ## Thanks
 
-* [Ryan Geiss](http://www.geisswerks.com/), creator of MilkDrop
-* [Winamp](http://www.winamp.com/) for starting it all
+* [Ryan Geiss](http://www.geisswerks.com/) for creating [MilkDrop](http://www.geisswerks.com/about_milkdrop.html)
+* Nullsoft for creating [Winamp](http://www.winamp.com/)
+* All the amazing preset creators, special thanks to [Flexi](https://twitter.com/Flexi23)
 
 
 ## License
