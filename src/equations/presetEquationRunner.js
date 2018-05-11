@@ -65,13 +65,6 @@ export default class PresetEquationRunner {
 
     this.mdVS = _.extend(this.mdVS, mdVSBase);
 
-    // hacks to make sure we have all the variables we should
-    if (!Object.prototype.hasOwnProperty.call(this.mdVS, 'tex_filt')) this.mdVS.tex_filt = 1;
-    if (!Object.prototype.hasOwnProperty.call(this.mdVS, 'fshader')) this.mdVS.fshader = 0.0;
-    if (!Object.prototype.hasOwnProperty.call(this.mdVS, 'additivewave')) {
-      this.mdVS.additivewave = 0;
-    }
-
     this.mdVS.rand_start = new Float32Array([
       Math.random(), Math.random(), Math.random(), Math.random()
     ]);
