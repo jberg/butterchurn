@@ -20,7 +20,7 @@ let config = {
   entry: {
     butterchurn: srcRoot + '/index.js',
     butterchurnExtraImages: srcRoot + '/image/extraImageTextures.js',
-    butterchurnIsSupported: srcRoot + '/isSupported.js',
+    isSupported: srcRoot + '/isSupported.js',
   },
   devtool: 'source-map',
   output: {
