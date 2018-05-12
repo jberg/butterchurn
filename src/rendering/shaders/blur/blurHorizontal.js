@@ -73,7 +73,7 @@ export default class BlurHorizontal {
          float d3 = ds[2];
          float d4 = ds[3];
 
-         vec2 uv2 = uv.xy + texsize.zw * vec2(0.5, 0.5);
+         vec2 uv2 = uv.xy;
 
          vec3 blur =
            ( texture(uTexture, uv2 + vec2( d1 * texsize.z,0.0) ).xyz

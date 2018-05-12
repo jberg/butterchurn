@@ -65,7 +65,7 @@ export default class BlurVertical {
          float d1 = wds[2];
          float d2 = wds[3];
 
-         vec2 uv2 = uv.xy - texsize.zw * vec2(0.5, 0.5);
+         vec2 uv2 = uv.xy;
 
          vec3 blur =
            ( texture(uTexture, uv2 + vec2(0.0, d1 * texsize.w) ).xyz
