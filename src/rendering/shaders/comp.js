@@ -182,12 +182,6 @@ export default class CompShader {
                                           return vec3(dot(v, vec3(0.32,0.49,0.29)));
                                       }
 
-                                      vec3 calc_hue(vec3 hue_base[ 4 ], vec2 uv) {
-                                          vec3 tA = mix( hue_base[0], hue_base[1], uv.x );
-                                          vec3 tB = mix( hue_base[2], hue_base[3], uv.x );
-                                          return mix( tA, tB, uv.y );
-                                      }
-
                                       in vec2 vUv;
                                       in vec4 vColor;
                                       out vec4 fragColor;
@@ -302,7 +296,6 @@ export default class CompShader {
                                       uniform vec4 rand_frame;
                                       uniform vec4 rand_preset;
 
-                                      uniform vec3 hue_base[ 4 ];
                                       uniform float fShader;
 
                                       float PI = 3.14159265358979323846264;
@@ -317,11 +310,11 @@ export default class CompShader {
                                         uv_orig.y = 1.0 - uv_orig.y;
                                         float rad = length(uv - 0.5);
                                         float ang = atan(uv.x - 0.5, uv.y - 0.5);
-                                        vec3 hue_shader = calc_hue(hue_base, uv);
+                                        vec3 hue_shader = vColor.rgb;
 
                                         ${fragShaderText}
 
-                                        fragColor = vec4(ret, 1.0) * vColor;
+                                        fragColor = vec4(ret, vColor.a);
                                       }`);
     this.gl.compileShader(fragShader);
 
@@ -391,7 +384,6 @@ export default class CompShader {
     this.bias3Loc = this.gl.getUniformLocation(this.shaderProgram, 'bias3');
     this.randPresetLoc = this.gl.getUniformLocation(this.shaderProgram, 'rand_preset');
     this.randFrameLoc = this.gl.getUniformLocation(this.shaderProgram, 'rand_frame');
-    this.hueBaseLoc = this.gl.getUniformLocation(this.shaderProgram, 'hue_base[0]');
     this.fShaderLoc = this.gl.getUniformLocation(this.shaderProgram, 'fShader');
 
     this.qaLoc = this.gl.getUniformLocation(this.shaderProgram, '_qa');
@@ -450,8 +442,8 @@ export default class CompShader {
     this.gl.uniform1f(this.bias3Loc, bias3);
   }
 
-  generateHueBase (mdVSFrame) {
-    this.hue_base = new Float32Array([
+  static generateHueBase (mdVSFrame) {
+    const hueBase = new Float32Array([
       1, 1, 1,
       1, 1, 1,
       1, 1, 1,
@@ -460,19 +452,22 @@ export default class CompShader {
 
     /* eslint-disable max-len */
     for (let i = 0; i < 4; i++) {
-      this.hue_base[(i * 3) + 0] = 0.6 + (0.3 * Math.sin((mdVSFrame.time * 30.0 * 0.0143) + 3 + (i * 21) + mdVSFrame.rand_start[3]));
-      this.hue_base[(i * 3) + 1] = 0.6 + (0.3 * Math.sin((mdVSFrame.time * 30.0 * 0.0107) + 1 + (i * 13) + mdVSFrame.rand_start[1]));
-      this.hue_base[(i * 3) + 2] = 0.6 + (0.3 * Math.sin((mdVSFrame.time * 30.0 * 0.0129) + 6 + (i * 9) + mdVSFrame.rand_start[2]));
-      const maxshade = Math.max(this.hue_base[(i * 3)], this.hue_base[(i * 3) + 1], this.hue_base[(i * 3) + 2]);
+      hueBase[(i * 3) + 0] = 0.6 + (0.3 * Math.sin((mdVSFrame.time * 30.0 * 0.0143) + 3 + (i * 21) + mdVSFrame.rand_start[3]));
+      hueBase[(i * 3) + 1] = 0.6 + (0.3 * Math.sin((mdVSFrame.time * 30.0 * 0.0107) + 1 + (i * 13) + mdVSFrame.rand_start[1]));
+      hueBase[(i * 3) + 2] = 0.6 + (0.3 * Math.sin((mdVSFrame.time * 30.0 * 0.0129) + 6 + (i * 9) + mdVSFrame.rand_start[2]));
+      const maxshade = Math.max(hueBase[(i * 3)], hueBase[(i * 3) + 1], hueBase[(i * 3) + 2]);
       for (let k = 0; k < 3; k++) {
-        this.hue_base[(i * 3) + k] = this.hue_base[(i * 3) + k] / maxshade;
-        this.hue_base[(i * 3) + k] = 0.5 + (0.5 * this.hue_base[(i * 3) + k]);
+        hueBase[(i * 3) + k] = hueBase[(i * 3) + k] / maxshade;
+        hueBase[(i * 3) + k] = 0.5 + (0.5 * hueBase[(i * 3) + k]);
       }
     }
     /* eslint-enable max-len */
+
+    return hueBase;
   }
 
-  generateCompColors (blending, warpColor) {
+  generateCompColors (blending, mdVSFrame, warpColor) {
+    const hueBase = CompShader.generateHueBase(mdVSFrame);
     const gridX1 = this.compWidth + 1;
     const gridY1 = this.compHeight + 1;
     const compColor = new Float32Array(gridX1 * gridY1 * 4);
@@ -482,6 +477,14 @@ export default class CompShader {
       for (let i = 0; i < gridX1; i++) {
         let x = i / this.compWidth;
         let y = j / this.compHeight;
+
+        const col = [1, 1, 1];
+        for (let c = 0; c < 3; c++) {
+          col[c] = (hueBase[0 + c] * x * y) +
+                   (hueBase[3 + c] * (1 - x) * y) +
+                   (hueBase[6 + c] * x * (1 - y)) +
+                   (hueBase[9 + c] * (1 - x) * (1 - y));
+        }
 
         let alpha = 1;
         if (blending) {
@@ -503,9 +506,9 @@ export default class CompShader {
                   (alpha11 * dx * (dy));
         }
 
-        compColor[offsetColor + 0] = 1;
-        compColor[offsetColor + 1] = 1;
-        compColor[offsetColor + 2] = 1;
+        compColor[offsetColor + 0] = col[0];
+        compColor[offsetColor + 1] = col[1];
+        compColor[offsetColor + 2] = col[2];
         compColor[offsetColor + 3] = alpha;
 
         offsetColor += 4;
@@ -517,8 +520,7 @@ export default class CompShader {
 
   renderQuadTexture (blending, texture, blurTexture1, blurTexture2, blurTexture3,
                      blurMins, blurMaxs, mdVSFrame, warpColor) {
-    this.generateHueBase(mdVSFrame);
-    const compColors = this.generateCompColors(blending, warpColor);
+    const compColors = this.generateCompColors(blending, mdVSFrame, warpColor);
 
     this.gl.useProgram(this.shaderProgram);
 
@@ -646,7 +648,6 @@ export default class CompShader {
                                        mdVSFrame.treb_att) / 3);
     this.gl.uniform1f(this.frameLoc, mdVSFrame.frame);
     this.gl.uniform1f(this.fpsLoc, mdVSFrame.fps);
-    this.gl.uniform3fv(this.hueBaseLoc, this.hue_base);
     this.gl.uniform4fv(this.randPresetLoc, mdVSFrame.rand_preset);
     this.gl.uniform4fv(this.randFrameLoc, new Float32Array([
       Math.random(), Math.random(), Math.random(), Math.random()
