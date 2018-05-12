@@ -7,12 +7,17 @@ export default class CompShader {
     this.noise = noise;
     this.image = image;
 
+    this.mesh_width = opts.mesh_width;
+    this.mesh_height = opts.mesh_height;
     this.texsizeX = opts.texsizeX;
     this.texsizeY = opts.texsizeY;
     this.aspectx = opts.aspectx;
     this.aspecty = opts.aspecty;
     this.invAspectx = 1.0 / this.aspectx;
     this.invAspecty = 1.0 / this.aspecty;
+
+    this.compWidth = 32;
+    this.compHeight = 24;
 
     this.buildPositions();
 
@@ -63,8 +68,8 @@ export default class CompShader {
     const widthHalf = width / 2;
     const heightHalf = height / 2;
 
-    const gridX = 32;
-    const gridY = 24;
+    const gridX = this.compWidth;
+    const gridY = this.compHeight;
 
     const gridX1 = gridX + 1;
     const gridY1 = gridY + 1;
@@ -100,6 +105,8 @@ export default class CompShader {
   }
 
   updateGlobals (opts) {
+    this.mesh_width = opts.mesh_width;
+    this.mesh_height = opts.mesh_height;
     this.texsizeX = opts.texsizeX;
     this.texsizeY = opts.texsizeY;
     this.aspectx = opts.aspectx;
@@ -465,9 +472,53 @@ export default class CompShader {
     /* eslint-enable max-len */
   }
 
+  generateCompColors (blending, warpColor) {
+    const gridX1 = this.compWidth + 1;
+    const gridY1 = this.compHeight + 1;
+    const compColor = new Float32Array(gridX1 * gridY1 * 4);
+
+    let offsetColor = 0;
+    for (let j = 0; j < gridY1; j++) {
+      for (let i = 0; i < gridX1; i++) {
+        let x = i / this.compWidth;
+        let y = j / this.compHeight;
+
+        let alpha = 1;
+        if (blending) {
+          x *= (this.mesh_width + 1);
+          y *= (this.mesh_height + 1);
+          x = Math.clamp(x, 0, this.mesh_width - 1);
+          y = Math.clamp(y, 0, this.mesh_height - 1);
+          const nx = Math.floor(x);
+          const ny = Math.floor(y);
+          const dx = x - nx;
+          const dy = y - ny;
+          const alpha00 = warpColor[(((ny * (this.mesh_width + 1)) + nx) * 4) + 3];
+          const alpha01 = warpColor[(((ny * (this.mesh_width + 1)) + (nx + 1)) * 4) + 3];
+          const alpha10 = warpColor[((((ny + 1) * (this.mesh_width + 1)) + nx) * 4) + 3];
+          const alpha11 = warpColor[((((ny + 1) * (this.mesh_width + 1)) + (nx + 1)) * 4) + 3];
+          alpha = (alpha00 * (1 - dx) * (1 - dy)) +
+                  (alpha01 * dx * (1 - dy)) +
+                  (alpha10 * (1 - dx) * dy) +
+                  (alpha11 * dx * (dy));
+        }
+
+        compColor[offsetColor + 0] = 1;
+        compColor[offsetColor + 1] = 1;
+        compColor[offsetColor + 2] = 1;
+        compColor[offsetColor + 3] = alpha;
+
+        offsetColor += 4;
+      }
+    }
+
+    return compColor;
+  }
+
   renderQuadTexture (blending, texture, blurTexture1, blurTexture2, blurTexture3,
                      blurMins, blurMaxs, mdVSFrame, warpColor) {
     this.generateHueBase(mdVSFrame);
+    const compColors = this.generateCompColors(blending, warpColor);
 
     this.gl.useProgram(this.shaderProgram);
 
@@ -481,7 +532,7 @@ export default class CompShader {
     this.gl.enableVertexAttribArray(this.positionLocation);
 
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.compColorVertexBuf);
-    this.gl.bufferData(this.gl.ARRAY_BUFFER, warpColor, this.gl.STATIC_DRAW);
+    this.gl.bufferData(this.gl.ARRAY_BUFFER, compColors, this.gl.STATIC_DRAW);
 
     this.gl.vertexAttribPointer(this.compColorLocation, 4, this.gl.FLOAT, false, 0, 0);
     this.gl.enableVertexAttribArray(this.compColorLocation);
