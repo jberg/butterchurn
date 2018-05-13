@@ -687,7 +687,7 @@ export default class Renderer {
     this.calcTimeAndFPS();
     this.frameNum += 1;
 
-    let globalVars = {
+    const globalVars = {
       frame: this.frameNum,
       time: this.time,
       fps: this.fps,
@@ -705,7 +705,7 @@ export default class Renderer {
       pixelsy: this.texsizeY,
       gmegabuf: this.presetEquationRunner.gmegabuf,
     };
-    globalVars = _.assign(globalVars, this.regVars);
+    Object.assign(globalVars, this.regVars);
 
     this.presetEquationRunner.runFrameEquations(globalVars);
     const mdVSFrame = this.presetEquationRunner.mdVSFrame;
@@ -716,8 +716,7 @@ export default class Renderer {
                            this.presetEquationRunner.runVertEQs,
                            false);
 
-    this.regVars = _.assign(this.regVars, _.pick(mdVSFrame, this.regs));
-    globalVars = _.assign(globalVars, this.regVars);
+    Object.assign(globalVars, this.regVars, _.pick(mdVSFrame, this.regs));
 
     let mdVSFrameMixed;
     if (this.blending) {
@@ -798,8 +797,7 @@ export default class Renderer {
                               this.prevPresetEquationRunner,
                               _.get(this.prevPreset, `shapes[${i}]`),
                               this.prevTexture);
-        this.regVars = _.assign(this.regVars, _.pick(shape.mdVSShapeFrame, this.regs));
-        globalVars = _.assign(globalVars, this.regVars);
+        Object.assign(globalVars, this.regVars, _.pick(shape.mdVSShapeFrame, this.regs));
       });
     }
 
@@ -815,8 +813,7 @@ export default class Renderer {
                                     this.preset.waves[i],
                                     this.prevPresetEquationRunner,
                                     _.get(this.prevPreset, `waves[${i}]`));
-        this.regVars = _.assign(this.regVars, _.pick(waveform.mdVSWaveFrame, this.regs));
-        globalVars = _.assign(globalVars, this.regVars);
+        Object.assign(globalVars, this.regVars, _.pick(waveform.mdVSWaveFrame, this.regs));
       });
     }
 
