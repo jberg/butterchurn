@@ -133,16 +133,6 @@ export default class CustomShape {
     this.thickOffsetLoc = this.gl.getUniformLocation(this.shaderProgram, 'thickOffset');
   }
 
-  static repairPerVertexEQs (m, r) {
-    if (!_.isEmpty(r)) {
-      _.forEach(r, (value, key) => {
-        // eslint-disable-next-line no-param-reassign
-        m[key] = value;
-      });
-    }
-    return m;
-  }
-
   drawCustomShape (blending, blendProgress, globalVars, presetEquationRunner, shapeEqs,
                    prevPresetEquationRunner, prevShapeEqs, prevTexture) {
     const numReps = blending ? 2 : 1;
@@ -170,20 +160,8 @@ export default class CustomShape {
         let mdVSShape = Utils.cloneVars(currPresetEquationRunner.mdVSShapes[this.index]);
         const mdVSTInit = currPresetEquationRunner.mdVSTShapeInits[this.index];
 
-        const repairKeys = mdVSShape.rkeys || [];
         mdVSShape = _.extend(mdVSShape, currPresetEquationRunner.mdVSQAfterFrame);
         mdVSShape = _.extend(mdVSShape, mdVSTInit);
-
-        const repairMap = {};
-        for (let j = 0; j < repairKeys.length; j++) {
-          const k = repairKeys[j];
-          // let user keys flow between shape instances
-          if (!_.includes(currPresetEquationRunner.mdVSUserKeysShapes[this.index], k) &&
-              !_.includes(currPresetEquationRunner.qs, k) &&
-              !_.includes(currPresetEquationRunner.ts, k)) {
-            repairMap[k] = mdVSShape[k];
-          }
-        }
 
         mdVSShape = _.extend(mdVSShape, globalVars);
         mdVSShape.time = currPresetEquationRunner.time;
@@ -202,8 +180,6 @@ export default class CustomShape {
         let numInst = _.get(mdVSShape, 'num_inst', 1);
         numInst = Math.clamp(numInst, 1, 1024);
         for (let j = 0; j < numInst; j++) {
-          mdVSShape = CustomShape.repairPerVertexEQs(mdVSShape, repairMap);
-
           mdVSShape.instance = j;
           mdVSShape.x = mdVSShapeBaseVals.x;
           mdVSShape.y = mdVSShapeBaseVals.y;

@@ -428,14 +428,6 @@ export default class Renderer {
     const aspecty = this.aspecty;
 
     let mdVSVertex = Utils.cloneVars(mdVSFrame);
-    const repairKeys = mdVSVertex.rkeys || [];
-    const repairMap = {};
-    for (let i = 0; i < repairKeys.length; i++) {
-      const k = repairKeys[i];
-      if (!_.includes(mdVSUserKeys, k) && !_.includes(this.qs, k)) {
-        repairMap[k] = mdVSVertex[k];
-      }
-    }
 
     let offset = 0;
     let offsetColor = 0;
@@ -458,7 +450,6 @@ export default class Renderer {
           mdVSVertex.rad = rad;
           mdVSVertex.ang = ang;
 
-          /*
           mdVSVertex.zoom = mdVSFrame.zoom;
           mdVSVertex.zoomexp = mdVSFrame.zoomexp;
           mdVSVertex.rot = mdVSFrame.rot;
@@ -469,9 +460,6 @@ export default class Renderer {
           mdVSVertex.dy = mdVSFrame.dy;
           mdVSVertex.sx = mdVSFrame.sx;
           mdVSVertex.sy = mdVSFrame.sy;
-          */
-
-          mdVSVertex = Utils.repairPerVertexEQs(mdVSVertex, repairMap);
 
           mdVSVertex = preset.pixel_eqs(mdVSVertex);
         }

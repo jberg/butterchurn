@@ -82,23 +82,12 @@ export default class CustomWaveform {
     this.thickOffsetLoc = this.gl.getUniformLocation(this.shaderProgram, 'thickOffset');
   }
 
-  static repairPerVertexEQs (m, r) {
-    if (!_.isEmpty(r)) {
-      _.forEach(r, (value, key) => {
-        // eslint-disable-next-line no-param-reassign
-        m[key] = value;
-      });
-    }
-    return m;
-  }
-
   generateWaveform (timeArrayL, timeArrayR, freqArrayL, freqArrayR,
                     globalVars, presetEquationRunner, waveEqs, alphaMult) {
     if (_.get(waveEqs, 'baseVals.enabled', 0) !== 0 && timeArrayL.length > 0) {
       let mdVSWave = Utils.cloneVars(presetEquationRunner.mdVSWaves[this.index]);
       const mdVSTInit = presetEquationRunner.mdVSTWaveInits[this.index];
 
-      const repairKeys = mdVSWave.rkeys || [];
       mdVSWave = _.extend(mdVSWave, presetEquationRunner.mdVSQAfterFrame);
       mdVSWave = _.extend(mdVSWave, mdVSTInit);
 
@@ -115,17 +104,6 @@ export default class CustomWaveform {
       mdVSWave = _.extend(mdVSWave, presetEquationRunner.mdVSFrameMapWaves[this.index]);
 
       let mdVSWaveFrame = waveEqs.frame_eqs(mdVSWave);
-
-      const repairMap = {};
-      for (let j = 0; j < repairKeys.length; j++) {
-        const k = repairKeys[j];
-        // let user keys flow between wave instances
-        if (!_.includes(presetEquationRunner.mdVSUserKeysWaves[this.index], k) &&
-            !_.includes(presetEquationRunner.qs, k) &&
-            !_.includes(presetEquationRunner.ts, k)) {
-          repairMap[k] = mdVSWaveFrame[k];
-        }
-      }
 
       const maxSamples = 512;
       if (Object.prototype.hasOwnProperty.call(mdVSWaveFrame, 'samples')) {
@@ -187,8 +165,6 @@ export default class CustomWaveform {
         }
 
         for (let j = 0; j < this.samples; j++) {
-          mdVSWaveFrame = CustomWaveform.repairPerVertexEQs(mdVSWaveFrame, repairMap);
-
           const value1 = this.pointsData[0][j];
           const value2 = this.pointsData[1][j];
 
