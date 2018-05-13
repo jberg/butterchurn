@@ -409,7 +409,7 @@ export default class Renderer {
     }
   }
 
-  runPixelEquations (preset, mdVSFrame, mdVSUserKeys, runVertEQs, blending) {
+  runPixelEquations (preset, mdVSFrame, runVertEQs, blending) {
     const gridX = this.mesh_width;
     const gridZ = this.mesh_height;
 
@@ -540,6 +540,8 @@ export default class Renderer {
         offsetColor += 4;
       }
     }
+
+    this.mdVSVertex = mdVSVertex;
   }
 
   static mixFrameEquations (blendProgress, mdVSFrame, mdVSFramePrev) {
@@ -709,21 +711,18 @@ export default class Renderer {
 
     this.presetEquationRunner.runFrameEquations(globalVars);
     const mdVSFrame = this.presetEquationRunner.mdVSFrame;
-    const mdVSUserKeys = this.presetEquationRunner.mdVSUserKeys;
     this.runPixelEquations(this.presetEquationRunner.preset,
                            mdVSFrame,
-                           mdVSUserKeys,
                            this.presetEquationRunner.runVertEQs,
                            false);
 
-    Object.assign(globalVars, this.regVars, _.pick(mdVSFrame, this.regs));
+    Object.assign(globalVars, this.regVars, _.pick(this.mdVSVertex, this.regs));
 
     let mdVSFrameMixed;
     if (this.blending) {
       this.prevPresetEquationRunner.runFrameEquations(globalVars);
       this.runPixelEquations(this.prevPresetEquationRunner.preset,
                              this.prevPresetEquationRunner.mdVSFrame,
-                             this.prevPresetEquationRunner.mdVSUserKeys,
                              this.prevPresetEquationRunner.runVertEQs,
                              true);
 
