@@ -103,45 +103,6 @@ export default class PresetEquationRunner {
     this.mdVSQAfterFrame = _.pick(this.mdVSFrame, this.qs);
     this.mdVSRegs = _.pick(this.mdVSFrame, this.regs);
 
-    this.mdVSShapes = [];
-    this.mdVSTShapeInits = [];
-    this.mdVSUserKeysShapes = [];
-    this.mdVSFrameMapShapes = [];
-    if (this.preset.shapes && this.preset.shapes.length > 0) {
-      for (let i = 0; i < this.preset.shapes.length; i++) {
-        const shape = this.preset.shapes[i];
-        const baseVals = shape.baseVals;
-        if (_.get(baseVals, 'enabled', 0) !== 0) {
-          let mdVSShape = Object.assign({}, baseVals, mdVSBase);
-
-          const nonUserShapeKeys = _.uniq(_.concat(this.qs, this.ts, this.regs, _.keys(mdVSShape)));
-
-          Object.assign(mdVSShape, this.mdVSQAfterFrame, this.mdVSRegs);
-          mdVSShape.megabuf = new Array(1048576).fill(0);
-
-          if (shape.init_eqs) {
-            mdVSShape = shape.init_eqs(mdVSShape);
-
-            this.mdVSRegs = _.pick(mdVSShape, this.regs);
-
-            // base vals need to be reset
-            Object.assign(mdVSShape, baseVals);
-          }
-          this.mdVSShapes.push(mdVSShape);
-          this.mdVSTShapeInits.push(_.pick(mdVSShape, this.ts));
-
-          this.mdVSUserKeysShapes.push(_.keys(_.omit(mdVSShape, nonUserShapeKeys)));
-          this.mdVSFrameMapShapes.push(_.pick(mdVSShape, this.mdVSUserKeysShapes[i]));
-        } else {
-          this.mdVSShapes.push({});
-          this.mdVSTShapeInits.push({});
-
-          this.mdVSUserKeysShapes.push([]);
-          this.mdVSFrameMapShapes.push({});
-        }
-      }
-    }
-
     this.mdVSWaves = [];
     this.mdVSTWaveInits = [];
     this.mdVSUserKeysWaves = [];
@@ -177,6 +138,45 @@ export default class PresetEquationRunner {
 
           this.mdVSUserKeysWaves.push([]);
           this.mdVSFrameMapWaves.push({});
+        }
+      }
+    }
+
+    this.mdVSShapes = [];
+    this.mdVSTShapeInits = [];
+    this.mdVSUserKeysShapes = [];
+    this.mdVSFrameMapShapes = [];
+    if (this.preset.shapes && this.preset.shapes.length > 0) {
+      for (let i = 0; i < this.preset.shapes.length; i++) {
+        const shape = this.preset.shapes[i];
+        const baseVals = shape.baseVals;
+        if (_.get(baseVals, 'enabled', 0) !== 0) {
+          let mdVSShape = Object.assign({}, baseVals, mdVSBase);
+
+          const nonUserShapeKeys = _.uniq(_.concat(this.qs, this.ts, this.regs, _.keys(mdVSShape)));
+
+          Object.assign(mdVSShape, this.mdVSQAfterFrame, this.mdVSRegs);
+          mdVSShape.megabuf = new Array(1048576).fill(0);
+
+          if (shape.init_eqs) {
+            mdVSShape = shape.init_eqs(mdVSShape);
+
+            this.mdVSRegs = _.pick(mdVSShape, this.regs);
+
+            // base vals need to be reset
+            Object.assign(mdVSShape, baseVals);
+          }
+          this.mdVSShapes.push(mdVSShape);
+          this.mdVSTShapeInits.push(_.pick(mdVSShape, this.ts));
+
+          this.mdVSUserKeysShapes.push(_.keys(_.omit(mdVSShape, nonUserShapeKeys)));
+          this.mdVSFrameMapShapes.push(_.pick(mdVSShape, this.mdVSUserKeysShapes[i]));
+        } else {
+          this.mdVSShapes.push({});
+          this.mdVSTShapeInits.push({});
+
+          this.mdVSUserKeysShapes.push([]);
+          this.mdVSFrameMapShapes.push({});
         }
       }
     }
