@@ -270,6 +270,8 @@ export default class CustomShape {
             }
           }
 
+          this.mdVSShapeFrame = mdVSShapeFrame;
+
           this.drawCustomShapeInstance(prevTexture, sides, isTextured, hasBorder, isBorderThick,
                                        isAdditive);
         }
