@@ -150,30 +150,14 @@ export default class CustomShape {
                                                      prevPresetEquationRunner;
       const currShapeEqs = (rep === 0) ? shapeEqs : prevShapeEqs;
       if (_.get(currShapeEqs, 'baseVals.enabled', 0) !== 0) {
-        this.setupShapeBuffers();
+        this.setupShapeBuffers(currPresetEquationRunner.mdVSFrame);
 
-        const mdVSFrame = currPresetEquationRunner.mdVSFrame;
-        const wrapping = (mdVSFrame.wrap !== 0) ? this.gl.REPEAT : this.gl.CLAMP_TO_EDGE;
-        this.gl.samplerParameteri(this.mainSampler, this.gl.TEXTURE_WRAP_S, wrapping);
-        this.gl.samplerParameteri(this.mainSampler, this.gl.TEXTURE_WRAP_T, wrapping);
-
-        let mdVSShape = Utils.cloneVars(currPresetEquationRunner.mdVSShapes[this.index]);
-        const mdVSTInit = currPresetEquationRunner.mdVSTShapeInits[this.index];
-
-        mdVSShape = _.extend(mdVSShape, currPresetEquationRunner.mdVSQAfterFrame);
-        mdVSShape = _.extend(mdVSShape, mdVSTInit);
-
-        mdVSShape = _.extend(mdVSShape, globalVars);
-        mdVSShape.time = currPresetEquationRunner.time;
-        mdVSShape.frame = currPresetEquationRunner.frameNum;
-        mdVSShape.meshx = this.mesh_width;
-        mdVSShape.meshy = this.mesh_height;
-        mdVSShape.aspectx = this.invAspectx;
-        mdVSShape.aspecty = this.invAspecty;
-        mdVSShape.pixelsx = this.texsizeX;
-        mdVSShape.pixelsy = this.texsizeY;
-
-        mdVSShape = _.extend(mdVSShape, currPresetEquationRunner.mdVSFrameMapShapes[this.index]);
+        const mdVSShape = Object.assign({},
+                                        currPresetEquationRunner.mdVSShapes[this.index],
+                                        currPresetEquationRunner.mdVSFrameMapShapes[this.index],
+                                        currPresetEquationRunner.mdVSQAfterFrame,
+                                        currPresetEquationRunner.mdVSTShapeInits[this.index],
+                                        globalVars);
 
         const mdVSShapeBaseVals = Utils.cloneVars(mdVSShape);
 
@@ -286,8 +270,6 @@ export default class CustomShape {
             }
           }
 
-          this.mdVSShapeFrame = mdVSShapeFrame;
-
           this.drawCustomShapeInstance(prevTexture, sides, isTextured, hasBorder, isBorderThick,
                                        isAdditive);
         }
@@ -301,7 +283,7 @@ export default class CustomShape {
     }
   }
 
-  setupShapeBuffers () {
+  setupShapeBuffers (mdVSFrame) {
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.positionVertexBuf);
     this.gl.bufferData(this.gl.ARRAY_BUFFER, this.positions, this.gl.DYNAMIC_DRAW);
 
@@ -325,6 +307,10 @@ export default class CustomShape {
 
     this.gl.vertexAttribPointer(this.aBorderPosLoc, 3, this.gl.FLOAT, false, 0, 0);
     this.gl.enableVertexAttribArray(this.aBorderPosLoc);
+
+    const wrapping = (mdVSFrame.wrap !== 0) ? this.gl.REPEAT : this.gl.CLAMP_TO_EDGE;
+    this.gl.samplerParameteri(this.mainSampler, this.gl.TEXTURE_WRAP_S, wrapping);
+    this.gl.samplerParameteri(this.mainSampler, this.gl.TEXTURE_WRAP_T, wrapping);
   }
 
   drawCustomShapeInstance (prevTexture, sides, isTextured, hasBorder, isBorderThick, isAdditive) {

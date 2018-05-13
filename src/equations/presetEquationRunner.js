@@ -22,11 +22,6 @@ export default class PresetEquationRunner {
       }
       return `reg${x}`;
     });
-    this.megabuf = new Array(1048576).fill(0);
-    this.gmegabuf = new Array(1048576).fill(0);
-
-    this.frameNum = 0;
-    this.time = 0;
 
     this.initializeEquations();
   }
@@ -35,6 +30,7 @@ export default class PresetEquationRunner {
     this.runVertEQs = (this.preset.pixel_eqs !== '');
 
     this.mdVSQInit = null;
+    this.mdVSRegs = null;
     this.mdVSFrame = null;
     this.mdVSUserKeys = null;
     this.mdVSFrameMap = null;
@@ -49,63 +45,63 @@ export default class PresetEquationRunner {
 
     this.mdVSQAfterFrame = null;
 
-    this.mdVS = _.clone(this.preset.baseVals);
+    this.gmegabuf = new Array(1048576).fill(0);
 
     const mdVSBase = {
+      frame: 0,
+      time: 0,
+      fps: 45,
       bass: 1,
       bass_att: 1,
       mid: 1,
       mid_att: 1,
       treb: 1,
       treb_att: 1,
-      megabuf: this.megabuf,
+      meshx: this.mesh_width,
+      meshy: this.mesh_height,
+      aspectx: this.invAspectx,
+      aspecty: this.invAspecty,
+      pixelsx: this.texsizeX,
+      pixelsy: this.texsizeY,
       gmegabuf: this.gmegabuf,
     };
-    this.mdVSBaseKeys = _.keys(mdVSBase);
 
-    this.mdVS = _.extend(this.mdVS, mdVSBase);
+    this.mdVS = Object.assign({}, this.preset.baseVals, mdVSBase);
 
+    this.mdVS.megabuf = new Array(1048576).fill(0);
     this.mdVS.rand_start = new Float32Array([
       Math.random(), Math.random(), Math.random(), Math.random()
     ]);
-    this.mdVS.frame = this.frameNum;
-    this.mdVS.fps = 45;
-    this.mdVS.time = this.time;
     this.mdVS.rand_preset = new Float32Array([
       Math.random(), Math.random(), Math.random(), Math.random()
     ]);
-    this.mdVS.meshx = this.mesh_width;
-    this.mdVS.meshy = this.mesh_height;
-    this.mdVS.aspectx = this.invAspectx;
-    this.mdVS.aspecty = this.invAspecty;
-    this.mdVS.pixelsx = this.texsizeX;
-    this.mdVS.pixelsy = this.texsizeY;
 
-    const nonUserKeys = _.concat(this.qs, this.ts, this.regs,
-                                 _.keys(this.mdVS), ['megabuf', 'gmegabuf']);
+    const nonUserKeys = _.concat(this.qs, this.ts, this.regs, _.keys(this.mdVS));
 
-    const origBaseVals = _.omit(Utils.cloneVars(this.mdVS),
-                                _.concat(this.qs, this.regs, ['megabuf', 'gmegabuf']));
-    this.mdVS = this.preset.init_eqs(Utils.cloneVars(this.mdVS));
-
-    // Only qs can be written during init
-    this.mdVS = _.extend(this.mdVS, origBaseVals);
+    const mdVSAfterInit = this.preset.init_eqs(Utils.cloneVars(this.mdVS));
 
     // qs need to be initialized to there init values every frame
-    this.mdVSQInit = _.pick(this.mdVS, this.qs);
+    this.mdVSQInit = _.pick(mdVSAfterInit, this.qs);
+    this.mdVSRegs = _.pick(mdVSAfterInit, this.regs);
+    const initUserVars = _.pick(mdVSAfterInit, _.keys(_.omit(mdVSAfterInit, nonUserKeys)));
+    initUserVars.megabuf = mdVSAfterInit.megabuf;
+    initUserVars.gmegabuf = mdVSAfterInit.gmegabuf;
 
-    this.mdVSFrame = this.preset.frame_eqs(Utils.cloneVars(this.mdVS));
+    this.mdVSFrame = this.preset.frame_eqs(Object.assign({},
+                                                         this.mdVS,
+                                                         this.mdVSQInit,
+                                                         this.mdVSRegs,
+                                                         initUserVars));
 
     // user vars need to be copied between frames
-    this.mdVSUserKeys = _.keys(_.omit(this.mdVS, nonUserKeys));
+    this.mdVSUserKeys = _.keys(_.omit(this.mdVSFrame, nonUserKeys));
 
     // Determine vars to carry over between frames
-    this.mdVSFrameMap = _.pick(this.mdVS, this.mdVSUserKeys);
+    this.mdVSFrameMap = _.pick(this.mdVSFrame, this.mdVSUserKeys);
 
     // qs for shapes
     this.mdVSQAfterFrame = _.pick(this.mdVSFrame, this.qs);
-
-    const baseVars = _.pick(this.mdVSFrame, this.mdVSBaseKeys);
+    this.mdVSRegs = _.pick(this.mdVSFrame, this.regs);
 
     this.mdVSShapes = [];
     this.mdVSTShapeInits = [];
@@ -116,20 +112,20 @@ export default class PresetEquationRunner {
         const shape = this.preset.shapes[i];
         const baseVals = shape.baseVals;
         if (_.get(baseVals, 'enabled', 0) !== 0) {
-          let mdVSShape = _.extend(_.clone(baseVals), baseVars);
-          mdVSShape.frame = this.frameNum;
-          mdVSShape.fps = 45;
-          mdVSShape.time = this.time;
+          let mdVSShape = Object.assign({}, baseVals, mdVSBase);
 
-          mdVSShape = _.extend(mdVSShape, this.mdVSQAfterFrame);
+          const nonUserShapeKeys = _.uniq(_.concat(this.qs, this.ts, this.regs, _.keys(mdVSShape)));
 
-          const nonUserShapeKeys = _.concat(this.qs, this.ts, _.keys(mdVSShape), ['num_inst']);
+          Object.assign(mdVSShape, this.mdVSQAfterFrame, this.mdVSRegs);
+          mdVSShape.megabuf = new Array(1048576).fill(0);
 
           if (shape.init_eqs) {
             mdVSShape = shape.init_eqs(mdVSShape);
 
-            // Only qs and ts can be written during init
-            mdVSShape = _.extend(mdVSShape, baseVals);
+            this.mdVSRegs = _.pick(mdVSShape, this.regs);
+
+            // base vals need to be reset
+            Object.assign(mdVSShape, baseVals);
           }
           this.mdVSShapes.push(mdVSShape);
           this.mdVSTShapeInits.push(_.pick(mdVSShape, this.ts));
@@ -155,20 +151,20 @@ export default class PresetEquationRunner {
         const wave = this.preset.waves[i];
         const baseVals = wave.baseVals;
         if (_.get(baseVals, 'enabled', 0) !== 0) {
-          let mdVSWave = _.extend(_.clone(baseVals), baseVars);
-          mdVSWave.frame = this.frameNum;
-          mdVSWave.fps = 45;
-          mdVSWave.time = this.time;
+          let mdVSWave = Object.assign({}, baseVals, mdVSBase);
 
-          mdVSWave = _.extend(mdVSWave, this.mdVSQAfterFrame);
+          const nonUserWaveKeys = _.concat(this.qs, this.ts, this.regs, _.keys(mdVSWave));
 
-          const nonUserWaveKeys = _.concat(this.qs, this.ts, _.keys(mdVSWave));
+          Object.assign(mdVSWave, this.mdVSQAfterFrame, this.mdVSRegs);
+          mdVSWave.megabuf = new Array(1048576).fill(0);
 
           if (wave.init_eqs) {
             mdVSWave = wave.init_eqs(mdVSWave);
 
-            // Only qs and ts can be written during init
-            mdVSWave = _.extend(mdVSWave, baseVals);
+            this.mdVSRegs = _.pick(mdVSWave, this.regs);
+
+            // base vals need to be reset
+            Object.assign(mdVSWave, baseVals);
           }
           this.mdVSWaves.push(mdVSWave);
           this.mdVSTWaveInits.push(_.pick(mdVSWave, this.ts));
@@ -203,26 +199,10 @@ export default class PresetEquationRunner {
   }
 
   runFrameEquations (globalVars) {
-    this.frameNum = globalVars.frame;
-    this.time = globalVars.time;
-    this.fps = globalVars.fps;
+    this.mdVSFrame = Object.assign({}, this.mdVS, this.mdVSQInit, this.mdVSFrameMap, globalVars);
 
-    this.mdVS = _.extend(Utils.cloneVars(this.mdVS), globalVars);
-    this.mdVSFrame = Utils.cloneVars(this.mdVS);
-    this.mdVSFrame.time = this.time;
-    this.mdVSFrame.x = 0;
-    this.mdVSFrame.y = 0;
-    this.mdVSFrame.rad = 0;
-    this.mdVSFrame.ang = 0;
-
-    // set qs and user vars
-    this.mdVSFrame = _.extend(this.mdVSFrame, this.mdVSQInit);
-    this.mdVSFrame = _.extend(this.mdVSFrame, this.mdVSFrameMap);
-
-    // run eqs
     this.mdVSFrame = this.preset.frame_eqs(this.mdVSFrame);
 
-    // save qs and user vars
     this.mdVSFrameMap = _.pick(this.mdVSFrame, this.mdVSUserKeys);
     this.mdVSQAfterFrame = _.pick(this.mdVSFrame, this.qs);
   }

@@ -1,5 +1,4 @@
 import _ from 'lodash';
-import Utils from '../../utils';
 import ShaderUtils from '../shaders/shaderUtils';
 import WaveUtils from './waveUtils';
 
@@ -85,23 +84,12 @@ export default class CustomWaveform {
   generateWaveform (timeArrayL, timeArrayR, freqArrayL, freqArrayR,
                     globalVars, presetEquationRunner, waveEqs, alphaMult) {
     if (_.get(waveEqs, 'baseVals.enabled', 0) !== 0 && timeArrayL.length > 0) {
-      let mdVSWave = Utils.cloneVars(presetEquationRunner.mdVSWaves[this.index]);
-      const mdVSTInit = presetEquationRunner.mdVSTWaveInits[this.index];
-
-      mdVSWave = _.extend(mdVSWave, presetEquationRunner.mdVSQAfterFrame);
-      mdVSWave = _.extend(mdVSWave, mdVSTInit);
-
-      mdVSWave = _.extend(mdVSWave, globalVars);
-      mdVSWave.time = presetEquationRunner.time;
-      mdVSWave.frame = presetEquationRunner.frameNum;
-      mdVSWave.meshx = this.mesh_width;
-      mdVSWave.meshy = this.mesh_height;
-      mdVSWave.aspectx = this.invAspectx;
-      mdVSWave.aspecty = this.invAspecty;
-      mdVSWave.pixelsx = this.texsizeX;
-      mdVSWave.pixelsy = this.texsizeY;
-
-      mdVSWave = _.extend(mdVSWave, presetEquationRunner.mdVSFrameMapWaves[this.index]);
+      const mdVSWave = Object.assign({},
+                                     presetEquationRunner.mdVSWaves[this.index],
+                                     presetEquationRunner.mdVSFrameMapWaves[this.index],
+                                     presetEquationRunner.mdVSQAfterFrame,
+                                     presetEquationRunner.mdVSTWaveInits[this.index],
+                                     globalVars);
 
       let mdVSWaveFrame = waveEqs.frame_eqs(mdVSWave);
 

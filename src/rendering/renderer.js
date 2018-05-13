@@ -55,7 +55,6 @@ export default class Renderer {
       }
       return `reg${x}`;
     });
-    this.regVars = {};
 
     this.blurRatios = [
       [0.5, 0.25],
@@ -127,6 +126,8 @@ export default class Renderer {
     this.prevPreset = this.preset;
     this.presetEquationRunner = new PresetEquationRunner(this.preset, params);
     this.prevPresetEquationRunner = new PresetEquationRunner(this.prevPreset, params);
+
+    this.regVars = this.presetEquationRunner.mdVSRegs;
   }
 
   static getHighestBlur (t) {
@@ -292,6 +293,8 @@ export default class Renderer {
 
     this.presetTime = this.time;
     this.presetEquationRunner.updatePreset(this.preset);
+
+    this.regVars = this.presetEquationRunner.mdVSRegs;
 
     const tmpWarpShader = this.prevWarpShader;
     this.prevWarpShader = this.warpShader;
@@ -700,7 +703,6 @@ export default class Renderer {
       aspecty: this.invAspecty,
       pixelsx: this.texsizeX,
       pixelsy: this.texsizeY,
-      megabuf: this.presetEquationRunner.megabuf,
       gmegabuf: this.presetEquationRunner.gmegabuf,
     };
     globalVars = _.assign(globalVars, this.regVars);
