@@ -1,4 +1,6 @@
 /* eslint-disable */
+var EPSILON = 0.00001;
+
 window.sqr = function sqr(x) {
   return x * x;
 }
@@ -16,11 +18,15 @@ window.sign = function sign(x) {
 }
 
 window.rand = function rand(x) {
-  return Math.floor(Math.random() * x);
+  var xf = Math.floor(x);
+  if (xf < 1) {
+    return Math.random();
+  }
+  return Math.random() * xf;
 }
 
 window.bnot = function bnot(x) {
-  return x == 0 ? 1 : 0;
+  return x ? 0 : 1;
 }
 
 function isFiniteNumber(num) {
@@ -63,19 +69,19 @@ window.bitand = function bitand(x, y) {
 
 window.sigmoid = function sigmoid(x, y) {
   var t = 1 + Math.exp(-x * y);
-  return Math.abs(t) > 0.00001 ? 1.0 / t : 0;
+  return Math.abs(t) > EPSILON ? 1.0 / t : 0;
 }
 
 window.bor = function bor(x, y) {
-  return x != 0 || y != 0 ? 1 : 0;
+  return Math.abs(x) > EPSILON || Math.abs(y) > EPSILON ? 1 : 0;
 }
 
 window.band = function band(x, y) {
-  return x != 0 && y != 0 ? 1 : 0;
+  return Math.abs(x) > EPSILON && Math.abs(y) > EPSILON ? 1 : 0;
 }
 
 window.equal = function equal(x, y) {
-  return Math.abs(x - y) < 0.00001 ? 1 : 0;
+  return Math.abs(x - y) < EPSILON ? 1 : 0;
 }
 
 window.above = function above(x, y) {
@@ -87,6 +93,6 @@ window.below = function below(x, y) {
 }
 
 window.ifcond = function ifcond(x, y, z) {
-  return x != 0 ? y : z;
+  return x ? y : z;
 }
 /* eslint-enable */
