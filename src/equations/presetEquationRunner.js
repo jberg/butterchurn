@@ -76,7 +76,7 @@ export default class PresetEquationRunner {
       Math.random(), Math.random(), Math.random(), Math.random()
     ]);
 
-    const nonUserKeys = _.concat(this.qs, this.ts, this.regs, _.keys(this.mdVS));
+    const nonUserKeys = _.concat(this.qs, this.regs, _.keys(this.mdVS));
 
     const mdVSAfterInit = this.preset.init_eqs(Utils.cloneVars(this.mdVS));
 
