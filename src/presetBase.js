@@ -25,6 +25,10 @@ window.rand = function rand(x) {
   return Math.random() * xf;
 }
 
+window.randint = function randint(x) {
+  return Math.floor(rand(x));
+}
+
 window.bnot = function bnot(x) {
   return x ? 0 : 1;
 }
