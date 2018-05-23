@@ -30,7 +30,7 @@ window.randint = function randint(x) {
 }
 
 window.bnot = function bnot(x) {
-  return x ? 0 : 1;
+  return Math.abs(x) < EPSILON ? 1 : 0;
 }
 
 function isFiniteNumber(num) {
@@ -97,6 +97,6 @@ window.below = function below(x, y) {
 }
 
 window.ifcond = function ifcond(x, y, z) {
-  return x ? y : z;
+  return Math.abs(x) > EPSILON ? y : z;
 }
 /* eslint-enable */
