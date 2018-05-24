@@ -133,155 +133,139 @@ export default class CustomShape {
     this.thickOffsetLoc = this.gl.getUniformLocation(this.shaderProgram, 'thickOffset');
   }
 
-  drawCustomShape (blending, blendProgress, globalVars, presetEquationRunner, shapeEqs,
-                   prevPresetEquationRunner, prevShapeEqs, prevTexture) {
-    const numReps = blending ? 2 : 1;
-    for (let rep = 0; rep < numReps; rep++) {
-      let alphaMult = 1;
-      if (numReps === 2) {
-        if (rep === 0) {
-          alphaMult = blendProgress;
-        } else {
-          alphaMult = 1 - blendProgress;
+  drawCustomShape (blendProgress, globalVars, presetEquationRunner, shapeEqs, prevTexture) {
+    if (_.get(shapeEqs, 'baseVals.enabled', 0) !== 0) {
+      this.setupShapeBuffers(presetEquationRunner.mdVSFrame);
+
+      const mdVSShape = Object.assign({},
+                                      presetEquationRunner.mdVSShapes[this.index],
+                                      presetEquationRunner.mdVSFrameMapShapes[this.index],
+                                      presetEquationRunner.mdVSQAfterFrame,
+                                      presetEquationRunner.mdVSTShapeInits[this.index],
+                                      globalVars);
+
+      const mdVSShapeBaseVals = Utils.cloneVars(mdVSShape);
+
+      let numInst = _.get(mdVSShape, 'num_inst', 1);
+      numInst = Math.clamp(numInst, 1, 1024);
+      for (let j = 0; j < numInst; j++) {
+        mdVSShape.instance = j;
+        mdVSShape.x = mdVSShapeBaseVals.x;
+        mdVSShape.y = mdVSShapeBaseVals.y;
+        mdVSShape.rad = mdVSShapeBaseVals.rad;
+        mdVSShape.ang = mdVSShapeBaseVals.ang;
+        mdVSShape.r = mdVSShapeBaseVals.r;
+        mdVSShape.g = mdVSShapeBaseVals.g;
+        mdVSShape.b = mdVSShapeBaseVals.b;
+        mdVSShape.a = mdVSShapeBaseVals.a;
+        mdVSShape.r2 = mdVSShapeBaseVals.r2;
+        mdVSShape.g2 = mdVSShapeBaseVals.g2;
+        mdVSShape.b2 = mdVSShapeBaseVals.b2;
+        mdVSShape.a2 = mdVSShapeBaseVals.a2;
+        mdVSShape.border_r = mdVSShapeBaseVals.border_r;
+        mdVSShape.border_g = mdVSShapeBaseVals.border_g;
+        mdVSShape.border_b = mdVSShapeBaseVals.border_b;
+        mdVSShape.border_a = mdVSShapeBaseVals.border_a;
+        mdVSShape.thickoutline = mdVSShapeBaseVals.thickoutline;
+        mdVSShape.textured = mdVSShapeBaseVals.textured;
+        mdVSShape.tex_zoom = mdVSShapeBaseVals.tex_zoom;
+        mdVSShape.tex_ang = mdVSShapeBaseVals.tex_ang;
+        mdVSShape.additive = mdVSShapeBaseVals.additive;
+
+        const mdVSShapeFrame = shapeEqs.frame_eqs(mdVSShape);
+
+        let sides = mdVSShapeFrame.sides;
+        sides = Math.clamp(sides, 3, 100);
+        sides = Math.floor(sides);
+
+        const rad = mdVSShapeFrame.rad;
+        const ang = mdVSShapeFrame.ang;
+
+        const x = (mdVSShapeFrame.x * 2) - 1;
+        const y = (mdVSShapeFrame.y * -2) + 1;
+
+        const r = mdVSShapeFrame.r;
+        const g = mdVSShapeFrame.g;
+        const b = mdVSShapeFrame.b;
+        const a = mdVSShapeFrame.a;
+        const r2 = mdVSShapeFrame.r2;
+        const g2 = mdVSShapeFrame.g2;
+        const b2 = mdVSShapeFrame.b2;
+        const a2 = mdVSShapeFrame.a2;
+
+        const borderR = mdVSShapeFrame.border_r;
+        const borderG = mdVSShapeFrame.border_g;
+        const borderB = mdVSShapeFrame.border_b;
+        const borderA = mdVSShapeFrame.border_a;
+        this.borderColor = [borderR, borderG, borderB, borderA * blendProgress];
+
+        const thickoutline = mdVSShapeFrame.thickoutline;
+
+        const textured = mdVSShapeFrame.textured;
+        const texZoom = mdVSShapeFrame.tex_zoom;
+        const texAng = mdVSShapeFrame.tex_ang;
+
+        const additive = mdVSShapeFrame.additive;
+
+        const hasBorder = this.borderColor[3] > 0;
+        const isTextured = Math.abs(textured) >= 1;
+        const isBorderThick = Math.abs(thickoutline) >= 1;
+        const isAdditive = Math.abs(additive) >= 1;
+
+        this.positions[0] = x;
+        this.positions[1] = y;
+        this.positions[2] = 0;
+
+        this.colors[0] = r;
+        this.colors[1] = g;
+        this.colors[2] = b;
+        this.colors[3] = a * blendProgress;
+
+        if (isTextured) {
+          this.uvs[0] = 0.5;
+          this.uvs[1] = 0.5;
         }
-      }
 
-      const currPresetEquationRunner = (rep === 0) ? presetEquationRunner :
-                                                     prevPresetEquationRunner;
-      const currShapeEqs = (rep === 0) ? shapeEqs : prevShapeEqs;
-      if (_.get(currShapeEqs, 'baseVals.enabled', 0) !== 0) {
-        this.setupShapeBuffers(currPresetEquationRunner.mdVSFrame);
+        const quarterPi = Math.PI * 0.25;
+        for (let k = 1; k <= (sides + 1); k++) {
+          const p = ((k - 1) / sides);
+          const pTwoPi = p * 2 * Math.PI;
 
-        const mdVSShape = Object.assign({},
-                                        currPresetEquationRunner.mdVSShapes[this.index],
-                                        currPresetEquationRunner.mdVSFrameMapShapes[this.index],
-                                        currPresetEquationRunner.mdVSQAfterFrame,
-                                        currPresetEquationRunner.mdVSTShapeInits[this.index],
-                                        globalVars);
+          const angSum = pTwoPi + ang + quarterPi;
+          this.positions[(k * 3) + 0] = x + (rad * Math.cos(angSum) * this.aspecty);
+          this.positions[(k * 3) + 1] = y + (rad * Math.sin(angSum));
+          this.positions[(k * 3) + 2] = 0;
 
-        const mdVSShapeBaseVals = Utils.cloneVars(mdVSShape);
-
-        let numInst = _.get(mdVSShape, 'num_inst', 1);
-        numInst = Math.clamp(numInst, 1, 1024);
-        for (let j = 0; j < numInst; j++) {
-          mdVSShape.instance = j;
-          mdVSShape.x = mdVSShapeBaseVals.x;
-          mdVSShape.y = mdVSShapeBaseVals.y;
-          mdVSShape.rad = mdVSShapeBaseVals.rad;
-          mdVSShape.ang = mdVSShapeBaseVals.ang;
-          mdVSShape.r = mdVSShapeBaseVals.r;
-          mdVSShape.g = mdVSShapeBaseVals.g;
-          mdVSShape.b = mdVSShapeBaseVals.b;
-          mdVSShape.a = mdVSShapeBaseVals.a;
-          mdVSShape.r2 = mdVSShapeBaseVals.r2;
-          mdVSShape.g2 = mdVSShapeBaseVals.g2;
-          mdVSShape.b2 = mdVSShapeBaseVals.b2;
-          mdVSShape.a2 = mdVSShapeBaseVals.a2;
-          mdVSShape.border_r = mdVSShapeBaseVals.border_r;
-          mdVSShape.border_g = mdVSShapeBaseVals.border_g;
-          mdVSShape.border_b = mdVSShapeBaseVals.border_b;
-          mdVSShape.border_a = mdVSShapeBaseVals.border_a;
-          mdVSShape.thickoutline = mdVSShapeBaseVals.thickoutline;
-          mdVSShape.textured = mdVSShapeBaseVals.textured;
-          mdVSShape.tex_zoom = mdVSShapeBaseVals.tex_zoom;
-          mdVSShape.tex_ang = mdVSShapeBaseVals.tex_ang;
-          mdVSShape.additive = mdVSShapeBaseVals.additive;
-
-          const mdVSShapeFrame = currShapeEqs.frame_eqs(mdVSShape);
-
-          let sides = mdVSShapeFrame.sides;
-          sides = Math.clamp(sides, 3, 100);
-          sides = Math.floor(sides);
-
-          const rad = mdVSShapeFrame.rad;
-          const ang = mdVSShapeFrame.ang;
-
-          const x = (mdVSShapeFrame.x * 2) - 1;
-          const y = (mdVSShapeFrame.y * -2) + 1;
-
-          const r = mdVSShapeFrame.r;
-          const g = mdVSShapeFrame.g;
-          const b = mdVSShapeFrame.b;
-          const a = mdVSShapeFrame.a;
-          const r2 = mdVSShapeFrame.r2;
-          const g2 = mdVSShapeFrame.g2;
-          const b2 = mdVSShapeFrame.b2;
-          const a2 = mdVSShapeFrame.a2;
-
-          const borderR = mdVSShapeFrame.border_r;
-          const borderG = mdVSShapeFrame.border_g;
-          const borderB = mdVSShapeFrame.border_b;
-          const borderA = mdVSShapeFrame.border_a;
-          this.borderColor = [borderR, borderG, borderB, borderA * alphaMult];
-
-          const thickoutline = mdVSShapeFrame.thickoutline;
-
-          const textured = mdVSShapeFrame.textured;
-          const texZoom = mdVSShapeFrame.tex_zoom;
-          const texAng = mdVSShapeFrame.tex_ang;
-
-          const additive = mdVSShapeFrame.additive;
-
-          const hasBorder = this.borderColor[3] > 0;
-          const isTextured = Math.abs(textured) >= 1;
-          const isBorderThick = Math.abs(thickoutline) >= 1;
-          const isAdditive = Math.abs(additive) >= 1;
-
-          this.positions[0] = x;
-          this.positions[1] = y;
-          this.positions[2] = 0;
-
-          this.colors[0] = r;
-          this.colors[1] = g;
-          this.colors[2] = b;
-          this.colors[3] = a * alphaMult;
+          this.colors[(k * 4) + 0] = r2;
+          this.colors[(k * 4) + 1] = g2;
+          this.colors[(k * 4) + 2] = b2;
+          this.colors[(k * 4) + 3] = a2 * blendProgress;
 
           if (isTextured) {
-            this.uvs[0] = 0.5;
-            this.uvs[1] = 0.5;
+            const texAngSum = pTwoPi + texAng + quarterPi;
+            this.uvs[(k * 2) + 0] = 0.5 + (((0.5 * Math.cos(texAngSum)) / texZoom) *
+                                           this.aspecty);
+            this.uvs[(k * 2) + 1] = 0.5 + ((0.5 * Math.sin(texAngSum)) / texZoom);
           }
 
-          const quarterPi = Math.PI * 0.25;
-          for (let k = 1; k <= (sides + 1); k++) {
-            const p = ((k - 1) / sides);
-            const pTwoPi = p * 2 * Math.PI;
-
-            const angSum = pTwoPi + ang + quarterPi;
-            this.positions[(k * 3) + 0] = x + (rad * Math.cos(angSum) * this.aspecty);
-            this.positions[(k * 3) + 1] = y + (rad * Math.sin(angSum));
-            this.positions[(k * 3) + 2] = 0;
-
-            this.colors[(k * 4) + 0] = r2;
-            this.colors[(k * 4) + 1] = g2;
-            this.colors[(k * 4) + 2] = b2;
-            this.colors[(k * 4) + 3] = a2 * alphaMult;
-
-            if (isTextured) {
-              const texAngSum = pTwoPi + texAng + quarterPi;
-              this.uvs[(k * 2) + 0] = 0.5 + (((0.5 * Math.cos(texAngSum)) / texZoom) *
-                                             this.aspecty);
-              this.uvs[(k * 2) + 1] = 0.5 + ((0.5 * Math.sin(texAngSum)) / texZoom);
-            }
-
-            if (hasBorder) {
-              this.borderPositions[((k - 1) * 3) + 0] = this.positions[(k * 3) + 0];
-              this.borderPositions[((k - 1) * 3) + 1] = this.positions[(k * 3) + 1];
-              this.borderPositions[((k - 1) * 3) + 2] = this.positions[(k * 3) + 2];
-            }
+          if (hasBorder) {
+            this.borderPositions[((k - 1) * 3) + 0] = this.positions[(k * 3) + 0];
+            this.borderPositions[((k - 1) * 3) + 1] = this.positions[(k * 3) + 1];
+            this.borderPositions[((k - 1) * 3) + 2] = this.positions[(k * 3) + 2];
           }
-
-          this.mdVSShapeFrame = mdVSShapeFrame;
-
-          this.drawCustomShapeInstance(prevTexture, sides, isTextured, hasBorder, isBorderThick,
-                                       isAdditive);
         }
 
-        const mdVSUserKeysShape = currPresetEquationRunner.mdVSUserKeysShapes[this.index];
-        const mdVSNewFrameMapShape = _.pick(mdVSShape, mdVSUserKeysShape);
+        this.mdVSShapeFrame = mdVSShapeFrame;
 
-        // eslint-disable-next-line no-param-reassign
-        currPresetEquationRunner.mdVSFrameMapShapes[this.index] = mdVSNewFrameMapShape;
+        this.drawCustomShapeInstance(prevTexture, sides, isTextured, hasBorder, isBorderThick,
+                                     isAdditive);
       }
+
+      const mdVSUserKeysShape = presetEquationRunner.mdVSUserKeysShapes[this.index];
+      const mdVSNewFrameMapShape = _.pick(mdVSShape, mdVSUserKeysShape);
+
+      // eslint-disable-next-line no-param-reassign
+      presetEquationRunner.mdVSFrameMapShapes[this.index] = mdVSNewFrameMapShape;
     }
   }
 

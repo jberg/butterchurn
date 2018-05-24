@@ -110,6 +110,8 @@ export default class Renderer {
     this.basicWaveform = new BasicWaveform(gl, params);
     this.customWaveforms = _.map(_.range(4), (i) => new CustomWaveform(i, gl, params));
     this.customShapes = _.map(_.range(4), (i) => new CustomShape(i, gl, params));
+    this.prevCustomWaveforms = _.map(_.range(4), (i) => new CustomWaveform(i, gl, params));
+    this.prevCustomShapes = _.map(_.range(4), (i) => new CustomShape(i, gl, params));
     this.darkenCenter = new DarkenCenter(gl, params);
     this.innerBorder = new Border(gl, params);
     this.outerBorder = new Border(gl, params);
@@ -368,6 +370,8 @@ export default class Renderer {
     this.basicWaveform.updateGlobals(params);
     _.forEach(this.customWaveforms, (wave) => wave.updateGlobals(params));
     _.forEach(this.customShapes, (shape) => shape.updateGlobals(params));
+    _.forEach(this.prevCustomWaveforms, (wave) => wave.updateGlobals(params));
+    _.forEach(this.prevCustomShapes, (shape) => shape.updateGlobals(params));
     this.darkenCenter.updateGlobals(params);
     this.innerBorder.updateGlobals(params);
     this.outerBorder.updateGlobals(params);
@@ -791,11 +795,10 @@ export default class Renderer {
 
     if (this.preset.shapes && this.preset.shapes.length > 0) {
       _.forEach(this.customShapes, (shape, i) => {
-        shape.drawCustomShape(this.blending, this.blendProgress, globalVars,
+        shape.drawCustomShape(this.blending ? this.blendProgress : 1,
+                              globalVars,
                               this.presetEquationRunner,
                               this.preset.shapes[i],
-                              this.prevPresetEquationRunner,
-                              _.get(this.prevPreset, `shapes[${i}]`),
                               this.prevTexture);
         Object.assign(this.regVars, _.pick(shape.mdVSShapeFrame, this.regs));
         Object.assign(globalVars, this.regVars);
@@ -804,19 +807,42 @@ export default class Renderer {
 
     if (this.preset.waves && this.preset.waves.length > 0) {
       _.forEach(this.customWaveforms, (waveform, i) => {
-        waveform.drawCustomWaveform(this.blending, this.blendProgress,
+        waveform.drawCustomWaveform(this.blending ? this.blendProgress : 1,
                                     this.audio.timeArrayL,
                                     this.audio.timeArrayR,
                                     this.audio.freqArrayL,
                                     this.audio.freqArrayR,
                                     globalVars,
                                     this.presetEquationRunner,
-                                    this.preset.waves[i],
-                                    this.prevPresetEquationRunner,
-                                    _.get(this.prevPreset, `waves[${i}]`));
+                                    this.preset.waves[i]);
         Object.assign(this.regVars, _.pick(waveform.mdVSWaveFrame, this.regs));
         Object.assign(globalVars, this.regVars);
       });
+    }
+
+    if (this.blending) {
+      if (this.prevPreset.shapes && this.prevPreset.shapes.length > 0) {
+        _.forEach(this.prevCustomShapes, (shape, i) => {
+          shape.drawCustomShape(1.0 - this.blendProgress,
+                                globalVars,
+                                this.prevPresetEquationRunner,
+                                this.prevPreset.shapes[i],
+                                this.prevTexture);
+        });
+      }
+
+      if (this.prevPreset.waves && this.prevPreset.waves.length > 0) {
+        _.forEach(this.prevCustomWaveforms, (waveform, i) => {
+          waveform.drawCustomWaveform(1.0 - this.blendProgress,
+                                      this.audio.timeArrayL,
+                                      this.audio.timeArrayR,
+                                      this.audio.freqArrayL,
+                                      this.audio.freqArrayR,
+                                      globalVars,
+                                      this.prevPresetEquationRunner,
+                                      this.prevPreset.waves[i]);
+        });
+      }
     }
 
     this.basicWaveform.drawBasicWaveform(this.blending, this.blendProgress,

@@ -209,96 +209,80 @@ export default class CustomWaveform {
     return false;
   }
 
-  drawCustomWaveform (blending, blendProgress, timeArrayL, timeArrayR, freqArrayL, freqArrayR,
-                      globalVars, presetEquationRunner, waveEqs,
-                      prevPresetEquationRunner, prevWaveEqs) {
-    const numReps = blending ? 2 : 1;
-    for (let rep = 0; rep < numReps; rep++) {
-      let alphaMult = 1;
-      if (numReps === 2) {
-        if (rep === 0) {
-          alphaMult = blendProgress;
+  drawCustomWaveform (blendProgress, timeArrayL, timeArrayR, freqArrayL, freqArrayR,
+                      globalVars, presetEquationRunner, waveEqs) {
+    if (waveEqs && this.generateWaveform(timeArrayL, timeArrayR, freqArrayL, freqArrayR,
+                                         globalVars, presetEquationRunner, waveEqs,
+                                         blendProgress)) {
+      this.gl.useProgram(this.shaderProgram);
+
+      const waveUseDots = (this.mdVSWaveFrame.usedots !== 0);
+      const waveThick = (this.mdVSWaveFrame.thick !== 0);
+      const waveAdditive = (this.mdVSWaveFrame.additive !== 0);
+
+      let positions;
+      let colors;
+      let numVerts;
+      if (!waveUseDots) {
+        positions = this.smoothedPositions;
+        colors = this.smoothedColors;
+        numVerts = (this.samples * 2) - 1;
+      } else {
+        positions = this.positions;
+        colors = this.colors;
+        numVerts = this.samples;
+      }
+
+      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.positionVertexBuf);
+      this.gl.bufferData(this.gl.ARRAY_BUFFER, positions, this.gl.STATIC_DRAW);
+
+      this.gl.vertexAttribPointer(this.aPosLocation, 3, this.gl.FLOAT, false, 0, 0);
+      this.gl.enableVertexAttribArray(this.aPosLocation);
+
+      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.colorVertexBuf);
+      this.gl.bufferData(this.gl.ARRAY_BUFFER, colors, this.gl.STATIC_DRAW);
+
+      this.gl.vertexAttribPointer(this.aColorLocation, 4, this.gl.FLOAT, false, 0, 0);
+      this.gl.enableVertexAttribArray(this.aColorLocation);
+
+      let instances = 1;
+      if (waveUseDots) {
+        if (waveThick) {
+          this.gl.uniform1f(this.sizeLoc, 2 + (this.texsizeX >= 1024 ? 1 : 0));
         } else {
-          alphaMult = 1 - blendProgress;
+          this.gl.uniform1f(this.sizeLoc, 1 + (this.texsizeX >= 1024 ? 1 : 0));
+        }
+      } else {
+        this.gl.uniform1f(this.sizeLoc, 1);
+        if (waveThick) {
+          instances = 4;
         }
       }
 
-      const currPresetEquationRunner = (rep === 0) ? presetEquationRunner :
-                                                     prevPresetEquationRunner;
-      const currWaveEqs = (rep === 0) ? waveEqs : prevWaveEqs;
-      if (currWaveEqs && this.generateWaveform(timeArrayL, timeArrayR, freqArrayL, freqArrayR,
-                                               globalVars, currPresetEquationRunner, currWaveEqs,
-                                               alphaMult)) {
-        this.gl.useProgram(this.shaderProgram);
+      if (waveAdditive) {
+        this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE);
+      } else {
+        this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
+      }
 
-        const waveUseDots = (this.mdVSWaveFrame.usedots !== 0);
-        const waveThick = (this.mdVSWaveFrame.thick !== 0);
-        const waveAdditive = (this.mdVSWaveFrame.additive !== 0);
+      const drawMode = waveUseDots ? this.gl.POINTS : this.gl.LINE_STRIP;
 
-        let positions;
-        let colors;
-        let numVerts;
-        if (!waveUseDots) {
-          positions = this.smoothedPositions;
-          colors = this.smoothedColors;
-          numVerts = (this.samples * 2) - 1;
-        } else {
-          positions = this.positions;
-          colors = this.colors;
-          numVerts = this.samples;
+      // TODO: use drawArraysInstanced
+      for (let i = 0; i < instances; i++) {
+        const offset = 2;
+        if (i === 0) {
+          this.gl.uniform2fv(this.thickOffsetLoc, [0, 0]);
+        } else if (i === 1) {
+          this.gl.uniform2fv(this.thickOffsetLoc, [offset / this.texsizeX, 0]);
+        } else if (i === 2) {
+          this.gl.uniform2fv(this.thickOffsetLoc, [0, offset / this.texsizeY]);
+        } else if (i === 3) {
+          this.gl.uniform2fv(this.thickOffsetLoc, [
+            offset / this.texsizeX, offset / this.texsizeY
+          ]);
         }
 
-        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.positionVertexBuf);
-        this.gl.bufferData(this.gl.ARRAY_BUFFER, positions, this.gl.STATIC_DRAW);
-
-        this.gl.vertexAttribPointer(this.aPosLocation, 3, this.gl.FLOAT, false, 0, 0);
-        this.gl.enableVertexAttribArray(this.aPosLocation);
-
-        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.colorVertexBuf);
-        this.gl.bufferData(this.gl.ARRAY_BUFFER, colors, this.gl.STATIC_DRAW);
-
-        this.gl.vertexAttribPointer(this.aColorLocation, 4, this.gl.FLOAT, false, 0, 0);
-        this.gl.enableVertexAttribArray(this.aColorLocation);
-
-        let instances = 1;
-        if (waveUseDots) {
-          if (waveThick) {
-            this.gl.uniform1f(this.sizeLoc, 2 + (this.texsizeX >= 1024 ? 1 : 0));
-          } else {
-            this.gl.uniform1f(this.sizeLoc, 1 + (this.texsizeX >= 1024 ? 1 : 0));
-          }
-        } else {
-          this.gl.uniform1f(this.sizeLoc, 1);
-          if (waveThick) {
-            instances = 4;
-          }
-        }
-
-        if (waveAdditive) {
-          this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE);
-        } else {
-          this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
-        }
-
-        const drawMode = waveUseDots ? this.gl.POINTS : this.gl.LINE_STRIP;
-
-        // TODO: use drawArraysInstanced
-        for (let i = 0; i < instances; i++) {
-          const offset = 2;
-          if (i === 0) {
-            this.gl.uniform2fv(this.thickOffsetLoc, [0, 0]);
-          } else if (i === 1) {
-            this.gl.uniform2fv(this.thickOffsetLoc, [offset / this.texsizeX, 0]);
-          } else if (i === 2) {
-            this.gl.uniform2fv(this.thickOffsetLoc, [0, offset / this.texsizeY]);
-          } else if (i === 3) {
-            this.gl.uniform2fv(this.thickOffsetLoc, [
-              offset / this.texsizeX, offset / this.texsizeY
-            ]);
-          }
-
-          this.gl.drawArrays(drawMode, 0, numVerts);
-        }
+        this.gl.drawArrays(drawMode, 0, numVerts);
       }
     }
   }
