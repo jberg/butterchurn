@@ -708,9 +708,13 @@ export default class Renderer {
       aspectx: this.invAspectx,
       aspecty: this.invAspecty,
       pixelsx: this.texsizeX,
-      pixelsy: this.texsizeY,
-      gmegabuf: this.presetEquationRunner.gmegabuf,
+      pixelsy: this.texsizeY
     };
+
+    const prevGlobalVars = Object.assign({}, globalVars);
+    prevGlobalVars.gmegabuf = this.prevPresetEquationRunner.gmegabuf;
+
+    globalVars.gmegabuf = this.presetEquationRunner.gmegabuf;
     Object.assign(globalVars, this.regVars);
 
     this.presetEquationRunner.runFrameEquations(globalVars);
@@ -725,7 +729,7 @@ export default class Renderer {
 
     let mdVSFrameMixed;
     if (this.blending) {
-      this.prevPresetEquationRunner.runFrameEquations(globalVars);
+      this.prevPresetEquationRunner.runFrameEquations(prevGlobalVars);
       this.runPixelEquations(this.prevPresetEquationRunner.preset,
                              this.prevPresetEquationRunner.mdVSFrame,
                              this.prevPresetEquationRunner.runVertEQs,
@@ -824,7 +828,7 @@ export default class Renderer {
       if (this.prevPreset.shapes && this.prevPreset.shapes.length > 0) {
         _.forEach(this.prevCustomShapes, (shape, i) => {
           shape.drawCustomShape(1.0 - this.blendProgress,
-                                globalVars,
+                                prevGlobalVars,
                                 this.prevPresetEquationRunner,
                                 this.prevPreset.shapes[i],
                                 this.prevTexture);
@@ -838,7 +842,7 @@ export default class Renderer {
                                       this.audio.timeArrayR,
                                       this.audio.freqArrayL,
                                       this.audio.freqArrayR,
-                                      globalVars,
+                                      prevGlobalVars,
                                       this.prevPresetEquationRunner,
                                       this.prevPreset.waves[i]);
         });
