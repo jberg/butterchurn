@@ -2,7 +2,7 @@ import _ from 'lodash';
 import Utils from '../utils';
 
 export default class PresetEquationRunner {
-  constructor (preset, opts) {
+  constructor (preset, globalVars, opts) {
     this.preset = preset;
 
     this.texsizeX = opts.texsizeX;
@@ -23,10 +23,10 @@ export default class PresetEquationRunner {
       return `reg${x}`;
     });
 
-    this.initializeEquations();
+    this.initializeEquations(globalVars);
   }
 
-  initializeEquations () {
+  initializeEquations (globalVars) {
     this.runVertEQs = (this.preset.pixel_eqs !== '');
 
     this.mdVSQInit = null;
@@ -48,15 +48,15 @@ export default class PresetEquationRunner {
     this.gmegabuf = new Array(1048576).fill(0);
 
     const mdVSBase = {
-      frame: 0,
-      time: 0,
-      fps: 45,
-      bass: 1,
-      bass_att: 1,
-      mid: 1,
-      mid_att: 1,
-      treb: 1,
-      treb_att: 1,
+      frame: globalVars.frame,
+      time: globalVars.time,
+      fps: globalVars.fps,
+      bass: globalVars.bass,
+      bass_att: globalVars.bass_att,
+      mid: globalVars.mid,
+      mid_att: globalVars.mid_att,
+      treb: globalVars.treb,
+      treb_att: globalVars.treb_att,
       meshx: this.mesh_width,
       meshy: this.mesh_height,
       aspectx: this.invAspectx,
@@ -182,9 +182,9 @@ export default class PresetEquationRunner {
     }
   }
 
-  updatePreset (preset) {
+  updatePreset (preset, globalVars) {
     this.preset = preset;
-    this.initializeEquations();
+    this.initializeEquations(globalVars);
   }
 
   updateGlobals (opts) {

@@ -124,10 +124,22 @@ export default class Renderer {
 
     this.blankPreset = blankPreset;
 
+    const globalVars = {
+      frame: 0,
+      time: 0,
+      fps: 45,
+      bass: 1,
+      bass_att: 1,
+      mid: 1,
+      mid_att: 1,
+      treb: 1,
+      treb_att: 1,
+    };
+
     this.preset = blankPreset;
     this.prevPreset = this.preset;
-    this.presetEquationRunner = new PresetEquationRunner(this.preset, params);
-    this.prevPresetEquationRunner = new PresetEquationRunner(this.prevPreset, params);
+    this.presetEquationRunner = new PresetEquationRunner(this.preset, globalVars, params);
+    this.prevPresetEquationRunner = new PresetEquationRunner(this.prevPreset, globalVars, params);
 
     this.regVars = this.presetEquationRunner.mdVSRegs;
   }
@@ -285,18 +297,37 @@ export default class Renderer {
     this.blendDuration = blendTime;
     this.blendProgress = 0;
 
-    const tmpEquationRunner = this.prevPresetEquationRunner;
     this.prevPresetEquationRunner = this.presetEquationRunner;
-    this.presetEquationRunner = tmpEquationRunner;
 
     this.prevPreset = this.preset;
     this.preset = preset;
     this.preset.baseVals.old_wave_mode = this.prevPreset.baseVals.wave_mode;
 
     this.presetTime = this.time;
-    this.presetEquationRunner.updatePreset(this.preset);
 
-    Object.assign(this.regVars, this.presetEquationRunner.mdVSRegs);
+    const globalVars = {
+      frame: this.frameNum,
+      time: this.time,
+      fps: this.fps,
+      bass: this.audioLevels.bass,
+      bass_att: this.audioLevels.bass_att,
+      mid: this.audioLevels.mid,
+      mid_att: this.audioLevels.mid_att,
+      treb: this.audioLevels.treb,
+      treb_att: this.audioLevels.treb_att,
+    };
+    const params = {
+      pixelRatio: this.pixelRatio,
+      textureRatio: this.textureRatio,
+      texsizeX: this.texsizeX,
+      texsizeY: this.texsizeY,
+      mesh_width: this.mesh_width,
+      mesh_height: this.mesh_height,
+      aspectx: this.aspectx,
+      aspecty: this.aspecty,
+    };
+    this.presetEquationRunner = new PresetEquationRunner(this.preset, globalVars, params);
+    this.regVars = this.presetEquationRunner.mdVSRegs;
 
     const tmpWarpShader = this.prevWarpShader;
     this.prevWarpShader = this.warpShader;
