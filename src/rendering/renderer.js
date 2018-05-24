@@ -294,7 +294,7 @@ export default class Renderer {
     this.presetTime = this.time;
     this.presetEquationRunner.updatePreset(this.preset);
 
-    this.regVars = this.presetEquationRunner.mdVSRegs;
+    Object.assign(this.regVars, this.presetEquationRunner.mdVSRegs);
 
     const tmpWarpShader = this.prevWarpShader;
     this.prevWarpShader = this.warpShader;
@@ -716,7 +716,8 @@ export default class Renderer {
                            this.presetEquationRunner.runVertEQs,
                            false);
 
-    Object.assign(globalVars, this.regVars, _.pick(this.mdVSVertex, this.regs));
+    Object.assign(this.regVars, _.pick(this.mdVSVertex, this.regs));
+    Object.assign(globalVars, this.regVars);
 
     let mdVSFrameMixed;
     if (this.blending) {
@@ -796,7 +797,8 @@ export default class Renderer {
                               this.prevPresetEquationRunner,
                               _.get(this.prevPreset, `shapes[${i}]`),
                               this.prevTexture);
-        Object.assign(globalVars, this.regVars, _.pick(shape.mdVSShapeFrame, this.regs));
+        Object.assign(this.regVars, _.pick(shape.mdVSShapeFrame, this.regs));
+        Object.assign(globalVars, this.regVars);
       });
     }
 
@@ -812,7 +814,8 @@ export default class Renderer {
                                     this.preset.waves[i],
                                     this.prevPresetEquationRunner,
                                     _.get(this.prevPreset, `waves[${i}]`));
-        Object.assign(globalVars, this.regVars, _.pick(waveform.mdVSWaveFrame, this.regs));
+        Object.assign(this.regVars, _.pick(waveform.mdVSWaveFrame, this.regs));
+        Object.assign(globalVars, this.regVars);
       });
     }
 
