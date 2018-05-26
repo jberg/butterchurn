@@ -134,10 +134,10 @@ export default class CustomWaveform {
 
         // Milkdrop smooths waveform forward, backward and then scales
         this.pointsData[0][0] = pointsLeft[j0];
-        this.pointsData[1][0] = pointsRight[j1 + 64]; // offset helps with mono inputs
+        this.pointsData[1][0] = pointsRight[j1];
         for (let j = 1; j < this.samples; j++) {
           const left = pointsLeft[Math.floor((j * t) + j0)];
-          const right = pointsRight[Math.floor((j * t) + j1 + 64) % pointsRight.length];
+          const right = pointsRight[Math.floor((j * t) + j1)];
           this.pointsData[0][j] = (left * mix2) + (this.pointsData[0][j - 1] * mix1);
           this.pointsData[1][j] = (right * mix2) + (this.pointsData[1][j - 1] * mix1);
         }
