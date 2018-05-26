@@ -835,8 +835,6 @@ export default class Renderer {
                               this.presetEquationRunner,
                               this.preset.shapes[i],
                               this.prevTexture);
-        Object.assign(this.regVars, _.pick(shape.mdVSShapeFrame, this.regs));
-        Object.assign(globalVars, this.regVars);
       });
     }
 
@@ -850,8 +848,6 @@ export default class Renderer {
                                     globalVars,
                                     this.presetEquationRunner,
                                     this.preset.waves[i]);
-        Object.assign(this.regVars, _.pick(waveform.mdVSWaveFrame, this.regs));
-        Object.assign(globalVars, this.regVars);
       });
     }
 
