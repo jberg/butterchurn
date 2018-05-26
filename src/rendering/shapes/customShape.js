@@ -262,7 +262,7 @@ export default class CustomShape {
       }
 
       const mdVSUserKeysShape = presetEquationRunner.mdVSUserKeysShapes[this.index];
-      const mdVSNewFrameMapShape = _.pick(mdVSShape, mdVSUserKeysShape);
+      const mdVSNewFrameMapShape = _.pick(this.mdVSShapeFrame, mdVSUserKeysShape);
 
       // eslint-disable-next-line no-param-reassign
       presetEquationRunner.mdVSFrameMapShapes[this.index] = mdVSNewFrameMapShape;
