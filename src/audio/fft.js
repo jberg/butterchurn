@@ -4,8 +4,17 @@ export default class FFT {
     this.samplesOut = samplesOut;
     this.NFREQ = samplesOut * 2;
 
+    this.initEqualizeTable();
     this.initBitRevTable();
     this.initCosSinTable();
+  }
+
+  initEqualizeTable () {
+    this.equalize = new Float32Array(this.samplesOut);
+    const invHalfNFREQ = 1.0 / this.samplesOut;
+    for (let i = 0; i < this.samplesOut; i++) {
+      this.equalize[i] = -0.02 * Math.log((this.samplesOut - i) * invHalfNFREQ);
+    }
   }
 
   /* eslint-disable no-bitwise */
@@ -101,7 +110,8 @@ export default class FFT {
 
     const spectralDataOut = new Float32Array(this.samplesOut);
     for (let i = 0; i < this.samplesOut; i++) {
-      spectralDataOut[i] = Math.sqrt((real[i] * real[i]) + (imag[i] * imag[i]));
+      spectralDataOut[i] = this.equalize[i] *
+                           Math.sqrt((real[i] * real[i]) + (imag[i] * imag[i]));
     }
 
     return spectralDataOut;

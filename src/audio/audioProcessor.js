@@ -55,14 +55,9 @@ export default class AudioProcessor {
       lastIdx = i;
     }
 
-    this.freqArray = this.fft.timeToFrequencyDomain(this.timeByteArray);
+    this.freqArray = this.fft.timeToFrequencyDomain(this.timeArray);
     this.freqArrayL = this.fft.timeToFrequencyDomain(tempTimeL);
     this.freqArrayR = this.fft.timeToFrequencyDomain(tempTimeR);
-    for (let i = 0; i < this.numSamps; i++) {
-      this.freqArray[i] /= 128;
-      this.freqArrayL[i] /= 128;
-      this.freqArrayR[i] /= 128;
-    }
   }
 
   connectAudio (audionode) {
