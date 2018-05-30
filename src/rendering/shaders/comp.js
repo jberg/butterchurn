@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import ShaderUtils from './shaderUtils';
 
 export default class CompShader {

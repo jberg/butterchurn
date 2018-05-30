@@ -76,14 +76,14 @@ export default class PresetEquationRunner {
       Math.random(), Math.random(), Math.random(), Math.random()
     ]);
 
-    const nonUserKeys = _.concat(this.qs, this.regs, _.keys(this.mdVS));
+    const nonUserKeys = this.qs.concat(this.regs, Object.keys(this.mdVS));
 
     const mdVSAfterInit = this.preset.init_eqs(Utils.cloneVars(this.mdVS));
 
     // qs need to be initialized to there init values every frame
     this.mdVSQInit = _.pick(mdVSAfterInit, this.qs);
     this.mdVSRegs = _.pick(mdVSAfterInit, this.regs);
-    const initUserVars = _.pick(mdVSAfterInit, _.keys(_.omit(mdVSAfterInit, nonUserKeys)));
+    const initUserVars = _.pick(mdVSAfterInit, Object.keys(_.omit(mdVSAfterInit, nonUserKeys)));
     initUserVars.megabuf = mdVSAfterInit.megabuf;
     initUserVars.gmegabuf = mdVSAfterInit.gmegabuf;
 
@@ -94,7 +94,7 @@ export default class PresetEquationRunner {
                                                          initUserVars));
 
     // user vars need to be copied between frames
-    this.mdVSUserKeys = _.keys(_.omit(this.mdVSFrame, nonUserKeys));
+    this.mdVSUserKeys = Object.keys(_.omit(this.mdVSFrame, nonUserKeys));
 
     // Determine vars to carry over between frames
     this.mdVSFrameMap = _.pick(this.mdVSFrame, this.mdVSUserKeys);
@@ -114,7 +114,7 @@ export default class PresetEquationRunner {
         if (_.get(baseVals, 'enabled', 0) !== 0) {
           let mdVSWave = Object.assign({}, baseVals, mdVSBase);
 
-          const nonUserWaveKeys = _.concat(this.qs, this.ts, this.regs, _.keys(mdVSWave));
+          const nonUserWaveKeys = this.qs.concat(this.ts, this.regs, Object.keys(mdVSWave));
 
           Object.assign(mdVSWave, this.mdVSQAfterFrame, this.mdVSRegs);
           mdVSWave.megabuf = new Array(1048576).fill(0);
@@ -130,7 +130,7 @@ export default class PresetEquationRunner {
           this.mdVSWaves.push(mdVSWave);
           this.mdVSTWaveInits.push(_.pick(mdVSWave, this.ts));
 
-          this.mdVSUserKeysWaves.push(_.keys(_.omit(mdVSWave, nonUserWaveKeys)));
+          this.mdVSUserKeysWaves.push(Object.keys(_.omit(mdVSWave, nonUserWaveKeys)));
           this.mdVSFrameMapWaves.push(_.pick(mdVSWave, this.mdVSUserKeysWaves[i]));
         } else {
           this.mdVSWaves.push({});
@@ -153,7 +153,7 @@ export default class PresetEquationRunner {
         if (_.get(baseVals, 'enabled', 0) !== 0) {
           let mdVSShape = Object.assign({}, baseVals, mdVSBase);
 
-          const nonUserShapeKeys = _.uniq(_.concat(this.qs, this.ts, this.regs, _.keys(mdVSShape)));
+          const nonUserShapeKeys = this.qs.concat(this.ts, this.regs, Object.keys(mdVSShape));
 
           Object.assign(mdVSShape, this.mdVSQAfterFrame, this.mdVSRegs);
           mdVSShape.megabuf = new Array(1048576).fill(0);
@@ -169,7 +169,7 @@ export default class PresetEquationRunner {
           this.mdVSShapes.push(mdVSShape);
           this.mdVSTShapeInits.push(_.pick(mdVSShape, this.ts));
 
-          this.mdVSUserKeysShapes.push(_.keys(_.omit(mdVSShape, nonUserShapeKeys)));
+          this.mdVSUserKeysShapes.push(Object.keys(_.omit(mdVSShape, nonUserShapeKeys)));
           this.mdVSFrameMapShapes.push(_.pick(mdVSShape, this.mdVSUserKeysShapes[i]));
         } else {
           this.mdVSShapes.push({});

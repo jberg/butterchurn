@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import AudioProcessor from './audio/audioProcessor';
 import Renderer from './rendering/renderer';
 
@@ -153,7 +152,7 @@ export default class Visualizer {
                                                    preset.waves[i].baseVals);
     }
 
-    if (!_.isFunction(preset.init_eqs)) {
+    if (typeof preset.init_eqs !== 'function') {
       /* eslint-disable no-param-reassign, no-new-func */
       preset.init_eqs = new Function('a', `${preset.init_eqs_str} return a;`);
       preset.frame_eqs = new Function('a', `${preset.frame_eqs_str} return a;`);
