@@ -38,7 +38,7 @@ let config = {
         use: {
           loader: 'babel-loader?cacheDirectory',
           options: {
-            plugins: ['add-module-exports', 'transform-runtime', 'babel-plugin-lodash'],
+            plugins: ['add-module-exports', 'transform-runtime'],
             presets: ['env']
           }
         }

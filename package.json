@@ -27,10 +27,8 @@
   "license": "MIT",
   "homepage": "https://butterchurnviz.com",
   "dependencies": {
-    "babel-plugin-lodash": "^3.3.2",
     "babel-runtime": "^6.26.0",
-    "ecma-proposal-math-extensions": "0.0.2",
-    "lodash": "^4.17.4"
+    "ecma-proposal-math-extensions": "0.0.2"
   },
   "devDependencies": {
     "babel": "^6.23.0",
