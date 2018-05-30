@@ -1,5 +1,3 @@
-import _ from 'lodash';
-
 export default class Utils {
   static atan2 (x, y) {
     let a = Math.atan2(x, y);
@@ -10,6 +8,6 @@ export default class Utils {
   }
 
   static cloneVars (vars) {
-    return _.clone(vars);
+    return Object.assign({}, vars);
   }
 }

@@ -141,7 +141,7 @@ export default class Visualizer {
   }
 
   loadPreset (presetMap, blendTime) {
-    const preset = _.cloneDeep(presetMap);
+    const preset = Object.assign({}, presetMap);
     preset.baseVals = Object.assign({}, this.baseValsDefaults, preset.baseVals);
     for (let i = 0; i < preset.shapes.length; i++) {
       preset.shapes[i].baseVals = Object.assign({}, this.shapeBaseValsDefaults,
