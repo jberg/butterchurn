@@ -150,8 +150,9 @@ export default class CompShader {
       fragShaderHeaderText = shaderParts[0];
       fragShaderText = shaderParts[1];
     }
-    fragShaderText = _.replace(fragShaderText, /texture2D/g, 'texture');
-    fragShaderText = _.replace(fragShaderText, /texture3D/g, 'texture');
+
+    fragShaderText = fragShaderText.replace(/texture2D/g, 'texture');
+    fragShaderText = fragShaderText.replace(/texture3D/g, 'texture');
 
     this.userTextures = ShaderUtils.getUserSamplers(fragShaderHeaderText);
 
