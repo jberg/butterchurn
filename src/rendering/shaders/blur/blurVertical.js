@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import ShaderUtils from '../shaderUtils';
 
 export default class BlurVertical {
@@ -112,7 +111,7 @@ export default class BlurVertical {
 
     this.gl.uniform1i(this.textureLoc, 0);
 
-    const b1ed = this.blurLevel === 0 ? _.get(mdVSFrame, 'b1ed', 0.25) : 0.0;
+    const b1ed = this.blurLevel === 0 ? mdVSFrame.b1ed : 0.0;
 
     this.gl.uniform4fv(this.texsizeLocation, [
       srcTexsize[0], srcTexsize[1], 1.0 / srcTexsize[0], 1.0 / srcTexsize[1]

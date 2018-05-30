@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import Utils from '../../utils';
 import ShaderUtils from '../shaders/shaderUtils';
 
@@ -134,7 +133,7 @@ export default class CustomShape {
   }
 
   drawCustomShape (blendProgress, globalVars, presetEquationRunner, shapeEqs, prevTexture) {
-    if (_.get(shapeEqs, 'baseVals.enabled', 0) !== 0) {
+    if (shapeEqs.baseVals.enabled !== 0) {
       this.setupShapeBuffers(presetEquationRunner.mdVSFrame);
 
       const mdVSShape = Object.assign({},
@@ -146,8 +145,7 @@ export default class CustomShape {
 
       const mdVSShapeBaseVals = Utils.cloneVars(mdVSShape);
 
-      let numInst = _.get(mdVSShape, 'num_inst', 1);
-      numInst = Math.clamp(numInst, 1, 1024);
+      const numInst = Math.clamp(mdVSShape.num_inst, 1, 1024);
       for (let j = 0; j < numInst; j++) {
         mdVSShape.instance = j;
         mdVSShape.x = mdVSShapeBaseVals.x;

@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import Utils from '../utils';
 
 export default class PresetEquationRunner {
@@ -112,7 +111,7 @@ export default class PresetEquationRunner {
       for (let i = 0; i < this.preset.waves.length; i++) {
         const wave = this.preset.waves[i];
         const baseVals = wave.baseVals;
-        if (_.get(baseVals, 'enabled', 0) !== 0) {
+        if (baseVals.enabled !== 0) {
           let mdVSWave = Object.assign({}, baseVals, mdVSBase);
 
           const nonUserWaveKeys = this.qs.concat(this.ts, this.regs, Object.keys(mdVSWave));
@@ -151,7 +150,7 @@ export default class PresetEquationRunner {
       for (let i = 0; i < this.preset.shapes.length; i++) {
         const shape = this.preset.shapes[i];
         const baseVals = shape.baseVals;
-        if (_.get(baseVals, 'enabled', 0) !== 0) {
+        if (baseVals.enabled !== 0) {
           let mdVSShape = Object.assign({}, baseVals, mdVSBase);
 
           const nonUserShapeKeys = this.qs.concat(this.ts, this.regs, Object.keys(mdVSShape));
