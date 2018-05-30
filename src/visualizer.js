@@ -165,7 +165,7 @@ export default class Visualizer {
 
       for (let i = 0; i < preset.shapes.length; i++) {
         if (preset.shapes[i].baseVals.enabled !== 0) {
-          preset.shapes[i] = _.assign(preset.shapes[i], {
+          preset.shapes[i] = Object.assign({}, preset.shapes[i], {
             init_eqs: new Function('a', `${preset.shapes[i].init_eqs_str} return a;`),
             frame_eqs: new Function('a', `${preset.shapes[i].frame_eqs_str} return a;`),
           });
@@ -185,7 +185,7 @@ export default class Visualizer {
             wave.point_eqs = '';
           }
 
-          preset.waves[i] = _.assign(preset.waves[i], wave);
+          preset.waves[i] = Object.assign({}, preset.waves[i], wave);
         }
       }
       /* eslint-enable no-param-reassign, no-new-func */
