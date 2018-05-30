@@ -399,10 +399,10 @@ export default class Renderer {
     this.blurShader2.updateGlobals(params);
     this.blurShader3.updateGlobals(params);
     this.basicWaveform.updateGlobals(params);
-    _.forEach(this.customWaveforms, (wave) => wave.updateGlobals(params));
-    _.forEach(this.customShapes, (shape) => shape.updateGlobals(params));
-    _.forEach(this.prevCustomWaveforms, (wave) => wave.updateGlobals(params));
-    _.forEach(this.prevCustomShapes, (shape) => shape.updateGlobals(params));
+    this.customWaveforms.forEach((wave) => wave.updateGlobals(params));
+    this.customShapes.forEach((shape) => shape.updateGlobals(params));
+    this.prevCustomWaveforms.forEach((wave) => wave.updateGlobals(params));
+    this.prevCustomShapes.forEach((shape) => shape.updateGlobals(params));
     this.darkenCenter.updateGlobals(params);
     this.innerBorder.updateGlobals(params);
     this.outerBorder.updateGlobals(params);
@@ -829,7 +829,7 @@ export default class Renderer {
     this.motionVectors.drawMotionVectors(mdVSFrameMixed, this.warpUVs);
 
     if (this.preset.shapes && this.preset.shapes.length > 0) {
-      _.forEach(this.customShapes, (shape, i) => {
+      this.customShapes.forEach((shape, i) => {
         shape.drawCustomShape(this.blending ? this.blendProgress : 1,
                               globalVars,
                               this.presetEquationRunner,
@@ -839,7 +839,7 @@ export default class Renderer {
     }
 
     if (this.preset.waves && this.preset.waves.length > 0) {
-      _.forEach(this.customWaveforms, (waveform, i) => {
+      this.customWaveforms.forEach((waveform, i) => {
         waveform.drawCustomWaveform(this.blending ? this.blendProgress : 1,
                                     this.audio.timeArrayL,
                                     this.audio.timeArrayR,
@@ -853,7 +853,7 @@ export default class Renderer {
 
     if (this.blending) {
       if (this.prevPreset.shapes && this.prevPreset.shapes.length > 0) {
-        _.forEach(this.prevCustomShapes, (shape, i) => {
+        this.prevCustomShapes.forEach((shape, i) => {
           shape.drawCustomShape(1.0 - this.blendProgress,
                                 prevGlobalVars,
                                 this.prevPresetEquationRunner,
@@ -863,7 +863,7 @@ export default class Renderer {
       }
 
       if (this.prevPreset.waves && this.prevPreset.waves.length > 0) {
-        _.forEach(this.prevCustomWaveforms, (waveform, i) => {
+        this.prevCustomWaveforms.forEach((waveform, i) => {
           waveform.drawCustomWaveform(1.0 - this.blendProgress,
                                       this.audio.timeArrayL,
                                       this.audio.timeArrayR,

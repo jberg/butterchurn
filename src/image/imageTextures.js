@@ -1,5 +1,3 @@
-import _ from 'lodash';
-
 export default class ImageTextures {
   constructor (gl) {
     this.gl = gl;
@@ -50,7 +48,8 @@ export default class ImageTextures {
   }
 
   loadExtraImages (imageData) {
-    _.forEach(imageData, ({ data, width, height }, imageName) => {
+    Object.keys(imageData).forEach((imageName) => {
+      const { data, width, height } = imageData[imageName];
       if (!this.samplers[imageName]) {
         const image = new Image();
         image.onload = () => {
