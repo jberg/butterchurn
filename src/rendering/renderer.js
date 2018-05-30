@@ -47,9 +47,9 @@ export default class Renderer {
     this.invAspectx = 1.0 / this.aspectx;
     this.invAspecty = 1.0 / this.aspecty;
 
-    this.qs = _.map(_.range(1, 33), (x) => `q${x}`);
-    this.ts = _.map(_.range(1, 9), (x) => `t${x}`);
-    this.regs = _.map(_.range(0, 100), (x) => {
+    this.qs = _.range(1, 33).map((x) => `q${x}`);
+    this.ts = _.range(1, 9).map((x) => `t${x}`);
+    this.regs = _.range(0, 100).map((x) => {
       if (x < 10) {
         return `reg0${x}`;
       }
@@ -108,10 +108,10 @@ export default class Renderer {
     this.blurTexture2 = this.blurShader2.blurVerticalTexture;
     this.blurTexture3 = this.blurShader3.blurVerticalTexture;
     this.basicWaveform = new BasicWaveform(gl, params);
-    this.customWaveforms = _.map(_.range(4), (i) => new CustomWaveform(i, gl, params));
-    this.customShapes = _.map(_.range(4), (i) => new CustomShape(i, gl, params));
-    this.prevCustomWaveforms = _.map(_.range(4), (i) => new CustomWaveform(i, gl, params));
-    this.prevCustomShapes = _.map(_.range(4), (i) => new CustomShape(i, gl, params));
+    this.customWaveforms = _.range(4).map((i) => new CustomWaveform(i, gl, params));
+    this.customShapes = _.range(4).map((i) => new CustomShape(i, gl, params));
+    this.prevCustomWaveforms = _.range(4).map((i) => new CustomWaveform(i, gl, params));
+    this.prevCustomShapes = _.range(4).map((i) => new CustomShape(i, gl, params));
     this.darkenCenter = new DarkenCenter(gl, params);
     this.innerBorder = new Border(gl, params);
     this.outerBorder = new Border(gl, params);

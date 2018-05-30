@@ -14,9 +14,9 @@ export default class PresetEquationRunner {
     this.invAspectx = 1.0 / this.aspectx;
     this.invAspecty = 1.0 / this.aspecty;
 
-    this.qs = _.map(_.range(1, 33), (x) => `q${x}`);
-    this.ts = _.map(_.range(1, 9), (x) => `t${x}`);
-    this.regs = _.map(_.range(0, 100), (x) => {
+    this.qs = _.range(1, 33).map((x) => `q${x}`);
+    this.ts = _.range(1, 9).map((x) => `t${x}`);
+    this.regs = _.range(0, 100).map((x) => {
       if (x < 10) {
         return `reg0${x}`;
       }
