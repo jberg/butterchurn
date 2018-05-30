@@ -18,4 +18,22 @@ export default class Utils {
 
     return Array.from({ length: (end - start) }, (_, i) => i + start);
   }
+
+  static pick (obj, keys) {
+    const newObj = {};
+    for (let i = 0; i < keys.length; i++) {
+      const key = keys[i];
+      newObj[key] = obj[key];
+    }
+    return newObj;
+  }
+
+  static omit (obj, keys) {
+    const newObj = Object.assign({}, obj);
+    for (let i = 0; i < keys.length; i++) {
+      const key = keys[i];
+      delete newObj[key];
+    }
+    return newObj;
+  }
 }

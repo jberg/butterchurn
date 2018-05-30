@@ -755,7 +755,7 @@ export default class Renderer {
                            this.presetEquationRunner.runVertEQs,
                            false);
 
-    Object.assign(this.regVars, _.pick(this.mdVSVertex, this.regs));
+    Object.assign(this.regVars, Utils.pick(this.mdVSVertex, this.regs));
     Object.assign(globalVars, this.regVars);
 
     let mdVSFrameMixed;

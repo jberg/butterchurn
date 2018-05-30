@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import Utils from '../../utils';
 import ShaderUtils from '../shaders/shaderUtils';
 import WaveUtils from './waveUtils';
 
@@ -189,7 +190,7 @@ export default class CustomWaveform {
 
         // this needs to be after per point (check fishbrain - witchcraft)
         const mdvsUserKeysWave = presetEquationRunner.mdVSUserKeysWaves[this.index];
-        const mdVSNewFrameMapWave = _.pick(mdVSWaveFrame, mdvsUserKeysWave);
+        const mdVSNewFrameMapWave = Utils.pick(mdVSWaveFrame, mdvsUserKeysWave);
 
         // eslint-disable-next-line no-param-reassign
         presetEquationRunner.mdVSFrameMapWaves[this.index] = mdVSNewFrameMapWave;
