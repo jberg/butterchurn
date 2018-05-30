@@ -10,4 +10,12 @@ export default class Utils {
   static cloneVars (vars) {
     return Object.assign({}, vars);
   }
+
+  static range (start, end) {
+    if (end === undefined) {
+      return [...Array(start).keys()];
+    }
+
+    return Array.from({ length: (end - start) }, (_, i) => i + start);
+  }
 }
