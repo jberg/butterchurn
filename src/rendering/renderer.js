@@ -375,6 +375,13 @@ export default class Renderer {
     this.updateGlobals();
   }
 
+  setInternalMeshSize (width, height) {
+    this.mesh_width = width;
+    this.mesh_height = height;
+
+    this.updateGlobals();
+  }
+
   updateGlobals () {
     const params = {
       pixelRatio: this.pixelRatio,

@@ -200,6 +200,10 @@ export default class Visualizer {
     this.renderer.setRendererSize(width, height, opts);
   }
 
+  setInternalMeshSize (width, height) {
+    this.renderer.setInternalMeshSize(width, height);
+  }
+
   render () {
     this.renderer.render();
   }
