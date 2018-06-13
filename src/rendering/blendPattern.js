@@ -11,11 +11,55 @@ export default class BlendPattern {
     this.createBlendPattern();
   }
 
+  static resizeMatrixValues (oldMat, oldWidth, oldHeight, newWidth, newHeight) {
+    const newMat = new Float32Array((newWidth + 1) * (newHeight + 1));
+    let nVert = 0;
+    for (let j = 0; j < (newHeight + 1); j++) {
+      for (let i = 0; i < (newWidth + 1); i++) {
+        let x = i / newHeight;
+        let y = j / newWidth;
+
+        x *= (oldWidth + 1);
+        y *= (oldHeight + 1);
+        x = Math.clamp(x, 0, oldWidth - 1);
+        y = Math.clamp(y, 0, oldHeight - 1);
+        const nx = Math.floor(x);
+        const ny = Math.floor(y);
+        const dx = x - nx;
+        const dy = y - ny;
+        const val00 = oldMat[(ny * (oldWidth + 1)) + nx];
+        const val01 = oldMat[(ny * (oldWidth + 1)) + (nx + 1)];
+        const val10 = oldMat[((ny + 1) * (oldWidth + 1)) + nx];
+        const val11 = oldMat[((ny + 1) * (oldWidth + 1)) + (nx + 1)];
+        newMat[nVert] = (val00 * (1 - dx) * (1 - dy)) +
+                        (val01 * dx * (1 - dy)) +
+                        (val10 * (1 - dx) * dy) +
+                        (val11 * dx * (dy));
+
+        nVert += 1;
+      }
+    }
+
+    return newMat;
+  }
+
   updateGlobals (opts) {
+    const oldMeshWidth = this.mesh_width;
+    const oldMeshHeight = this.mesh_height;
+
     this.mesh_width = opts.mesh_width;
     this.mesh_height = opts.mesh_height;
     this.aspectx = opts.aspectx;
     this.aspecty = opts.aspecty;
+
+    if (this.mesh_width !== oldMeshWidth || this.mesh_height !== oldMeshHeight) {
+      this.vertInfoA = BlendPattern.resizeMatrixValues(this.vertInfoA,
+                                                       oldMeshWidth, oldMeshHeight,
+                                                       this.mesh_width, this.mesh_height);
+      this.vertInfoC = BlendPattern.resizeMatrixValues(this.vertInfoC,
+                                                       oldMeshWidth, oldMeshHeight,
+                                                       this.mesh_width, this.mesh_height);
+    }
   }
 
   genPlasma (x0, x1, y0, y1, dt) {
