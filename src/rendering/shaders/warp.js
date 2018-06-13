@@ -103,6 +103,8 @@ export default class WarpShader {
   updateGlobals (opts) {
     this.texsizeX = opts.texsizeX;
     this.texsizeY = opts.texsizeY;
+    this.mesh_width = opts.mesh_width;
+    this.mesh_height = opts.mesh_height;
     this.aspectx = opts.aspectx;
     this.aspecty = opts.aspecty;
     this.invAspectx = 1.0 / this.aspectx;
