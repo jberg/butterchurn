@@ -39,6 +39,7 @@ export default class Renderer {
     this.mesh_height = opts.mesh_height || 24;
     this.pixelRatio = opts.pixelRatio || 1;
     this.textureRatio = opts.textureRatio || 1;
+    this.outputFXAA = opts.outputFXAA || false;
     this.texsizeX = this.width * this.pixelRatio * this.textureRatio;
     this.texsizeY = this.height * this.pixelRatio * this.textureRatio;
     this.aspectx = (this.texsizeY > this.texsizeX) ? this.texsizeX / this.texsizeY : 1;
@@ -248,6 +249,10 @@ export default class Renderer {
     this.mesh_height = height;
 
     this.updateGlobals();
+  }
+
+  setOutputAA (useAA) {
+    this.outputFXAA = useAA;
   }
 
   updateGlobals () {
@@ -764,8 +769,11 @@ export default class Renderer {
     ];
     this.innerBorder.drawBorder(innerColor, mdVSFrameMixed.ib_size, mdVSFrameMixed.ob_size);
 
-
-    this.bindFrambufferAndSetViewport(this.compFrameBuffer, this.texsizeX, this.texsizeY);
+    if (this.outputFXAA) {
+      this.bindFrambufferAndSetViewport(this.compFrameBuffer, this.texsizeX, this.texsizeY);
+    } else {
+      this.bindFrambufferAndSetViewport(null, this.width, this.height);
+    }
 
     this.gl.clear(this.gl.COLOR_BUFFER_BIT);
     this.gl.enable(this.gl.BLEND);
@@ -790,10 +798,13 @@ export default class Renderer {
                                         mdVSFrameMixed, this.warpColor);
     }
 
-    this.gl.bindTexture(this.gl.TEXTURE_2D, this.compTexture);
-    this.gl.generateMipmap(this.gl.TEXTURE_2D);
 
-    this.bindFrambufferAndSetViewport(null, this.width, this.height);
-    this.outputShader.renderQuadTexture(this.compTexture);
+    if (this.outputFXAA) {
+      this.gl.bindTexture(this.gl.TEXTURE_2D, this.compTexture);
+      this.gl.generateMipmap(this.gl.TEXTURE_2D);
+
+      this.bindFrambufferAndSetViewport(null, this.width, this.height);
+      this.outputShader.renderQuadTexture(this.compTexture);
+    }
   }
 }

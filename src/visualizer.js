@@ -204,6 +204,10 @@ export default class Visualizer {
     this.renderer.setInternalMeshSize(width, height);
   }
 
+  setOutputAA (useAA) {
+    this.renderer.setOutputAA(useAA);
+  }
+
   render () {
     this.renderer.render();
   }
