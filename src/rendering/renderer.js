@@ -582,14 +582,14 @@ export default class Renderer {
     this.gl.viewport(0, 0, width, height);
   }
 
-  bindFrameBufferTexture (targetFrameBuffer, targetTexture, data = null) {
+  bindFrameBufferTexture (targetFrameBuffer, targetTexture) {
     this.gl.bindTexture(this.gl.TEXTURE_2D, targetTexture);
 
     this.gl.pixelStorei(this.gl.UNPACK_ALIGNMENT, 1);
     this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA,
                        this.texsizeX, this.texsizeY, 0,
                        this.gl.RGBA, this.gl.UNSIGNED_BYTE,
-                       data || new Uint8Array(this.texsizeX * this.texsizeY * 4));
+                       new Uint8Array(this.texsizeX * this.texsizeY * 4));
 
     this.gl.generateMipmap(this.gl.TEXTURE_2D);
 
