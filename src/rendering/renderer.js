@@ -36,8 +36,8 @@ export default class Renderer {
 
     this.width = opts.width || 1200;
     this.height = opts.height || 900;
-    this.mesh_width = opts.mesh_width || 32;
-    this.mesh_height = opts.mesh_height || 24;
+    this.mesh_width = opts.meshWidth || 32;
+    this.mesh_height = opts.meshHeight || 24;
     this.pixelRatio = opts.pixelRatio || 1;
     this.textureRatio = opts.textureRatio || 1;
     this.outputFXAA = opts.outputFXAA || false;
@@ -238,8 +238,8 @@ export default class Renderer {
 
     this.width = width;
     this.height = height;
-    this.mesh_width = opts.mesh_width || this.mesh_width;
-    this.mesh_height = opts.mesh_height || this.mesh_height;
+    this.mesh_width = opts.meshWidth || this.mesh_width;
+    this.mesh_height = opts.meshHeight || this.mesh_height;
     this.pixelRatio = opts.pixelRatio || this.pixelRatio;
     this.textureRatio = opts.textureRatio || this.textureRatio;
     this.texsizeX = width * this.pixelRatio * this.textureRatio;
