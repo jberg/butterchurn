@@ -74,9 +74,6 @@ export default class Renderer {
     this.compFrameBuffer = this.gl.createFramebuffer();
     this.compTexture = this.gl.createTexture();
 
-    this.resampleFrameBuffer = this.gl.createFramebuffer();
-    this.resampleTexture = this.gl.createTexture();
-
     this.anisoExt = (
       this.gl.getExtension('EXT_texture_filter_anisotropic') ||
       this.gl.getExtension('MOZ_EXT_texture_filter_anisotropic') ||
@@ -86,7 +83,6 @@ export default class Renderer {
     this.bindFrameBufferTexture(this.prevFrameBuffer, this.prevTexture);
     this.bindFrameBufferTexture(this.targetFrameBuffer, this.targetTexture);
     this.bindFrameBufferTexture(this.compFrameBuffer, this.compTexture);
-    this.bindFrameBufferTexture(this.resampleFrameBuffer, this.resampleTexture);
 
     const params = {
       pixelRatio: this.pixelRatio,
