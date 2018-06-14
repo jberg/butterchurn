@@ -250,14 +250,13 @@ export default class Renderer {
     if (this.resampleOnResize &&
         (this.texsizeX !== oldTexsizeX || this.texsizeY !== oldTexsizeY)) {
       // copy target texture, because we flip prev/target at start of render
-      this.bindFrambufferAndSetViewport(this.resampleFrameBuffer, this.texsizeX, this.texsizeY);
+      const targetTextureNew = this.gl.createTexture();
+      this.bindFrameBufferTexture(this.targetFrameBuffer, targetTextureNew);
+      this.bindFrambufferAndSetViewport(this.targetFrameBuffer, this.texsizeX, this.texsizeY);
+
       this.resampleShader.renderQuadTexture(this.targetTexture);
 
-      const targetFramePixels = new Uint8Array(this.texsizeX * this.texsizeY * 4);
-      this.gl.readPixels(0, 0, this.texsizeX, this.texsizeY, this.gl.RGBA,
-                         this.gl.UNSIGNED_BYTE, targetFramePixels);
-
-      this.bindFrameBufferTexture(this.targetFrameBuffer, this.targetTexture, targetFramePixels);
+      this.targetTexture = targetTextureNew;
     } else {
       this.bindFrameBufferTexture(this.targetFrameBuffer, this.targetTexture);
     }
