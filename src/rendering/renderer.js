@@ -10,6 +10,7 @@ import MotionVectors from './motionVectors/motionVectors';
 import WarpShader from './shaders/warp';
 import CompShader from './shaders/comp';
 import OutputShader from './shaders/output';
+import ResampleShader from './shaders/resample';
 import BlurShader from './shaders/blur/blur';
 import Noise from '../noise/noise';
 import ImageTextures from '../image/imageTextures';
@@ -40,6 +41,7 @@ export default class Renderer {
     this.pixelRatio = opts.pixelRatio || 1;
     this.textureRatio = opts.textureRatio || 1;
     this.outputFXAA = opts.outputFXAA || false;
+    this.resampleOnResize = opts.resampleOnResize || false;
     this.texsizeX = this.width * this.pixelRatio * this.textureRatio;
     this.texsizeY = this.height * this.pixelRatio * this.textureRatio;
     this.aspectx = (this.texsizeY > this.texsizeX) ? this.texsizeX / this.texsizeY : 1;
@@ -73,6 +75,9 @@ export default class Renderer {
     this.compFrameBuffer = this.gl.createFramebuffer();
     this.compTexture = this.gl.createTexture();
 
+    this.resampleFrameBuffer = this.gl.createFramebuffer();
+    this.resampleTexture = this.gl.createTexture();
+
     this.anisoExt = (
       this.gl.getExtension('EXT_texture_filter_anisotropic') ||
       this.gl.getExtension('MOZ_EXT_texture_filter_anisotropic') ||
@@ -82,6 +87,7 @@ export default class Renderer {
     this.bindFrameBufferTexture(this.prevFrameBuffer, this.prevTexture);
     this.bindFrameBufferTexture(this.targetFrameBuffer, this.targetTexture);
     this.bindFrameBufferTexture(this.compFrameBuffer, this.compTexture);
+    this.bindFrameBufferTexture(this.resampleFrameBuffer, this.resampleTexture);
 
     const params = {
       pixelRatio: this.pixelRatio,
@@ -117,6 +123,7 @@ export default class Renderer {
     this.outerBorder = new Border(gl, params);
     this.motionVectors = new MotionVectors(gl, params);
     this.blendPattern = new BlendPattern(params);
+    this.resampleShader = new ResampleShader(gl);
 
     this.warpUVs = new Float32Array((this.mesh_width + 1) * (this.mesh_height + 1) * 2);
     this.warpColor = new Float32Array((this.mesh_width + 1) * (this.mesh_height + 1) * 4);
@@ -226,6 +233,9 @@ export default class Renderer {
   }
 
   setRendererSize (width, height, opts) {
+    const oldTexsizeX = this.texsizeX;
+    const oldTexsizeY = this.texsizeY;
+
     this.width = width;
     this.height = height;
     this.mesh_width = opts.mesh_width || this.mesh_width;
@@ -237,8 +247,22 @@ export default class Renderer {
     this.aspectx = (this.texsizeY > this.texsizeX) ? this.texsizeX / this.texsizeY : 1;
     this.aspecty = (this.texsizeX > this.texsizeY) ? this.texsizeY / this.texsizeX : 1;
 
+    if (this.resampleOnResize &&
+        (this.texsizeX !== oldTexsizeX || this.texsizeY !== oldTexsizeY)) {
+      // copy target texture, because we flip prev/target at start of render
+      this.bindFrambufferAndSetViewport(this.resampleFrameBuffer, this.texsizeX, this.texsizeY);
+      this.resampleShader.renderQuadTexture(this.targetTexture);
+
+      const targetFramePixels = new Uint8Array(this.texsizeX * this.texsizeY * 4);
+      this.gl.readPixels(0, 0, this.texsizeX, this.texsizeY, this.gl.RGBA,
+                         this.gl.UNSIGNED_BYTE, targetFramePixels);
+
+      this.bindFrameBufferTexture(this.targetFrameBuffer, this.targetTexture, targetFramePixels);
+    } else {
+      this.bindFrameBufferTexture(this.targetFrameBuffer, this.targetTexture);
+    }
+
     this.bindFrameBufferTexture(this.prevFrameBuffer, this.prevTexture);
-    this.bindFrameBufferTexture(this.targetFrameBuffer, this.targetTexture);
     this.bindFrameBufferTexture(this.compFrameBuffer, this.compTexture);
 
     this.updateGlobals();
@@ -561,14 +585,14 @@ export default class Renderer {
     this.gl.viewport(0, 0, width, height);
   }
 
-  bindFrameBufferTexture (targetFrameBuffer, targetTexture) {
+  bindFrameBufferTexture (targetFrameBuffer, targetTexture, data = null) {
     this.gl.bindTexture(this.gl.TEXTURE_2D, targetTexture);
 
     this.gl.pixelStorei(this.gl.UNPACK_ALIGNMENT, 1);
     this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA,
                        this.texsizeX, this.texsizeY, 0,
                        this.gl.RGBA, this.gl.UNSIGNED_BYTE,
-                       new Uint8Array(this.texsizeX * this.texsizeY * 4));
+                       data || new Uint8Array(this.texsizeX * this.texsizeY * 4));
 
     this.gl.generateMipmap(this.gl.TEXTURE_2D);
 
