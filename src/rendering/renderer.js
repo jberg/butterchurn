@@ -41,7 +41,6 @@ export default class Renderer {
     this.pixelRatio = opts.pixelRatio || 1;
     this.textureRatio = opts.textureRatio || 1;
     this.outputFXAA = opts.outputFXAA || false;
-    this.resampleOnResize = opts.resampleOnResize || false;
     this.texsizeX = this.width * this.pixelRatio * this.textureRatio;
     this.texsizeY = this.height * this.pixelRatio * this.textureRatio;
     this.aspectx = (this.texsizeY > this.texsizeX) ? this.texsizeX / this.texsizeY : 1;
@@ -247,8 +246,7 @@ export default class Renderer {
     this.aspectx = (this.texsizeY > this.texsizeX) ? this.texsizeX / this.texsizeY : 1;
     this.aspecty = (this.texsizeX > this.texsizeY) ? this.texsizeY / this.texsizeX : 1;
 
-    if (this.resampleOnResize &&
-        (this.texsizeX !== oldTexsizeX || this.texsizeY !== oldTexsizeY)) {
+    if (this.texsizeX !== oldTexsizeX || this.texsizeY !== oldTexsizeY) {
       // copy target texture, because we flip prev/target at start of render
       const targetTextureNew = this.gl.createTexture();
       this.bindFrameBufferTexture(this.targetFrameBuffer, targetTextureNew);
