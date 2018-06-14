@@ -251,12 +251,10 @@ export default class Renderer {
       this.resampleShader.renderQuadTexture(this.targetTexture);
 
       this.targetTexture = targetTextureNew;
-    } else {
-      this.bindFrameBufferTexture(this.targetFrameBuffer, this.targetTexture);
-    }
 
-    this.bindFrameBufferTexture(this.prevFrameBuffer, this.prevTexture);
-    this.bindFrameBufferTexture(this.compFrameBuffer, this.compTexture);
+      this.bindFrameBufferTexture(this.prevFrameBuffer, this.prevTexture);
+      this.bindFrameBufferTexture(this.compFrameBuffer, this.compTexture);
+    }
 
     this.updateGlobals();
   }
