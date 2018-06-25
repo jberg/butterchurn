@@ -264,7 +264,7 @@ export default class WarpShader {
                                       uniform vec4 rand_frame;
                                       uniform vec4 rand_preset;
 
-                                      float PI = 3.14159265358979323846264;
+                                      float PI = ${Math.PI};
 
                                       ${fragShaderHeaderText}
 
