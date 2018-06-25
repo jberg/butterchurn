@@ -393,7 +393,7 @@ export default class BasicWaveform {
         }
       }
 
-      const mix = 0.5 - (0.5 * Math.cos(blendProgress * 3.1415926535898));
+      const mix = 0.5 - (0.5 * Math.cos(blendProgress * Math.PI));
       const mix2 = 1 - mix;
 
       if (this.oldNumVert > 0) {

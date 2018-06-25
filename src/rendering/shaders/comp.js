@@ -298,7 +298,7 @@ export default class CompShader {
 
                                       uniform float fShader;
 
-                                      float PI = 3.14159265358979323846264;
+                                      float PI = ${Math.PI};
 
                                       ${fragShaderHeaderText}
 
