@@ -601,11 +601,19 @@ export default class Renderer {
                                  this.gl.TEXTURE_2D, targetTexture, 0);
   }
 
-  render () {
+  render ({ audioLevels } = {}) {
     this.calcTimeAndFPS();
     this.frameNum += 1;
 
-    this.audio.sampleAudio();
+    if (audioLevels) {
+      this.audio.updateAudio(
+        audioLevels.timeByteArray,
+        audioLevels.timeByteArrayL,
+        audioLevels.timeByteArrayR
+      );
+    } else {
+      this.audio.sampleAudio();
+    }
     this.audioLevels.updateAudioLevels(this.fps, this.frameNum);
 
     const globalVars = {
