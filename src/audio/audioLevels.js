@@ -32,9 +32,9 @@ export default class AudioLevels {
     return ratePerFrame;
   }
 
-  updateAudioLevels (sampleTimeDelta, frame) {
+  updateAudioLevels (fps, frame) {
     if (this.audio.freqArray.length > 0) {
-      let effectiveFPS = 1000 / sampleTimeDelta;
+      let effectiveFPS = fps;
       if (!AudioLevels.isFiniteNumber(effectiveFPS) || effectiveFPS < 15) {
         effectiveFPS = 15;
       } else if (effectiveFPS > 120) {

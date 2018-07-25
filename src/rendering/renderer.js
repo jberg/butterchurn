@@ -63,7 +63,6 @@ export default class Renderer {
       [0.0625, 0.0625]
     ];
 
-    this.lastAudioTime = performance.now();
     this.audioLevels = new AudioLevels(this.audio);
 
     this.prevFrameBuffer = this.gl.createFramebuffer();
@@ -603,17 +602,11 @@ export default class Renderer {
   }
 
   render () {
-    this.audio.sampleAudio();
-
-    const audioTime = performance.now();
-    const audioDiff = audioTime - this.lastAudioTime;
-    if (audioDiff > 30) {
-      this.audioLevels.updateAudioLevels(audioDiff, this.frameNum);
-      this.lastAudioTime = audioTime;
-    }
-
     this.calcTimeAndFPS();
     this.frameNum += 1;
+
+    this.audio.sampleAudio();
+    this.audioLevels.updateAudioLevels(this.fps, this.frameNum);
 
     const globalVars = {
       frame: this.frameNum,
