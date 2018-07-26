@@ -208,7 +208,7 @@ export default class Visualizer {
     this.renderer.setOutputAA(useAA);
   }
 
-  render () {
-    this.renderer.render();
+  render (opts) {
+    this.renderer.render(opts);
   }
 }
