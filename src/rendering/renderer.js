@@ -305,14 +305,19 @@ export default class Renderer {
     this.warpColor = new Float32Array((this.mesh_width + 1) * (this.mesh_height + 1) * 4);
   }
 
-  calcTimeAndFPS () {
-    const newTime = performance.now();
-    let elapsed = (newTime - this.lastTime) / 1000.0;
-    if (elapsed > 1.0 || elapsed < 0.0 || this.frame < 2) {
-      elapsed = 1.0 / 30.0;
+  calcTimeAndFPS (elapsedTime) {
+    let elapsed;
+    if (elapsedTime) {
+      elapsed = elapsedTime;
+    } else {
+      const newTime = performance.now();
+      elapsed = (newTime - this.lastTime) / 1000.0;
+      if (elapsed > 1.0 || elapsed < 0.0 || this.frame < 2) {
+        elapsed = 1.0 / 30.0;
+      }
+      this.lastTime = newTime;
     }
 
-    this.lastTime = newTime;
     this.time += 1.0 / this.fps;
 
     if (this.blending) {
@@ -601,8 +606,8 @@ export default class Renderer {
                                  this.gl.TEXTURE_2D, targetTexture, 0);
   }
 
-  render ({ audioLevels } = {}) {
-    this.calcTimeAndFPS();
+  render ({ audioLevels, elapsedTime } = {}) {
+    this.calcTimeAndFPS(elapsedTime);
     this.frameNum += 1;
 
     if (audioLevels) {
