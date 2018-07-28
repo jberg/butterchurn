@@ -15,6 +15,8 @@ Butterchurn is a WebGL implementation of the Milkdrop Visualizer
 With [yarn](https://yarnpkg.com/) or [npm](https://npmjs.org/) installed, run
 
     $ yarn add butterchurn butterchurn-presets
+    or
+    $ npm install butterchurn butterchurn-presets
 
 ### Create a visualizer
 
@@ -48,6 +50,9 @@ visualizer.setRendererSize(1600, 1200);
 
 visualizer.render();
 ```
+
+## Integrations
+* [Webamp](https://github.com/captbaritone/webamp), the fantastic reimplementation of Winamp 2.9 in HTML5 and Javascript, built by [captbaritone](https://github.com/captbaritone)
 
 
 ## Thanks
