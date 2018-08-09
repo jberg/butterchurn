@@ -38,7 +38,7 @@ export default class Renderer {
     this.height = opts.height || 900;
     this.mesh_width = opts.meshWidth || 48;
     this.mesh_height = opts.meshHeight || 36;
-    this.pixelRatio = opts.pixelRatio || 1;
+    this.pixelRatio = opts.pixelRatio || window.devicePixelRatio || 1;
     this.textureRatio = opts.textureRatio || 1;
     this.outputFXAA = opts.outputFXAA || false;
     this.texsizeX = this.width * this.pixelRatio * this.textureRatio;
