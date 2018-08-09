@@ -139,7 +139,7 @@ export default class Visualizer {
     this.audio.disconnectAudio(audioNode);
   }
 
-  loadPreset (presetMap, blendTime) {
+  loadPreset (presetMap, blendTime = 0) {
     const preset = Object.assign({}, presetMap);
     preset.baseVals = Object.assign({}, this.baseValsDefaults, preset.baseVals);
     for (let i = 0; i < preset.shapes.length; i++) {
