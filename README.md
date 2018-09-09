@@ -51,6 +51,20 @@ visualizer.setRendererSize(1600, 1200);
 visualizer.render();
 ```
 
+### Browser Support
+
+Butterchurn requires the [browser support WebGL 2](https://caniuse.com/#feat=webgl2).
+
+You can test for support using our minimal isSupported script:
+
+```Javacript
+import isButterchurnSupported from "butterchurn/lib/isSupported.min";
+
+if (isButterchurnSupported()) {
+  // Load and use butterchurn
+}
+```
+
 ## Integrations
 * [Webamp](https://github.com/captbaritone/webamp), the fantastic reimplementation of Winamp 2.9 in HTML5 and Javascript, built by [captbaritone](https://github.com/captbaritone)
 * [mStream](http://mstream.io/), your personal music streaming server, built by [IrosTheBeggar](https://github.com/IrosTheBeggar)
