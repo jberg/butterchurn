@@ -211,4 +211,8 @@ export default class Visualizer {
   render (opts) {
     this.renderer.render(opts);
   }
+
+  launchSongTitleAnim (text) {
+    this.renderer.launchSongTitleAnim(text);
+  }
 }

@@ -14,6 +14,7 @@ import ResampleShader from './shaders/resample';
 import BlurShader from './shaders/blur/blur';
 import Noise from '../noise/noise';
 import ImageTextures from '../image/imageTextures';
+import TitleText from './text/titleText';
 import BlendPattern from './blendPattern';
 import Utils from '../utils';
 
@@ -116,8 +117,13 @@ export default class Renderer {
     this.innerBorder = new Border(gl, params);
     this.outerBorder = new Border(gl, params);
     this.motionVectors = new MotionVectors(gl, params);
+    this.titleText = new TitleText(gl, params);
     this.blendPattern = new BlendPattern(params);
     this.resampleShader = new ResampleShader(gl);
+
+    this.supertext = {
+      startTime: -1
+    };
 
     this.warpUVs = new Float32Array((this.mesh_width + 1) * (this.mesh_height + 1) * 2);
     this.warpColor = new Float32Array((this.mesh_width + 1) * (this.mesh_height + 1) * 4);
@@ -299,6 +305,7 @@ export default class Renderer {
     this.innerBorder.updateGlobals(params);
     this.outerBorder.updateGlobals(params);
     this.motionVectors.updateGlobals(params);
+    this.titleText.updateGlobals(params);
     this.blendPattern.updateGlobals(params);
 
     this.warpUVs = new Float32Array((this.mesh_width + 1) * (this.mesh_height + 1) * 2);
@@ -790,6 +797,13 @@ export default class Renderer {
     ];
     this.innerBorder.drawBorder(innerColor, mdVSFrameMixed.ib_size, mdVSFrameMixed.ob_size);
 
+    if (this.supertext.startTime >= 0) {
+      const progress = (this.time - this.supertext.startTime) / this.supertext.duration;
+      if (progress >= 1) {
+        this.titleText.renderTitle(progress, true, globalVars);
+      }
+    }
+
     if (this.outputFXAA) {
       this.bindFrambufferAndSetViewport(this.compFrameBuffer, this.texsizeX, this.texsizeY);
     } else {
@@ -819,6 +833,14 @@ export default class Renderer {
                                         mdVSFrameMixed, this.warpColor);
     }
 
+    if (this.supertext.startTime >= 0) {
+      const progress = (this.time - this.supertext.startTime) / this.supertext.duration;
+      this.titleText.renderTitle(progress, false, globalVars);
+
+      if (progress >= 1) {
+        this.supertext.startTime = -1;
+      }
+    }
 
     if (this.outputFXAA) {
       this.gl.bindTexture(this.gl.TEXTURE_2D, this.compTexture);
@@ -827,5 +849,13 @@ export default class Renderer {
       this.bindFrambufferAndSetViewport(null, this.width, this.height);
       this.outputShader.renderQuadTexture(this.compTexture);
     }
+  }
+
+  launchSongTitleAnim (text) {
+    this.supertext = {
+      startTime: this.time,
+      duration: 1.7
+    };
+    this.titleText.generateTitleTexture(text);
   }
 }
