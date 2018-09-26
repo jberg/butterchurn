@@ -11,9 +11,6 @@ export default class TitleText {
     this.invAspectx = 1.0 / this.aspectx;
     this.invAspecty = 1.0 / this.aspecty;
 
-    this.titleTexsizeX = Math.max(this.texsizeX, this.texsizeY);
-    this.titleTexsizeY = Math.floor(this.titleTexsizeX / 4);
-
     this.buildPositions();
 
     this.textTexture = this.gl.createTexture();
@@ -22,8 +19,8 @@ export default class TitleText {
     this.vertexBuf = this.gl.createBuffer();
 
     this.canvas = document.createElement('canvas');
-    this.canvas.width = this.titleTexsizeX;
-    this.canvas.height = this.titleTexsizeY;
+    this.canvas.width = this.texsizeX;
+    this.canvas.height = this.texsizeY;
     this.context2D = this.canvas.getContext('2d');
 
     this.floatPrecision = ShaderUtils.getFragmentFloatPrecision(this.gl);
@@ -31,25 +28,24 @@ export default class TitleText {
   }
 
   generateTitleTexture (text) {
-    this.context2D.clearRect(0, 0, this.titleTexsizeX, this.titleTexsizeY);
+    this.context2D.clearRect(0, 0, this.texsizeX, this.texsizeY);
 
-    this.fontSize = Math.floor(16 * (this.titleTexsizeX / 256));
-    this.fontSize *= 0.75; // hack to try to match original
+    this.fontSize = Math.floor(16 * (this.texsizeX / 256));
     this.fontSize = Math.max(this.fontSize, 6);
     this.context2D.font = `italic ${this.fontSize}px Times New Roman`;
 
     let titleText = text;
     let textLength = this.context2D.measureText(titleText).width;
-    if (textLength > this.titleTexsizeX) {
-      const percentToKeep = 0.91 * (this.titleTexsizeX / textLength);
+    if (textLength > this.texsizeX) {
+      const percentToKeep = 0.91 * (this.texsizeX / textLength);
       titleText = `${titleText.substring(0, Math.floor(titleText.length * percentToKeep))}...`;
       textLength = this.context2D.measureText(titleText).width;
     }
 
     this.context2D.fillStyle = '#FFFFFF';
     this.context2D.fillText(titleText,
-                            (this.titleTexsizeX - textLength) / 2,
-                            this.titleTexsizeY / 2);
+                            (this.texsizeX - textLength) / 2,
+                            this.texsizeY / 2);
 
     this.gl.pixelStorei(this.gl.UNPACK_FLIP_Y_WEBGL, true);
 
@@ -74,11 +70,8 @@ export default class TitleText {
     this.invAspectx = 1.0 / this.aspectx;
     this.invAspecty = 1.0 / this.aspecty;
 
-    this.titleTexsizeX = Math.max(this.texsizeX, this.texsizeY);
-    this.titleTexsizeY = Math.floor(this.titleTexsizeX / 4);
-
-    this.canvas.width = this.titleTexsizeX;
-    this.canvas.height = this.titleTexsizeY;
+    this.canvas.width = this.texsizeX;
+    this.canvas.height = this.texsizeY;
   }
 
   // based on https://github.com/mrdoob/three.js/blob/master/src/geometries/PlaneGeometry.js
