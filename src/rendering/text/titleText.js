@@ -47,11 +47,15 @@ export default class TitleText {
                             (this.texsizeX - textLength) / 2,
                             this.texsizeY / 2);
 
+    const imageData = new Uint8Array(
+      this.context2D.getImageData(0, 0, this.texsizeX, this.texsizeY).data.buffer
+    );
+
     this.gl.pixelStorei(this.gl.UNPACK_FLIP_Y_WEBGL, true);
 
     this.gl.bindTexture(this.gl.TEXTURE_2D, this.textTexture);
-    this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.gl.RGBA, this.gl.UNSIGNED_BYTE,
-                       this.canvas);
+    this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, this.texsizeX, this.texsizeY, 0,
+                       this.gl.RGBA, this.gl.UNSIGNED_BYTE, imageData);
     this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.LINEAR);
     this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER,
                           this.gl.LINEAR_MIPMAP_LINEAR);
