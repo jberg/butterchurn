@@ -2,9 +2,10 @@
   "name": "butterchurn",
   "version": "2.5.3",
   "description": "Butterchurn is a WebGL implementation of the Milkdrop Visualizer",
-  "main": "lib/butterchurn.min.js",
-  "unpkg": "lib/butterchurn.min.js",
+  "main": "lib/butterchurn.js",
+  "unpkg": "lib/butterchurn.js",
   "files": [
+    "lib/butterchurn.js",
     "lib/butterchurn.min.js",
     "lib/butterchurnExtraImages.min.js",
     "lib/isSupported.min.js"
