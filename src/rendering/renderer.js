@@ -262,6 +262,11 @@ export default class Renderer {
     }
 
     this.updateGlobals();
+
+    // rerender current frame at new size
+    if (this.frameNum > 0) {
+      this.renderToScreen();
+    }
   }
 
   setInternalMeshSize (width, height) {
@@ -804,6 +809,15 @@ export default class Renderer {
       }
     }
 
+    // Store variables in case we need to rerender
+    this.globalVars = globalVars;
+    this.mdVSFrame = mdVSFrame;
+    this.mdVSFrameMixed = mdVSFrameMixed;
+
+    this.renderToScreen();
+  }
+
+  renderToScreen () {
     if (this.outputFXAA) {
       this.bindFrambufferAndSetViewport(this.compFrameBuffer, this.texsizeX, this.texsizeY);
     } else {
@@ -815,11 +829,13 @@ export default class Renderer {
     this.gl.blendEquation(this.gl.FUNC_ADD);
     this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
 
+    const { blurMins, blurMaxs } = Renderer.getBlurValues(this.mdVSFrameMixed);
+
     if (!this.blending) {
       this.compShader.renderQuadTexture(false, this.targetTexture,
                                         this.blurTexture1, this.blurTexture2, this.blurTexture3,
                                         blurMins, blurMaxs,
-                                        mdVSFrame, this.warpColor);
+                                        this.mdVSFrame, this.warpColor);
     } else {
       this.prevCompShader.renderQuadTexture(false, this.targetTexture,
                                             this.blurTexture1, this.blurTexture2, this.blurTexture3,
@@ -830,12 +846,12 @@ export default class Renderer {
       this.compShader.renderQuadTexture(true, this.targetTexture,
                                         this.blurTexture1, this.blurTexture2, this.blurTexture3,
                                         blurMins, blurMaxs,
-                                        mdVSFrameMixed, this.warpColor);
+                                        this.mdVSFrameMixed, this.warpColor);
     }
 
     if (this.supertext.startTime >= 0) {
       const progress = (this.time - this.supertext.startTime) / this.supertext.duration;
-      this.titleText.renderTitle(progress, false, globalVars);
+      this.titleText.renderTitle(progress, false, this.globalVars);
 
       if (progress >= 1) {
         this.supertext.startTime = -1;
