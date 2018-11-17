@@ -118,7 +118,7 @@ window.memcpy = function memcpy(megabuf, dst, src, len) {
   }
 
   if (copyLen > 0) {
-    megabuf.copyWithin(dst, src, copyLen);
+    megabuf.copyWithin(destOffset, srcOffset, copyLen);
   }
 
   return megabuf;
