@@ -99,4 +99,28 @@ window.below = function below(x, y) {
 window.ifcond = function ifcond(x, y, z) {
   return Math.abs(x) > EPSILON ? y : z;
 }
+
+window.memcpy = function memcpy(megabuf, dst, src, len) {
+  let destOffset = dst;
+  let srcOffset = src;
+  let copyLen = len;
+
+  if (srcOffset < 0) {
+    copyLen += srcOffset;
+    destOffset -= srcOffset;
+    srcOffset = 0;
+  }
+
+  if (destOffset < 0) {
+    copyLen += destOffset;
+    srcOffset -= destOffset;
+    destOffset = 0;
+  }
+
+  if (copyLen > 0) {
+    megabuf.copyWithin(dst, src, copyLen);
+  }
+
+  return megabuf;
+}
 /* eslint-enable */
