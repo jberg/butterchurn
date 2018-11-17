@@ -121,6 +121,6 @@ window.memcpy = function memcpy(megabuf, dst, src, len) {
     megabuf.copyWithin(destOffset, srcOffset, copyLen);
   }
 
-  return megabuf;
+  return dst;
 }
 /* eslint-enable */
