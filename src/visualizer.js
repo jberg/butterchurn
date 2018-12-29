@@ -215,4 +215,12 @@ export default class Visualizer {
   launchSongTitleAnim (text) {
     this.renderer.launchSongTitleAnim(text);
   }
+
+  toDataURL () {
+    return this.renderer.toDataURL();
+  }
+
+  warpBufferToDataURL () {
+    return this.renderer.warpBufferToDataURL();
+  }
 }

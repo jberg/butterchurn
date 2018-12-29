@@ -874,4 +874,62 @@ export default class Renderer {
     };
     this.titleText.generateTitleTexture(text);
   }
+
+  toDataURL () {
+    const data = new Uint8Array(this.texsizeX * this.texsizeY * 4);
+
+    const compFrameBuffer = this.gl.createFramebuffer();
+    const compTexture = this.gl.createTexture();
+
+    this.bindFrameBufferTexture(compFrameBuffer, compTexture);
+
+    const { blurMins, blurMaxs } = Renderer.getBlurValues(this.mdVSFrameMixed);
+    this.compShader.renderQuadTexture(false, this.targetTexture,
+      this.blurTexture1, this.blurTexture2, this.blurTexture3,
+      blurMins, blurMaxs,
+      this.mdVSFrame, this.warpColor);
+
+    this.gl.readPixels(0, 0, this.texsizeX, this.texsizeY,
+      this.gl.RGBA, this.gl.UNSIGNED_BYTE, data);
+
+    // flip data
+    Array.from({ length: this.texsizeY }, (val, i) =>
+      data.slice(i * this.texsizeX * 4, (i + 1) * this.texsizeX * 4)
+    ).forEach((val, i) =>
+      data.set(val, (this.texsizeY - i - 1) * this.texsizeX * 4)
+    );
+
+    const canvas = document.createElement('canvas');
+    canvas.width = this.texsizeX;
+    canvas.height = this.texsizeY;
+
+    const context = canvas.getContext('2d');
+    const imageData = context.createImageData(this.texsizeX, this.texsizeY);
+    imageData.data.set(data);
+    context.putImageData(imageData, 0, 0);
+
+    this.gl.deleteTexture(compTexture);
+    this.gl.deleteFramebuffer(compFrameBuffer);
+
+    return canvas.toDataURL();
+  }
+
+  warpBufferToDataURL () {
+    const data = new Uint8Array(this.texsizeX * this.texsizeY * 4);
+
+    this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.targetFrameBuffer);
+    this.gl.readPixels(0, 0, this.texsizeX, this.texsizeY,
+      this.gl.RGBA, this.gl.UNSIGNED_BYTE, data);
+
+    const canvas = document.createElement('canvas');
+    canvas.width = this.texsizeX;
+    canvas.height = this.texsizeY;
+
+    const context = canvas.getContext('2d');
+    const imageData = context.createImageData(this.texsizeX, this.texsizeY);
+    imageData.data.set(data);
+    context.putImageData(imageData, 0, 0);
+
+    return canvas.toDataURL();
+  }
 }
