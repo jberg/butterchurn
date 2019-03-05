@@ -12,7 +12,7 @@ export default class AudioLevels {
 
     this.att.fill(1);
     this.avg.fill(1);
-    this.longAve.fill(1);
+    this.longAvg.fill(1);
   }
   /* eslint-disable camelcase */
   get bass () {
