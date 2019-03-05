@@ -5,10 +5,14 @@ export default class AudioLevels {
     this.stops = new Uint8Array([85, 170, 255]);
 
     this.val = new Float32Array(3);
-    this.att = new Float32Array(3);
     this.imm = new Float32Array(3);
+    this.att = new Float32Array(3);
     this.avg = new Float32Array(3);
     this.longAvg = new Float32Array(3);
+
+    this.att.fill(1);
+    this.avg.fill(1);
+    this.longAve.fill(1);
   }
   /* eslint-disable camelcase */
   get bass () {
