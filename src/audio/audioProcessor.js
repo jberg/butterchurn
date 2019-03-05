@@ -32,16 +32,18 @@ export default class AudioProcessor {
       this.splitter.connect(this.analyserL, 0);
       this.splitter.connect(this.analyserR, 1);
 
-      // New Stuff
+      // Initialised once as typed arrays
+      // Used for webaudio API raw (time domain) samples. 0 -> 255
       this.timeByteArray = new Uint8Array(this.fftSize);
       this.timeByteArrayL = new Uint8Array(this.fftSize);
       this.timeByteArrayR = new Uint8Array(this.fftSize);
 
+      // Signed raw samples shifted to -128 -> 127
       this.timeArray = new Int8Array(this.fftSize);
       this.timeByteArraySignedL = new Int8Array(this.fftSize);
       this.timeByteArraySignedR = new Int8Array(this.fftSize);
 
-
+      // Undersampled from this.fftSize to this.numSamps
       this.timeArrayL = new Int8Array(this.numSamps);
       this.timeArrayR = new Int8Array(this.numSamps);
     }
@@ -51,14 +53,18 @@ export default class AudioProcessor {
     this.analyser.getByteTimeDomainData(this.timeByteArray);
     this.analyserL.getByteTimeDomainData(this.timeByteArrayL);
     this.analyserR.getByteTimeDomainData(this.timeByteArrayR);
-
-    this.updateAudio();
+    this.processAudio();
+  }
+  updateAudio (timeByteArray, timeByteArrayL, timeByteArrayR) {
+    this.timeByteArray.set(timeByteArray);
+    this.timeByteArrayL.set(timeByteArrayL);
+    this.timeByteArrayR.set(timeByteArrayR);
+    this.processAudio();
   }
   /* eslint-disable no-bitwise */
-  updateAudio () {
-    // let lastIdx = 0;
+  processAudio () {
     for (let i = 0, j = 0; i < this.fftSize; i++) {
-      // Shift Unsigned to Signed
+      // Shift Unsigned to Signed about 0
       this.timeArray[i] = this.timeByteArray[i] - 128;
       this.timeByteArraySignedL[i] = this.timeByteArrayL[i] - 128;
       this.timeByteArraySignedR[i] = this.timeByteArrayR[i] - 128;
