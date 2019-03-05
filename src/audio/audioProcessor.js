@@ -54,11 +54,11 @@ export default class AudioProcessor {
 
     this.updateAudio();
   }
-
+  /* eslint-disable no-bitwise */
   updateAudio () {
     // let lastIdx = 0;
-    for (let i = 0, j=0; i < this.fftSize; i++) {
-      // Unsigned to Signed
+    for (let i = 0, j = 0; i < this.fftSize; i++) {
+      // Shift Unsigned to Signed
       this.timeArray[i] = this.timeByteArray[i] - 128;
       this.timeByteArraySignedL[i] = this.timeByteArrayL[i] - 128;
       this.timeByteArraySignedR[i] = this.timeByteArrayR[i] - 128;
@@ -67,13 +67,8 @@ export default class AudioProcessor {
       if (i & 2) { // Equivalent to i % 2
         this.timeArrayL[j] = this.timeByteArraySignedL[i];
         this.timeArrayR[j] = this.timeByteArraySignedR[i];
-        j++;
+        j += 1;
       }
-
-      // Test no smoothing
-      // tempTimeL[i] = 0.5 * (this.timeArrayL[i] + this.timeArrayL[lastIdx]);
-      // tempTimeR[i] = 0.5 * (this.timeArrayR[i] + this.timeArrayR[lastIdx]);
-      // lastIdx = i;
     }
 
     // Use full width samples for the FFT
@@ -89,4 +84,5 @@ export default class AudioProcessor {
   disconnectAudio (audionode) {
     audionode.disconnect(this.audible);
   }
+/* eslint-enable no-bitwise */
 }
