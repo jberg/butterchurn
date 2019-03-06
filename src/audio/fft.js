@@ -1,19 +1,22 @@
 export default class FFT {
-  constructor (samplesIn, samplesOut) {
+  constructor (samplesIn, samplesOut, equalize = false) {
     this.samplesIn = samplesIn;
     this.samplesOut = samplesOut;
+    this.equalize = equalize;
     this.NFREQ = samplesOut * 2;
 
-    this.initEqualizeTable();
+    if (this.equalize) {
+      this.initEqualizeTable();
+    }
     this.initBitRevTable();
     this.initCosSinTable();
   }
 
   initEqualizeTable () {
-    this.equalize = new Float32Array(this.samplesOut);
+    this.equalizeArr = new Float32Array(this.samplesOut);
     const invHalfNFREQ = 1.0 / this.samplesOut;
     for (let i = 0; i < this.samplesOut; i++) {
-      this.equalize[i] = -0.02 * Math.log((this.samplesOut - i) * invHalfNFREQ);
+      this.equalizeArr[i] = -0.02 * Math.log((this.samplesOut - i) * invHalfNFREQ);
     }
   }
 
@@ -109,9 +112,15 @@ export default class FFT {
     }
 
     const spectralDataOut = new Float32Array(this.samplesOut);
-    for (let i = 0; i < this.samplesOut; i++) {
-      spectralDataOut[i] = this.equalize[i] *
-                           Math.sqrt((real[i] * real[i]) + (imag[i] * imag[i]));
+    if (this.equalize) {
+      for (let i = 0; i < this.samplesOut; i++) {
+        spectralDataOut[i] = this.equalizeArr[i] *
+                             Math.sqrt((real[i] * real[i]) + (imag[i] * imag[i]));
+      }
+    } else {
+      for (let i = 0; i < this.samplesOut; i++) {
+        spectralDataOut[i] = Math.sqrt((real[i] * real[i]) + (imag[i] * imag[i]));
+      }
     }
 
     return spectralDataOut;

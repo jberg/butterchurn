@@ -5,7 +5,7 @@ export default class AudioProcessor {
     this.numSamps = 512;
     this.fftSize = this.numSamps * 2;
 
-    this.fft = new FFT(this.fftSize, 512);
+    this.fft = new FFT(this.fftSize, 512, false);
 
     if (context) {
       this.audioContext = context;
