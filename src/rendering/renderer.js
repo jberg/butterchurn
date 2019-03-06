@@ -893,11 +893,9 @@ export default class Renderer {
       this.gl.RGBA, this.gl.UNSIGNED_BYTE, data);
 
     // flip data
-    Array.from({ length: this.texsizeY }, (val, i) =>
-      data.slice(i * this.texsizeX * 4, (i + 1) * this.texsizeX * 4)
-    ).forEach((val, i) =>
-      data.set(val, (this.texsizeY - i - 1) * this.texsizeX * 4)
-    );
+    Array.from({ length: this.texsizeY },
+      (val, i) => data.slice(i * this.texsizeX * 4, (i + 1) * this.texsizeX * 4))
+      .forEach((val, i) => data.set(val, (this.texsizeY - i - 1) * this.texsizeX * 4));
 
     const canvas = document.createElement('canvas');
     canvas.width = this.texsizeX;
