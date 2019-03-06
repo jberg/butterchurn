@@ -31,22 +31,22 @@ export default class AudioProcessor {
       this.audible.connect(this.splitter);
       this.splitter.connect(this.analyserL, 0);
       this.splitter.connect(this.analyserR, 1);
-
-      // Initialised once as typed arrays
-      // Used for webaudio API raw (time domain) samples. 0 -> 255
-      this.timeByteArray = new Uint8Array(this.fftSize);
-      this.timeByteArrayL = new Uint8Array(this.fftSize);
-      this.timeByteArrayR = new Uint8Array(this.fftSize);
-
-      // Signed raw samples shifted to -128 -> 127
-      this.timeArray = new Int8Array(this.fftSize);
-      this.timeByteArraySignedL = new Int8Array(this.fftSize);
-      this.timeByteArraySignedR = new Int8Array(this.fftSize);
-
-      // Undersampled from this.fftSize to this.numSamps
-      this.timeArrayL = new Int8Array(this.numSamps);
-      this.timeArrayR = new Int8Array(this.numSamps);
     }
+
+    // Initialised once as typed arrays
+    // Used for webaudio API raw (time domain) samples. 0 -> 255
+    this.timeByteArray = new Uint8Array(this.fftSize);
+    this.timeByteArrayL = new Uint8Array(this.fftSize);
+    this.timeByteArrayR = new Uint8Array(this.fftSize);
+
+    // Signed raw samples shifted to -128 -> 127
+    this.timeArray = new Int8Array(this.fftSize);
+    this.timeByteArraySignedL = new Int8Array(this.fftSize);
+    this.timeByteArraySignedR = new Int8Array(this.fftSize);
+
+    // Undersampled from this.fftSize to this.numSamps
+    this.timeArrayL = new Int8Array(this.numSamps);
+    this.timeArrayR = new Int8Array(this.numSamps);
   }
 
   sampleAudio () {
