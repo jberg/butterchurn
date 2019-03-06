@@ -14,26 +14,33 @@ export default class AudioLevels {
     this.avg.fill(1);
     this.longAvg.fill(1);
   }
+
   /* eslint-disable camelcase */
   get bass () {
     return this.val[0];
   }
+
   get bass_att () {
     return this.att[0];
   }
+
   get mid () {
     return this.val[1];
   }
+
   get mid_att () {
     return this.att[1];
   }
+
   get treb () {
     return this.val[2];
   }
+
   get treb_att () {
     return this.att[2];
   }
   /* eslint-enable camelcase */
+
   static isFiniteNumber (num) {
     return (Number.isFinite(num) && !Number.isNaN(num));
   }
