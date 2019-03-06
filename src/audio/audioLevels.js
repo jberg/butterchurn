@@ -50,8 +50,8 @@ export default class AudioLevels {
       let effectiveFPS = fps;
       if (!AudioLevels.isFiniteNumber(effectiveFPS) || effectiveFPS < 15) {
         effectiveFPS = 15;
-      } else if (effectiveFPS > 120) {
-        effectiveFPS = 120;
+      } else if (effectiveFPS > 144) {
+        effectiveFPS = 144;
       }
 
       // Clear for next loop
