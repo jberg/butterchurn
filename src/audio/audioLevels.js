@@ -1,26 +1,39 @@
 export default class AudioLevels {
   constructor (audio) {
     this.audio = audio;
+    this.starts = new Uint8Array([0, 85, 170]);
+    this.stops = new Uint8Array([85, 170, 255]);
 
-    this.bass = 1;
-    this.bass_att = 1;
-    this.bass_imm = 0;
-    this.bass_avg = 1;
-    this.bass_long_avg = 1;
+    this.val = new Float32Array(3);
+    this.imm = new Float32Array(3);
+    this.att = new Float32Array(3);
+    this.avg = new Float32Array(3);
+    this.longAvg = new Float32Array(3);
 
-    this.mid = 1;
-    this.mid_att = 1;
-    this.mid_imm = 0;
-    this.mid_avg = 1;
-    this.mid_long_avg = 1;
-
-    this.treb = 1;
-    this.treb_att = 1;
-    this.treb_imm = 0;
-    this.treb_avg = 1;
-    this.treb_long_avg = 1;
+    this.att.fill(1);
+    this.avg.fill(1);
+    this.longAvg.fill(1);
   }
-
+  /* eslint-disable camelcase */
+  get bass () {
+    return this.val[0];
+  }
+  get bass_att () {
+    return this.att[0];
+  }
+  get mid () {
+    return this.val[1];
+  }
+  get mid_att () {
+    return this.att[1];
+  }
+  get treb () {
+    return this.val[2];
+  }
+  get treb_att () {
+    return this.att[2];
+  }
+  /* eslint-enable camelcase */
   static isFiniteNumber (num) {
     return (Number.isFinite(num) && !Number.isNaN(num));
   }
@@ -41,28 +54,23 @@ export default class AudioLevels {
         effectiveFPS = 120;
       }
 
-      const val = [0.0, 0.0, 0.0];
-      const imm = [0.0, 0.0, 0.0];
+      // Clear for next loop
+      this.imm.fill(0);
       for (let i = 0; i < 3; i++) {
-        const start = Math.floor(this.audio.numSamps * (i / 6));
-        const end = Math.floor(this.audio.numSamps * ((i + 1) / 6));
-        for (let j = start; j < end; j++) {
-          imm[i] += this.audio.freqArray[j];
+        for (let j = this.starts[i]; j < this.stops[i]; j++) {
+          this.imm[i] += this.audio.freqArray[j];
         }
       }
 
-      const att = [this.bass_att, this.mid_att, this.treb_att];
-      const avg = [this.bass_avg, this.mid_avg, this.treb_avg];
-      const longAvg = [this.bass_long_avg, this.mid_long_avg, this.treb_long_avg];
       for (let i = 0; i < 3; i++) {
         let rate;
-        if (imm[i] > avg[i]) {
+        if (this.imm[i] > this.avg[i]) {
           rate = 0.2;
         } else {
           rate = 0.5;
         }
         rate = AudioLevels.adjustRateToFPS(rate, 30.0, effectiveFPS);
-        avg[i] = (avg[i] * rate) + (imm[i] * (1 - rate));
+        this.avg[i] = (this.avg[i] * rate) + (this.imm[i] * (1 - rate));
 
         if (frame < 50) {
           rate = 0.9;
@@ -70,36 +78,16 @@ export default class AudioLevels {
           rate = 0.992;
         }
         rate = AudioLevels.adjustRateToFPS(rate, 30.0, effectiveFPS);
-        longAvg[i] = (longAvg[i] * rate) + (imm[i] * (1 - rate));
+        this.longAvg[i] = (this.longAvg[i] * rate) + (this.imm[i] * (1 - rate));
 
-        if (Math.abs(longAvg[i]) < 0.001) {
-          val[i] = 1.0;
-          att[i] = 1.0;
+        if (Math.abs(this.longAvg[i]) < 0.001) {
+          this.val[i] = 1.0;
+          this.att[i] = 1.0;
         } else {
-          val[i] = imm[i] / longAvg[i];
-          att[i] = avg[i] / longAvg[i];
+          this.val[i] = this.imm[i] / this.longAvg[i];
+          this.att[i] = this.avg[i] / this.longAvg[i];
         }
       }
-
-      this.bass = val[0];
-      this.mid = val[1];
-      this.treb = val[2];
-
-      this.bass_att = att[0];
-      this.mid_att = att[1];
-      this.treb_att = att[2];
-
-      this.bass_imm = imm[0];
-      this.mid_imm = imm[1];
-      this.treb_imm = imm[2];
-
-      this.bass_avg = avg[0];
-      this.mid_avg = avg[1];
-      this.treb_avg = avg[2];
-
-      this.bass_long_avg = longAvg[0];
-      this.mid_long_avg = longAvg[1];
-      this.treb_long_avg = longAvg[2];
     }
   }
 }
