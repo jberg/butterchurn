@@ -28,25 +28,24 @@
   "license": "MIT",
   "homepage": "https://butterchurnviz.com",
   "dependencies": {
-    "babel-runtime": "^6.26.0",
+    "@babel/runtime": "^7.0.0",
     "ecma-proposal-math-extensions": "0.0.2"
   },
   "devDependencies": {
-    "babel": "^6.23.0",
-    "babel-core": "^6.26.0",
-    "babel-eslint": "^8.2.1",
-    "babel-loader": "^7.1.2",
+    "@babel/core": "^7.0.0",
+    "@babel/plugin-transform-runtime": "^7.0.0",
+    "@babel/preset-env": "^7.0.0",
+    "babel-eslint": "^9.0.0",
+    "babel-loader": "^8.0.0",
     "babel-plugin-add-module-exports": "^0.2.1",
-    "babel-plugin-transform-runtime": "^6.23.0",
-    "babel-preset-env": "^1.6.1",
-    "eslint": "^4.17.0",
+    "eslint": "^5.15.1",
     "eslint-config-airbnb": "^16.1.0",
-    "eslint-loader": "^1.9.0",
+    "eslint-loader": "^2.1.2",
     "eslint-plugin-import": "^2.8.0",
     "eslint-plugin-jsx-a11y": "^6.0.3",
     "eslint-plugin-react": "^7.6.1",
-    "uglifyjs-webpack-plugin": "^1.1.8",
-    "webpack": "^3.10.0",
+    "webpack": "^4.29.6",
+    "webpack-cli": "^3.2.3",
     "yargs": "^11.0.0"
   }
 }
