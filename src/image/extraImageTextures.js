@@ -36,5 +36,3 @@ const imageData = {
 export default class ButterchurnExtraImages {
   static getImages () { return imageData; }
 }
-
-module.exports = ButterchurnExtraImages;

@@ -7,5 +7,3 @@ export default class Butterchurn {
     return new Visualizer(context, canvas, opts);
   }
 }
-
-module.exports = Butterchurn;

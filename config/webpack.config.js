@@ -34,10 +34,10 @@ const config = {
         test: /(\.js)$/,
         exclude: /node_modules/,
         use: {
-          loader: 'babel-loader?cacheDirectory',
+          loader: 'babel-loader',
           options: {
-            plugins: ['@babel/transform-runtime'],
-            presets: ['@babel/preset-env']
+            presets: ['@babel/preset-env'],
+            sourceType: 'unambiguous'
           }
         }
       },

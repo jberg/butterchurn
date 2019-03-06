@@ -14,4 +14,3 @@ const isSupported = () => {
 };
 
 export default isSupported;
-module.exports = isSupported;
