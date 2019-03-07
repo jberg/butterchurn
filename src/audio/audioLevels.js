@@ -11,10 +11,10 @@ export default class AudioLevels {
 
     const bucketHz = sampleRate / this.audio.fftSize;
 
-    const bassLow = Math.clamp(Math.round(20 / bucketHz) - 1, 0, this.audio.fftSize - 1);
-    const bassHigh = Math.clamp(Math.round(320 / bucketHz) - 1, 0, this.audio.fftSize - 1);
-    const midHigh = Math.clamp(Math.round(2800 / bucketHz) - 1, 0, this.audio.fftSize - 1);
-    const trebHigh = Math.clamp(Math.round(11025 / bucketHz) - 1, 0, this.audio.fftSize - 1);
+    const bassLow = Math.clamp(Math.round(20 / bucketHz) - 1, 0, this.audio.numSamps - 1);
+    const bassHigh = Math.clamp(Math.round(320 / bucketHz) - 1, 0, this.audio.numSamps - 1);
+    const midHigh = Math.clamp(Math.round(2800 / bucketHz) - 1, 0, this.audio.numSamps - 1);
+    const trebHigh = Math.clamp(Math.round(11025 / bucketHz) - 1, 0, this.audio.numSamps - 1);
 
     this.starts = [bassLow, bassHigh, midHigh];
     this.stops = [bassHigh, midHigh, trebHigh];
