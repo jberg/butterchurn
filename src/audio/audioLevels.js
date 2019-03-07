@@ -102,7 +102,7 @@ export default class AudioLevels {
         rate = AudioLevels.adjustRateToFPS(rate, 30.0, effectiveFPS);
         this.longAvg[i] = (this.longAvg[i] * rate) + (this.imm[i] * (1 - rate));
 
-        if (Math.abs(this.longAvg[i]) < 0.001) {
+        if (this.longAvg[i] < 0.001) {
           this.val[i] = 1.0;
           this.att[i] = 1.0;
         } else {
