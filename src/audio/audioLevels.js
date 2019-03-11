@@ -61,10 +61,7 @@ export default class AudioLevels {
   }
 
   static adjustRateToFPS (rate, baseFPS, FPS) {
-    const ratePerSecond = rate ** baseFPS;
-    const ratePerFrame = ratePerSecond ** (1.0 / FPS);
-
-    return ratePerFrame;
+    return rate ** (baseFPS / FPS);
   }
 
   updateAudioLevels (fps, frame) {
