@@ -5,7 +5,7 @@ export default class AudioProcessor {
     this.numSamps = 512;
     this.fftSize = this.numSamps * 2;
 
-    this.fft = new FFT(this.fftSize, 512, false);
+    this.fft = new FFT(this.fftSize, 512, true);
 
     if (context) {
       this.audioContext = context;
@@ -44,6 +44,10 @@ export default class AudioProcessor {
     this.timeByteArraySignedL = new Int8Array(this.fftSize);
     this.timeByteArraySignedR = new Int8Array(this.fftSize);
 
+    // Temporary array for smoothing
+    this.tempTimeArrayL = new Int8Array(this.fftSize);
+    this.tempTimeArrayR = new Int8Array(this.fftSize);
+
     // Undersampled from this.fftSize to this.numSamps
     this.timeArrayL = new Int8Array(this.numSamps);
     this.timeArrayR = new Int8Array(this.numSamps);
@@ -63,18 +67,27 @@ export default class AudioProcessor {
   }
   /* eslint-disable no-bitwise */
   processAudio () {
-    for (let i = 0, j = 0; i < this.fftSize; i++) {
+    for (let i = 0, j = 0, lastIdx = 0; i < this.fftSize; i++) {
       // Shift Unsigned to Signed about 0
       this.timeArray[i] = this.timeByteArray[i] - 128;
       this.timeByteArraySignedL[i] = this.timeByteArrayL[i] - 128;
       this.timeByteArraySignedR[i] = this.timeByteArrayR[i] - 128;
 
+      this.tempTimeArrayL[i] =
+        0.5 *
+        (this.timeByteArraySignedL[i] + this.timeByteArraySignedL[lastIdx]);
+      this.tempTimeArrayR[i] =
+        0.5 *
+        (this.timeByteArraySignedR[i] + this.timeByteArraySignedR[lastIdx]);
+
       // Undersampled
-      if (i & 2) { // Equivalent to i % 2
-        this.timeArrayL[j] = this.timeByteArraySignedL[i];
-        this.timeArrayR[j] = this.timeByteArraySignedR[i];
+      if (i % 2 === 0) {
+        this.timeArrayL[j] = this.tempTimeArrayL[i];
+        this.timeArrayR[j] = this.tempTimeArrayR[i];
         j += 1;
       }
+
+      lastIdx = i;
     }
 
     // Use full width samples for the FFT
