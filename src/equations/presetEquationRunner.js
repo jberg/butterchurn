@@ -206,4 +206,20 @@ export default class PresetEquationRunner {
     this.mdVSFrameMap = Utils.pick(this.mdVSFrame, this.mdVSUserKeys);
     this.mdVSQAfterFrame = Utils.pick(this.mdVSFrame, this.qs);
   }
+
+  runPixelEquations (mdVSVertex) {
+    return this.preset.pixel_eqs(mdVSVertex);
+  }
+
+  runShapeFrameEquations (shapeIdx, mdVSShape) {
+    return this.preset.shapes[shapeIdx].frame_eqs(mdVSShape);
+  }
+
+  runWaveFrameEquations (waveIdx, mdVSWave) {
+    return this.preset.waves[waveIdx].frame_eqs(mdVSWave);
+  }
+
+  runWavePointEquations (waveIdx, mdVSWaveFrame) {
+    return this.preset.waves[waveIdx].point_eqs(mdVSWaveFrame);
+  }
 }

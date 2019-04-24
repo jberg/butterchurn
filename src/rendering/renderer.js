@@ -354,7 +354,7 @@ export default class Renderer {
     }
   }
 
-  runPixelEquations (preset, mdVSFrame, runVertEQs, blending) {
+  runPixelEquations (presetEquationRunner, mdVSFrame, blending) {
     const gridX = this.mesh_width;
     const gridZ = this.mesh_height;
 
@@ -385,7 +385,7 @@ export default class Renderer {
         const y = ((iz / gridZ) * 2.0) - 1.0;
         const rad = Math.sqrt((x * x * aspectx * aspectx) + (y * y * aspecty * aspecty));
 
-        if (runVertEQs) {
+        if (presetEquationRunner.runVertEQs) {
           let ang;
           if (iz === gridZ / 2 && ix === gridX / 2) {
             ang = 0;
@@ -409,7 +409,7 @@ export default class Renderer {
           mdVSVertex.sx = mdVSFrame.sx;
           mdVSVertex.sy = mdVSFrame.sy;
 
-          mdVSVertex = preset.pixel_eqs(mdVSVertex);
+          mdVSVertex = presetEquationRunner.runPixelEquations(mdVSVertex);
         }
 
         const warp = mdVSVertex.warp;
@@ -659,10 +659,7 @@ export default class Renderer {
 
     this.presetEquationRunner.runFrameEquations(globalVars);
     const mdVSFrame = this.presetEquationRunner.mdVSFrame;
-    this.runPixelEquations(this.presetEquationRunner.preset,
-                           mdVSFrame,
-                           this.presetEquationRunner.runVertEQs,
-                           false);
+    this.runPixelEquations(this.presetEquationRunner, mdVSFrame, false);
 
     Object.assign(this.regVars, Utils.pick(this.mdVSVertex, this.regs));
     Object.assign(globalVars, this.regVars);
@@ -670,9 +667,8 @@ export default class Renderer {
     let mdVSFrameMixed;
     if (this.blending) {
       this.prevPresetEquationRunner.runFrameEquations(prevGlobalVars);
-      this.runPixelEquations(this.prevPresetEquationRunner.preset,
+      this.runPixelEquations(this.prevPresetEquationRunner,
                              this.prevPresetEquationRunner.mdVSFrame,
-                             this.prevPresetEquationRunner.runVertEQs,
                              true);
 
       mdVSFrameMixed = Renderer.mixFrameEquations(this.blendProgress,
@@ -743,6 +739,7 @@ export default class Renderer {
                               globalVars,
                               this.presetEquationRunner,
                               this.preset.shapes[i],
+                              i,
                               this.prevTexture);
       });
     }
@@ -756,7 +753,8 @@ export default class Renderer {
                                     this.audio.freqArrayR,
                                     globalVars,
                                     this.presetEquationRunner,
-                                    this.preset.waves[i]);
+                                    this.preset.waves[i],
+                                    i);
       });
     }
 
@@ -767,6 +765,7 @@ export default class Renderer {
                                 prevGlobalVars,
                                 this.prevPresetEquationRunner,
                                 this.prevPreset.shapes[i],
+                                i,
                                 this.prevTexture);
         });
       }
@@ -780,7 +779,8 @@ export default class Renderer {
                                       this.audio.freqArrayR,
                                       prevGlobalVars,
                                       this.prevPresetEquationRunner,
-                                      this.prevPreset.waves[i]);
+                                      this.prevPreset.waves[i],
+                                      i);
         });
       }
     }

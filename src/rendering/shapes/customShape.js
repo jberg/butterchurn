@@ -132,7 +132,8 @@ export default class CustomShape {
     this.thickOffsetLoc = this.gl.getUniformLocation(this.shaderProgram, 'thickOffset');
   }
 
-  drawCustomShape (blendProgress, globalVars, presetEquationRunner, shapeEqs, prevTexture) {
+  drawCustomShape (blendProgress, globalVars, presetEquationRunner, shapeEqs, shapeIdx,
+                   prevTexture) {
     if (shapeEqs.baseVals.enabled !== 0) {
       this.setupShapeBuffers(presetEquationRunner.mdVSFrame);
 
@@ -170,7 +171,7 @@ export default class CustomShape {
         mdVSShape.tex_ang = mdVSShapeBaseVals.tex_ang;
         mdVSShape.additive = mdVSShapeBaseVals.additive;
 
-        const mdVSShapeFrame = shapeEqs.frame_eqs(mdVSShape);
+        const mdVSShapeFrame = presetEquationRunner.runShapeFrameEquations(shapeIdx, mdVSShape);
 
         let sides = mdVSShapeFrame.sides;
         sides = Math.clamp(sides, 3, 100);

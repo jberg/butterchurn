@@ -82,7 +82,7 @@ export default class CustomWaveform {
   }
 
   generateWaveform (timeArrayL, timeArrayR, freqArrayL, freqArrayR,
-                    globalVars, presetEquationRunner, waveEqs, alphaMult) {
+                    globalVars, presetEquationRunner, waveEqs, waveIdx, alphaMult) {
     if (waveEqs.baseVals.enabled !== 0 && timeArrayL.length > 0) {
       const mdVSWave = Object.assign({},
                                      presetEquationRunner.mdVSWaves[this.index],
@@ -91,7 +91,7 @@ export default class CustomWaveform {
                                      presetEquationRunner.mdVSTWaveInits[this.index],
                                      globalVars);
 
-      let mdVSWaveFrame = waveEqs.frame_eqs(mdVSWave);
+      let mdVSWaveFrame = presetEquationRunner.runWaveFrameEquations(waveIdx, mdVSWave);
 
       const maxSamples = 512;
       if (Object.prototype.hasOwnProperty.call(mdVSWaveFrame, 'samples')) {
@@ -167,7 +167,7 @@ export default class CustomWaveform {
           mdVSWaveFrame.a = frameA;
 
           if (waveEqs.point_eqs !== '') {
-            mdVSWaveFrame = waveEqs.point_eqs(mdVSWaveFrame);
+            mdVSWaveFrame = presetEquationRunner.runWavePointEquations(waveIdx, mdVSWaveFrame);
           }
 
           const x = ((mdVSWaveFrame.x * 2) - 1) * this.invAspectx;
@@ -210,9 +210,9 @@ export default class CustomWaveform {
   }
 
   drawCustomWaveform (blendProgress, timeArrayL, timeArrayR, freqArrayL, freqArrayR,
-                      globalVars, presetEquationRunner, waveEqs) {
+                      globalVars, presetEquationRunner, waveEqs, waveIdx) {
     if (waveEqs && this.generateWaveform(timeArrayL, timeArrayR, freqArrayL, freqArrayR,
-                                         globalVars, presetEquationRunner, waveEqs,
+                                         globalVars, presetEquationRunner, waveEqs, waveIdx,
                                          blendProgress)) {
       this.gl.useProgram(this.shaderProgram);
 
