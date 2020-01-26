@@ -1,3 +1,4 @@
+import milkdropParser from 'milkdrop-eel-parser';
 import AudioProcessor from './audio/audioProcessor';
 import Renderer from './rendering/renderer';
 
@@ -5,12 +6,15 @@ export default class Visualizer {
   constructor (audioContext, canvas, opts) {
     this.audio = new AudioProcessor(audioContext);
 
+    console.log('EEL ALPHA');
+
     const gl = canvas.getContext('webgl2', {
       alpha: false,
       antialias: false,
       depth: false,
       stencil: false,
       premultipliedAlpha: false,
+      desynchronized: true,
     });
 
     this.baseValsDefaults = {
@@ -152,7 +156,29 @@ export default class Visualizer {
                                                    preset.waves[i].baseVals);
     }
 
-    if (typeof preset.init_eqs !== 'function') {
+    if (Object.prototype.hasOwnProperty.call(preset, 'init_eqs_eel_str')) {
+      const parsedPreset = milkdropParser.parse_preset_wave_and_shape(preset.presetVersion || 2,
+                                                                      preset.init_eqs_eel_str,
+                                                                      preset.frame_eqs_eel_str,
+                                                                      preset.pixel_eqs_eel_str,
+                                                                      preset.shapes,
+                                                                      preset.waves);
+      preset.init_eqs_eel_parse = parsedPreset.init_eqs_eel_parse;
+      preset.frame_eqs_eel_parse = parsedPreset.frame_eqs_eel_parse;
+      preset.pixel_eqs_eel_parse = parsedPreset.pixel_eqs_eel_parse;
+
+      for (let i = 0; i < preset.shapes.length; i++) {
+        preset.shapes[i].init_eqs_eel_parse = parsedPreset.shapes[i].init_eqs_eel_parse;
+        preset.shapes[i].frame_eqs_eel_parse = parsedPreset.shapes[i].frame_eqs_eel_parse;
+      }
+
+      for (let i = 0; i < preset.waves.length; i++) {
+        preset.waves[i].init_eqs_eel_parse = parsedPreset.waves[i].init_eqs_eel_parse;
+        preset.waves[i].frame_eqs_eel_parse = parsedPreset.waves[i].frame_eqs_eel_parse;
+        preset.waves[i].point_eqs_eel_parse = parsedPreset.waves[i].point_eqs_eel_parse;
+      }
+      console.log(preset);
+    } else if (typeof preset.init_eqs !== 'function') {
       /* eslint-disable no-param-reassign, no-new-func */
       preset.init_eqs = new Function('a', `${preset.init_eqs_str} return a;`);
       preset.frame_eqs = new Function('a', `${preset.frame_eqs_str} return a;`);
@@ -189,6 +215,7 @@ export default class Visualizer {
       }
       /* eslint-enable no-param-reassign, no-new-func */
     }
+
     this.renderer.loadPreset(preset, blendTime);
   }
 

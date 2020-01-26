@@ -1,6 +1,7 @@
 import AudioLevels from '../audio/audioLevels';
 import blankPreset from '../blankPreset';
 import PresetEquationRunner from '../equations/presetEquationRunner';
+import PresetEELEquationRunner from '../equations/presetEELEquationRunner';
 import BasicWaveform from './waves/basicWaveform';
 import CustomWaveform from './waves/customWaveform';
 import CustomShape from './shapes/customShape';
@@ -200,7 +201,12 @@ export default class Renderer {
       aspectx: this.aspectx,
       aspecty: this.aspecty,
     };
-    this.presetEquationRunner = new PresetEquationRunner(this.preset, globalVars, params);
+
+    if (Object.prototype.hasOwnProperty.call(this.preset, 'init_eqs_eel_str')) {
+      this.presetEquationRunner = new PresetEELEquationRunner(this.preset, globalVars, params);
+    } else {
+      this.presetEquationRunner = new PresetEquationRunner(this.preset, globalVars, params);
+    }
     this.regVars = this.presetEquationRunner.mdVSRegs;
 
     const tmpWarpShader = this.prevWarpShader;

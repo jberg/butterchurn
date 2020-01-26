@@ -2659,6 +2659,11 @@ micromatch@^3.0.4, micromatch@^3.1.4, micromatch@^3.1.8:
     snapdragon "^0.8.1"
     to-regex "^3.0.2"
 
+milkdrop-eel-parser@^0.0.4:
+  version "0.0.4"
+  resolved "https://registry.yarnpkg.com/milkdrop-eel-parser/-/milkdrop-eel-parser-0.0.4.tgz#274224f97b8954ff653b16d029e7e8c2806aea15"
+  integrity sha512-4PsOdTMDB7GM3UFzqXQQXf8MBeoolOhsBLMlhug+IIMZ+yNkvqLbdqDbrueGZc8P8tLRJP8pbAxna1yjFr06HQ==
+
 miller-rabin@^4.0.0:
   version "4.0.1"
   resolved "https://registry.yarnpkg.com/miller-rabin/-/miller-rabin-4.0.1.tgz#f080351c865b0dc562a8462966daa53543c78a4d"

@@ -6,11 +6,17 @@
   <meta name="description" content="Butterchurn Demo Example">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <!-- <script type="text/javascript" src="../lib/butterchurn.js"></script> -->
   <script type="text/javascript" src="https://unpkg.com/lodash"></script>
+  <!-- <script type="text/javascript" src="../lib/butterchurn.js"></script> -->
   <script type="text/javascript" src="https://unpkg.com/butterchurn"></script>
+  <script type="text/javascript" src="https://unpkg.com/butterchurn/lib/butterchurnExtraImages.min.js"></script>
   <script type="text/javascript" src="https://unpkg.com/butterchurn-presets"></script>
   <script type="text/javascript" src="https://unpkg.com/butterchurn-presets/lib/butterchurnPresetsExtra.min.js"></script>
+  <script type="text/javascript" src="https://unpkg.com/butterchurn-presets/lib/butterchurnPresetsExtra2.min.js"></script>
+  <!-- <script type="text/javascript" src="butterchurnPresets.min.js"></script>
+  <script type="text/javascript" src="butterchurnPresetsExtra.min.js"></script>
+  <script type="text/javascript" src="butterchurnPresetsExtra2.min.js"></script> -->
+  <script type="text/javascript" src="milkdrop-preset-converter.min.js"></script>
   <script
     src="https://code.jquery.com/jquery-3.1.1.min.js"
     integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
@@ -147,6 +153,8 @@
 
         visualizer.loadPreset(presets[presetKeys[presetIndex]], blendTime);
         $('#presetSelect').val(presetIndex);
+
+        restartCycleInterval();
       }
 
       function prevPreset(blendTime = 5.7) {
@@ -159,6 +167,21 @@
 
         visualizer.loadPreset(presets[presetKeys[presetIndex]], blendTime);
         $('#presetSelect').val(presetIndex);
+
+        restartCycleInterval();
+      }
+
+      function savePreset() {
+        var presetKey = presetKeys[presetIndex];
+        var savedKeys = localStorage.getItem('savedPresets');
+        if (_.isEmpty(savedKeys)) {
+          savedKeys = [];
+        } else {
+          savedKeys = JSON.parse(savedKeys);
+        }
+        savedKeys.push(presetKeys[presetIndex]);
+        savedKeys = _.uniq(savedKeys);
+        localStorage.setItem('savedPresets', JSON.stringify(savedKeys));
       }
 
       function restartCycleInterval() {
@@ -168,17 +191,21 @@
         }
 
         if (presetCycle) {
-          cycleInterval = setInterval(() => nextPreset(2.7), presetCycleLength);
+          cycleInterval = setInterval(() => {
+            nextPreset(2.7);
+          }, presetCycleLength);
         }
       }
 
       $(document).keydown((e) => {
         if (e.which === 32 || e.which === 39) {
-          nextPreset();
+          nextPreset(5);
         } else if (e.which === 8 || e.which === 37) {
           prevPreset();
         } else if (e.which === 72) {
           nextPreset(0);
+        } else if (e.which === 83) {
+          savePreset();
         }
       });
 
@@ -226,6 +253,7 @@
       });
 
       function initPlayer() {
+        AudioContext = window.AudioContext = (window.AudioContext || window.webkitAudioContext);
         audioContext = new AudioContext();
 
         presets = {};
@@ -234,6 +262,9 @@
         }
         if (window.butterchurnPresetsExtra) {
           Object.assign(presets, butterchurnPresetsExtra.getPresets());
+        }
+        if (window.butterchurnPresetsExtra2) {
+          Object.assign(presets, butterchurnPresetsExtra2.getPresets());
         }
         presets = _(presets).toPairs().sortBy(([k, v]) => k.toLowerCase()).fromPairs().value();
         presetKeys = _.keys(presets);
@@ -250,12 +281,51 @@
         visualizer = butterchurn.default.createVisualizer(audioContext, canvas , {
           width: 800,
           height: 600,
+          mesh_width: 64,
+          mesh_height: 48,
           pixelRatio: window.devicePixelRatio || 1,
           textureRatio: 1,
         });
+        visualizer.loadExtraImages(butterchurnExtraImages.default.getImages());
         nextPreset(0);
-        cycleInterval = setInterval(() => nextPreset(2.7), presetCycleLength);
+        restartCycleInterval();
       }
+
+      var mainWrapper = document.getElementById('mainWrapper');
+      mainWrapper.addEventListener('dragover', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'copy';
+      });
+
+      // Get file data on drop
+      mainWrapper.addEventListener('drop', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+
+        var files = e.dataTransfer.files;
+        for (var i = 0; i < files.length; i++) {
+          var file = files[i];
+          if (file.name.match(/\.milk/)) {
+            var reader = new FileReader();
+            reader.onload = async (e2) => {
+              var convertedPreset = await milkdropPresetConverter.convertPreset(reader.result);
+              console.log('converted preset: %O', convertedPreset);
+              visualizer.loadPreset(convertedPreset, 2.7);
+            }
+
+            reader.readAsText(file);
+          } else if (file.name.match(/\.json/)) {
+            var reader = new FileReader();
+            reader.onload = (e2) => {
+              var preset = JSON.parse(reader.result);
+              visualizer.loadPreset(preset, 2.7);
+            }
+
+            reader.readAsText(file);
+          }
+        }
+      });
 
       initPlayer();
     });

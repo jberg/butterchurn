@@ -154,6 +154,9 @@ export default class CompShader {
     fragShaderText = fragShaderText.replace(/texture3D/g, 'texture');
 
     this.userTextures = ShaderUtils.getUserSamplers(fragShaderHeaderText);
+    // if (this.userTextures.length > 0) {
+    //   console.log('USING TEXTURES: %O', _.join(_.map(this.userTextures, 'sampler'), ', '));
+    // }
 
     this.shaderProgram = this.gl.createProgram();
 
@@ -317,6 +320,10 @@ export default class CompShader {
                                         fragColor = vec4(ret, vColor.a);
                                       }`);
     this.gl.compileShader(fragShader);
+
+    if (this.gl.getShaderInfoLog(fragShader).length > 0) {
+      console.log(this.gl.getShaderInfoLog(fragShader));
+    }
 
     this.gl.attachShader(this.shaderProgram, vertShader);
     this.gl.attachShader(this.shaderProgram, fragShader);
@@ -533,6 +540,8 @@ export default class CompShader {
     this.gl.vertexAttribPointer(this.positionLocation, 3, this.gl.FLOAT, false, 0, 0);
     this.gl.enableVertexAttribArray(this.positionLocation);
 
+    // TODO: move uv/rad/ang to be attributes (need to transfer from pixel eqs calc)
+    // TODO: SQUISH TO CENTER
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.compColorVertexBuf);
     this.gl.bufferData(this.gl.ARRAY_BUFFER, compColors, this.gl.STATIC_DRAW);
 

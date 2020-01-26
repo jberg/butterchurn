@@ -129,6 +129,9 @@ export default class WarpShader {
     fragShaderText = fragShaderText.replace(/texture3D/g, 'texture');
 
     this.userTextures = ShaderUtils.getUserSamplers(fragShaderHeaderText);
+    // if (this.userTextures.length > 0) {
+    //   console.log('USING TEXTURES: %O', _.join(_.map(this.userTextures, 'sampler'), ', '));
+    // }
 
     this.shaderProgram = this.gl.createProgram();
 
@@ -278,6 +281,10 @@ export default class WarpShader {
                                         fragColor = vec4(ret, 1.0) * vColor;
                                       }`);
     this.gl.compileShader(fragShader);
+
+    if (this.gl.getShaderInfoLog(fragShader).length > 0) {
+      console.log(this.gl.getShaderInfoLog(fragShader));
+    }
 
     this.gl.attachShader(this.shaderProgram, vertShader);
     this.gl.attachShader(this.shaderProgram, fragShader);

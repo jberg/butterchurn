@@ -2,6 +2,9 @@ export default class AudioLevels {
   constructor (audio) {
     this.audio = audio;
 
+    // Add customizable audio cutoffs from visualizer creation
+    // Add maxAudioFPS that controls how often to update the audio analysis
+
     let sampleRate;
     if (this.audio.audioContext) {
       sampleRate = this.audio.audioContext.sampleRate;

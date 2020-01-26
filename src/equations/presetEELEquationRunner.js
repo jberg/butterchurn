@@ -1,6 +1,7 @@
+import milkdropParser from 'milkdrop-eel-parser';
 import Utils from '../utils';
 
-export default class PresetEquationRunner {
+export default class PresetEELEquationRunner {
   constructor (preset, globalVars, opts) {
     this.preset = preset;
 
@@ -26,7 +27,7 @@ export default class PresetEquationRunner {
   }
 
   initializeEquations (globalVars) {
-    this.runVertEQs = (this.preset.pixel_eqs !== '');
+    this.runVertEQs = (this.preset.pixel_eqs_eel_str !== '');
 
     this.mdVSQInit = null;
     this.mdVSRegs = null;
@@ -77,7 +78,14 @@ export default class PresetEquationRunner {
 
     const nonUserKeys = this.qs.concat(this.regs, Object.keys(this.mdVS));
 
-    const mdVSAfterInit = this.preset.init_eqs(Utils.cloneVars(this.mdVS));
+    let mdVSAfterInit;
+    if (this.preset.init_eqs_eel_parse) {
+      mdVSAfterInit = milkdropParser.interpret(this.preset.presetVersion || 2,
+                                               Utils.cloneVars(this.mdVS),
+                                               this.preset.init_eqs_eel_parse);
+    } else {
+      mdVSAfterInit = Utils.cloneVars(this.mdVS);
+    }
 
     // qs need to be initialized to there init values every frame
     this.mdVSQInit = Utils.pick(mdVSAfterInit, this.qs);
@@ -87,11 +95,13 @@ export default class PresetEquationRunner {
     initUserVars.megabuf = mdVSAfterInit.megabuf;
     initUserVars.gmegabuf = mdVSAfterInit.gmegabuf;
 
-    this.mdVSFrame = this.preset.frame_eqs(Object.assign({},
-                                                         this.mdVS,
-                                                         this.mdVSQInit,
-                                                         this.mdVSRegs,
-                                                         initUserVars));
+    this.mdVSFrame = milkdropParser.interpret(this.preset.presetVersion || 2,
+                                              Object.assign({},
+                                                            this.mdVS,
+                                                            this.mdVSQInit,
+                                                            this.mdVSRegs,
+                                                            initUserVars),
+                                              this.preset.frame_eqs_eel_parse);
 
     // user vars need to be copied between frames
     this.mdVSUserKeys = Object.keys(Utils.omit(this.mdVSFrame, nonUserKeys));
@@ -119,8 +129,10 @@ export default class PresetEquationRunner {
           Object.assign(mdVSWave, this.mdVSQAfterFrame, this.mdVSRegs);
           mdVSWave.megabuf = new Array(1048576).fill(0);
 
-          if (wave.init_eqs) {
-            mdVSWave = wave.init_eqs(mdVSWave);
+          if (wave.init_eqs_eel_parse) {
+            mdVSWave = milkdropParser.interpret(this.preset.presetVersion || 2,
+                                                mdVSWave,
+                                                wave.init_eqs_eel_parse);
 
             this.mdVSRegs = Utils.pick(mdVSWave, this.regs);
 
@@ -158,8 +170,10 @@ export default class PresetEquationRunner {
           Object.assign(mdVSShape, this.mdVSQAfterFrame, this.mdVSRegs);
           mdVSShape.megabuf = new Array(1048576).fill(0);
 
-          if (shape.init_eqs) {
-            mdVSShape = shape.init_eqs(mdVSShape);
+          if (shape.init_eqs_eel_parse) {
+            mdVSShape = milkdropParser.interpret(this.preset.presetVersion || 2,
+                                                 mdVSShape,
+                                                 shape.init_eqs_eel_parse);
 
             this.mdVSRegs = Utils.pick(mdVSShape, this.regs);
 
@@ -201,39 +215,35 @@ export default class PresetEquationRunner {
   runFrameEquations (globalVars) {
     this.mdVSFrame = Object.assign({}, this.mdVS, this.mdVSQInit, this.mdVSFrameMap, globalVars);
 
-    this.mdVSFrame = this.preset.frame_eqs(this.mdVSFrame);
-
-    // const undef = Utils.pick(this.mdVSFrame,
-    //                      (val) => (!_.isArrayLike(val) &&
-    //                                (!Number.isFinite(val) || Number.isNaN(val))));
-
-    // if (!_.isEmpty(undef)) {
-    //   console.log(undef);
-    // }
-
-    // const gmegaundef = _.filter(this.mdVSFrame.gmegabuf,
-    //                             (val) => !Number.isFinite(val) || Number.isNaN(val));
-    // if (!_.isEmpty(gmegaundef)) {
-    //   console.log(gmegaundef);
-    // }
+    this.mdVSFrame = milkdropParser.interpret(this.preset.presetVersion || 2,
+                                              this.mdVSFrame,
+                                              this.preset.frame_eqs_eel_parse);
 
     this.mdVSFrameMap = Utils.pick(this.mdVSFrame, this.mdVSUserKeys);
     this.mdVSQAfterFrame = Utils.pick(this.mdVSFrame, this.qs);
   }
 
   runPixelEquations (mdVSVertex) {
-    return this.preset.pixel_eqs(mdVSVertex);
+    return milkdropParser.interpret(this.preset.presetVersion || 2,
+                                    mdVSVertex,
+                                    this.preset.pixel_eqs_eel_parse);
   }
 
   runShapeFrameEquations (shapeIdx, mdVSShape) {
-    return this.preset.shapes[shapeIdx].frame_eqs(mdVSShape);
+    return milkdropParser.interpret(this.preset.presetVersion || 2,
+                                    mdVSShape,
+                                    this.preset.shapes[shapeIdx].frame_eqs_eel_parse);
   }
 
   runWaveFrameEquations (waveIdx, mdVSWave) {
-    return this.preset.waves[waveIdx].frame_eqs(mdVSWave);
+    return milkdropParser.interpret(this.preset.presetVersion || 2,
+                                    mdVSWave,
+                                    this.preset.waves[waveIdx].frame_eqs_eel_parse);
   }
 
   runWavePointEquations (waveIdx, mdVSWaveFrame) {
-    return this.preset.waves[waveIdx].point_eqs(mdVSWaveFrame);
+    return milkdropParser.interpret(this.preset.presetVersion || 2,
+                                    mdVSWaveFrame,
+                                    this.preset.waves[waveIdx].point_eqs_eel_parse);
   }
 }
