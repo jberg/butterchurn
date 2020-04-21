@@ -36,4 +36,20 @@ export default class Utils {
     }
     return newObj;
   }
+
+  static setWasm (wasmGlobals, obj, keys) {
+    keys.forEach((key) => {
+      // eslint-disable-next-line no-param-reassign
+      wasmGlobals[key].value = obj[key] || 0;
+    });
+  }
+
+  static pickWasm (wasmGlobals, keys) {
+    const newObj = {};
+    for (let i = 0; i < keys.length; i++) {
+      const key = keys[i];
+      newObj[key] = wasmGlobals[key].value;
+    }
+    return newObj;
+  }
 }

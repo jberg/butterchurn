@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Butterchurn Demo</title>
+  <meta name="description" content="Butterchurn Demo Example">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <script type="text/javascript" src="../../lib/butterchurn.js"></script>
+  <script type="text/javascript" src="https://unpkg.com/lodash"></script>
+  <!-- <script type="text/javascript" src="https://unpkg.com/butterchurn"></script> -->
+  <script
+    src="https://code.jquery.com/jquery-3.1.1.min.js"
+    integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
+    crossorigin="anonymous"></script>
+
+  <style>
+    #canvas:-moz-full-screen {
+      width: 100%;
+      height: 100%;
+    }
+    #canvas:-webkit-full-screen {
+      width: 100%;
+      height: 100%;
+    }
+    #canvas:-ms-fullscreen {
+      width: 100%;
+      height: 100%;
+    }
+    #canvas:fullscreen {
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+  <link rel="stylesheet" href="https://unpkg.com/normalize.css/normalize.css" />
+
+  <script>
+    $(function() {
+      var visualizer = null;
+      var rendering = false;
+      var audioContext = null;
+      var sourceNode = null;
+      var delayedAudible = null;
+      var canvas = document.getElementById('canvas');
+
+      function connectToAudioAnalyzer(sourceNode) {
+        if(delayedAudible) {
+          delayedAudible.disconnect();
+        }
+
+        delayedAudible = audioContext.createDelay();
+        delayedAudible.delayTime.value = 0.26;
+
+        sourceNode.connect(delayedAudible)
+        delayedAudible.connect(audioContext.destination);
+
+        visualizer.connectAudio(delayedAudible);
+      }
+
+      function startRenderer() {
+        requestAnimationFrame(() => startRenderer());
+        visualizer.render();
+      }
+
+      function playBufferSource(buffer) {
+        if (!rendering) {
+          rendering = true;
+          startRenderer();
+        }
+
+        if (sourceNode) {
+          sourceNode.disconnect();
+        }
+
+        sourceNode = audioContext.createBufferSource();
+        sourceNode.buffer = buffer;
+        connectToAudioAnalyzer(sourceNode);
+
+        sourceNode.start(0);
+      }
+
+      function loadLocalFiles(files, index = 0) {
+        audioContext.resume();
+
+        var reader = new FileReader();
+        reader.onload = (event) => {
+          audioContext.decodeAudioData(
+            event.target.result,
+            (buf) => {
+              playBufferSource(buf);
+
+              setTimeout(() => {
+                if (files.length > index + 1) {
+                  loadLocalFiles(files, index + 1);
+                } else {
+                  sourceNode.disconnect();
+                  sourceNode = null;
+                  $("#audioSelectWrapper").css('display', 'block');
+                }
+              }, buf.duration * 1000);
+            }
+          );
+        };
+
+        var file = files[index];
+        reader.readAsArrayBuffer(file);
+      }
+
+      function connectMicAudio(sourceNode, audioContext) {
+        audioContext.resume();
+
+        var gainNode = audioContext.createGain();
+        gainNode.gain.value = 1.25;
+        sourceNode.connect(gainNode);
+
+        visualizer.connectAudio(gainNode);
+        startRenderer();
+      }
+
+      $("#localFileBut").click(function() {
+        $("#audioSelectWrapper").css('display', 'none');
+
+        var fileSelector = $('<input type="file" accept="audio/*" multiple />');
+
+        fileSelector[0].onchange = function(event) {
+          loadLocalFiles(fileSelector[0].files);
+        }
+
+        fileSelector.click();
+      });
+
+      $("#micSelect").click(() => {
+        $("#audioSelectWrapper").css('display', 'none');
+
+        navigator.getUserMedia({ audio: true }, (stream) => {
+          var micSourceNode = audioContext.createMediaStreamSource(stream);
+          connectMicAudio(micSourceNode, audioContext);
+        }, (err) => {
+          console.log('Error getting audio stream from getUserMedia');
+        });
+      });
+
+      function initPlayer() {
+        audioContext = new AudioContext();
+        visualizer = butterchurn.default.createVisualizer(audioContext, canvas , {
+          width: 800,
+          height: 600,
+          pixelRatio: window.devicePixelRatio || 1,
+          textureRatio: 1,
+        });
+
+        fetch('./Flexi, martin + geiss - dedicated to the sherwin maxawow.json')
+        .then((response) => {
+          return response.json();
+        })
+        .then((data) => {
+          data.useWASM = true;
+          visualizer.loadPreset(data)
+        });
+      }
+
+      initPlayer();
+    });
+  </script>
+</head>
+<body>
+  <div id="mainWrapper">
+    <div id="audioSelectWrapper">
+      <div id="localFileBut">
+        <span>Load local files</span>
+      </div>
+      <div id="micSelect">
+        <span>Use Mic</span>
+      </div>
+    </div>
+    <canvas id='canvas' width='800' height='600'>
+    </canvas>
+  </div>
+</body>
+</html>

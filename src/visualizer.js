@@ -1,5 +1,7 @@
+import { loadModule } from 'eel-wasm';
 import AudioProcessor from './audio/audioProcessor';
 import Renderer from './rendering/renderer';
+import Utils from './utils';
 
 export default class Visualizer {
   constructor (audioContext, canvas, opts) {
@@ -139,7 +141,7 @@ export default class Visualizer {
     this.audio.disconnectAudio(audioNode);
   }
 
-  loadPreset (presetMap, blendTime = 0) {
+  async loadPreset (presetMap, blendTime = 0) {
     const preset = Object.assign({}, presetMap);
     preset.baseVals = Object.assign({}, this.baseValsDefaults, preset.baseVals);
     for (let i = 0; i < preset.shapes.length; i++) {
@@ -152,7 +154,80 @@ export default class Visualizer {
                                                    preset.waves[i].baseVals);
     }
 
-    if (typeof preset.init_eqs !== 'function') {
+    if (preset.useWASM) {
+      const wasmGlobals = {};
+      Object.keys(preset.baseVals).forEach((key) => {
+        wasmGlobals[key] = new WebAssembly.Global(
+          { value: 'f64', mutable: true },
+          preset.baseVals[key]
+        );
+      });
+
+      const globalVars = [
+        ...Utils.range(1, 33).map((x) => `q${x}`),
+        ...Utils.range(1, 9).map((x) => `t${x}`),
+        ...Utils.range(0, 100).map((x) => {
+          if (x < 10) {
+            return `reg0${x}`;
+          }
+          return `reg${x}`;
+        }),
+        'old_wave_mode',
+        'frame',
+        'time',
+        'fps',
+        'bass',
+        'bass_att',
+        'mid',
+        'mid_att',
+        'treb',
+        'treb_att',
+        'meshx',
+        'meshy',
+        'aspectx',
+        'aspecty',
+        'pixelsx',
+        'pixelsy',
+        'rand_start',
+        'rand_preset',
+        'x',
+        'y',
+        'rad',
+        'ang'
+      ];
+
+      globalVars.forEach((key) => {
+        wasmGlobals[key] = new WebAssembly.Global(
+          { value: 'f64', mutable: true },
+          0
+        );
+      });
+
+      // initialize megabuf/gmegabuf
+
+      const wasmFunctions = {
+        presetInit: preset.init_eqs_eel,
+        perFrame: preset.frame_eqs_eel,
+      };
+
+      if (preset.pixel_eqs_eel !== '') {
+        wasmFunctions.perPixel = preset.pixel_eqs_eel;
+      }
+
+      const mod = await loadModule({
+        globals: wasmGlobals,
+        functions: wasmFunctions,
+      });
+
+      preset.globals = wasmGlobals;
+      preset.init_eqs = () => mod.exports.presetInit();
+      preset.frame_eqs = () => mod.exports.perFrame();
+      if (preset.pixel_eqs_eel !== '') {
+        preset.pixel_eqs = () => mod.exports.perPixel();
+      } else {
+        preset.pixel_eqs = '';
+      }
+    } else if (typeof preset.init_eqs !== 'function') {
       /* eslint-disable no-param-reassign, no-new-func */
       preset.init_eqs = new Function('a', `${preset.init_eqs_str} return a;`);
       preset.frame_eqs = new Function('a', `${preset.frame_eqs_str} return a;`);

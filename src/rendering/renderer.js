@@ -1,6 +1,7 @@
 import AudioLevels from '../audio/audioLevels';
 import blankPreset from '../blankPreset';
 import PresetEquationRunner from '../equations/presetEquationRunner';
+import PresetEquationRunnerWASM from '../equations/presetEquationRunnerWASM';
 import BasicWaveform from './waves/basicWaveform';
 import CustomWaveform from './waves/customWaveform';
 import CustomShape from './shapes/customShape';
@@ -175,7 +176,6 @@ export default class Renderer {
 
     this.prevPreset = this.preset;
     this.preset = preset;
-    this.preset.baseVals.old_wave_mode = this.prevPreset.baseVals.wave_mode;
 
     this.presetTime = this.time;
 
@@ -200,8 +200,16 @@ export default class Renderer {
       aspectx: this.aspectx,
       aspecty: this.aspecty,
     };
-    this.presetEquationRunner = new PresetEquationRunner(this.preset, globalVars, params);
-    this.regVars = this.presetEquationRunner.mdVSRegs;
+
+    if (preset.useWASM) {
+      this.preset.globals.old_wave_mode.value = this.prevPreset.baseVals.wave_mode;
+      this.presetEquationRunner = new PresetEquationRunnerWASM(this.preset, globalVars, params);
+      this.regVars = this.presetEquationRunner.mdVSRegs;
+    } else {
+      this.preset.baseVals.old_wave_mode = this.prevPreset.baseVals.wave_mode;
+      this.presetEquationRunner = new PresetEquationRunner(this.preset, globalVars, params);
+      this.regVars = this.presetEquationRunner.mdVSRegs;
+    }
 
     const tmpWarpShader = this.prevWarpShader;
     this.prevWarpShader = this.warpShader;
@@ -652,13 +660,17 @@ export default class Renderer {
     };
 
     const prevGlobalVars = Object.assign({}, globalVars);
-    prevGlobalVars.gmegabuf = this.prevPresetEquationRunner.gmegabuf;
+    if (!this.prevPreset.useWASM) {
+      prevGlobalVars.gmegabuf = this.prevPresetEquationRunner.gmegabuf;
+    }
 
-    globalVars.gmegabuf = this.presetEquationRunner.gmegabuf;
+    if (!this.preset.useWASM) {
+      globalVars.gmegabuf = this.presetEquationRunner.gmegabuf;
+    }
+
     Object.assign(globalVars, this.regVars);
 
-    this.presetEquationRunner.runFrameEquations(globalVars);
-    const mdVSFrame = this.presetEquationRunner.mdVSFrame;
+    const mdVSFrame = this.presetEquationRunner.runFrameEquations(globalVars);
     this.runPixelEquations(this.presetEquationRunner, mdVSFrame, false);
 
     Object.assign(this.regVars, Utils.pick(this.mdVSVertex, this.regs));
@@ -666,14 +678,14 @@ export default class Renderer {
 
     let mdVSFrameMixed;
     if (this.blending) {
-      this.prevPresetEquationRunner.runFrameEquations(prevGlobalVars);
+      this.prevMDVSFrame = this.prevPresetEquationRunner.runFrameEquations(prevGlobalVars);
       this.runPixelEquations(this.prevPresetEquationRunner,
-                             this.prevPresetEquationRunner.mdVSFrame,
+                             this.prevMDVSFrame,
                              true);
 
       mdVSFrameMixed = Renderer.mixFrameEquations(this.blendProgress,
                                                   mdVSFrame,
-                                                  this.prevPresetEquationRunner.mdVSFrame);
+                                                  this.prevMDVSFrame);
     } else {
       mdVSFrameMixed = mdVSFrame;
     }
@@ -707,7 +719,7 @@ export default class Renderer {
       this.prevWarpShader.renderQuadTexture(false, this.prevTexture,
                                             this.blurTexture1, this.blurTexture2,
                                             this.blurTexture3, blurMins, blurMaxs,
-                                            this.prevPresetEquationRunner.mdVSFrame,
+                                            this.prevMDVSFrame,
                                             this.warpUVs, this.warpColor);
 
       this.warpShader.renderQuadTexture(true, this.prevTexture,
@@ -840,7 +852,7 @@ export default class Renderer {
       this.prevCompShader.renderQuadTexture(false, this.targetTexture,
                                             this.blurTexture1, this.blurTexture2, this.blurTexture3,
                                             blurMins, blurMaxs,
-                                            this.prevPresetEquationRunner.mdVSFrame,
+                                            this.prevMDVSFrame,
                                             this.warpColor);
 
       this.compShader.renderQuadTexture(true, this.targetTexture,
