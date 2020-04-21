@@ -673,7 +673,11 @@ export default class Renderer {
     const mdVSFrame = this.presetEquationRunner.runFrameEquations(globalVars);
     this.runPixelEquations(this.presetEquationRunner, mdVSFrame, false);
 
-    Object.assign(this.regVars, Utils.pick(this.mdVSVertex, this.regs));
+    if (this.preset.useWASM) {
+      Object.assign(this.regVars, this.presetEquationRunner.getRegVars());
+    } else {
+      Object.assign(this.regVars, Utils.pick(this.mdVSVertex, this.regs));
+    }
     Object.assign(globalVars, this.regVars);
 
     let mdVSFrameMixed;
