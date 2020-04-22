@@ -30,6 +30,8 @@ export default class PresetEquationRunnerWASM {
       'wave_b',
       'wave_x',
       'wave_y',
+      'wave_scale',
+      'wave_smoothing',
       'wave_mode',
       'old_wave_mode',
       'wave_mystery',
