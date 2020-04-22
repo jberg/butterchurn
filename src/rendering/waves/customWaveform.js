@@ -82,16 +82,25 @@ export default class CustomWaveform {
   }
 
   generateWaveform (timeArrayL, timeArrayR, freqArrayL, freqArrayR,
-                    globalVars, presetEquationRunner, waveEqs, waveIdx, alphaMult) {
+                    globalVars, presetEquationRunner, waveEqs, alphaMult) {
     if (waveEqs.baseVals.enabled !== 0 && timeArrayL.length > 0) {
-      const mdVSWave = Object.assign({},
-                                     presetEquationRunner.mdVSWaves[this.index],
-                                     presetEquationRunner.mdVSFrameMapWaves[this.index],
-                                     presetEquationRunner.mdVSQAfterFrame,
-                                     presetEquationRunner.mdVSTWaveInits[this.index],
-                                     globalVars);
+      let mdVSWaveFrame;
+      if (presetEquationRunner.preset.useWASM) {
+        const mdVSWave = Object.assign({},
+                                       presetEquationRunner.mdVSQAfterFrame,
+                                       presetEquationRunner.mdVSTWaveInits[this.index],
+                                       globalVars);
+        mdVSWaveFrame = presetEquationRunner.runWaveFrameEquations(this.index, mdVSWave);
+      } else {
+        const mdVSWave = Object.assign({},
+                                       presetEquationRunner.mdVSWaves[this.index],
+                                       presetEquationRunner.mdVSFrameMapWaves[this.index],
+                                       presetEquationRunner.mdVSQAfterFrame,
+                                       presetEquationRunner.mdVSTWaveInits[this.index],
+                                       globalVars);
 
-      let mdVSWaveFrame = presetEquationRunner.runWaveFrameEquations(waveIdx, mdVSWave);
+        mdVSWaveFrame = presetEquationRunner.runWaveFrameEquations(this.index, mdVSWave);
+      }
 
       const maxSamples = 512;
       if (Object.prototype.hasOwnProperty.call(mdVSWaveFrame, 'samples')) {
@@ -116,6 +125,7 @@ export default class CustomWaveform {
       const frameB = mdVSWaveFrame.b;
       const frameA = mdVSWaveFrame.a;
 
+      // XXX - probably need to fix for WASM
       const waveScale = presetEquationRunner.mdVS.wave_scale;
 
       this.samples -= sep;
@@ -167,7 +177,7 @@ export default class CustomWaveform {
           mdVSWaveFrame.a = frameA;
 
           if (waveEqs.point_eqs !== '') {
-            mdVSWaveFrame = presetEquationRunner.runWavePointEquations(waveIdx, mdVSWaveFrame);
+            mdVSWaveFrame = presetEquationRunner.runWavePointEquations(this.index, mdVSWaveFrame);
           }
 
           const x = ((mdVSWaveFrame.x * 2) - 1) * this.invAspectx;
@@ -188,11 +198,13 @@ export default class CustomWaveform {
         }
 
         // this needs to be after per point (check fishbrain - witchcraft)
-        const mdvsUserKeysWave = presetEquationRunner.mdVSUserKeysWaves[this.index];
-        const mdVSNewFrameMapWave = Utils.pick(mdVSWaveFrame, mdvsUserKeysWave);
+        if (!presetEquationRunner.preset.useWASM) {
+          const mdvsUserKeysWave = presetEquationRunner.mdVSUserKeysWaves[this.index];
+          const mdVSNewFrameMapWave = Utils.pick(mdVSWaveFrame, mdvsUserKeysWave);
 
-        // eslint-disable-next-line no-param-reassign
-        presetEquationRunner.mdVSFrameMapWaves[this.index] = mdVSNewFrameMapWave;
+          // eslint-disable-next-line no-param-reassign
+          presetEquationRunner.mdVSFrameMapWaves[this.index] = mdVSNewFrameMapWave;
+        }
 
         this.mdVSWaveFrame = mdVSWaveFrame;
 
@@ -210,9 +222,9 @@ export default class CustomWaveform {
   }
 
   drawCustomWaveform (blendProgress, timeArrayL, timeArrayR, freqArrayL, freqArrayR,
-                      globalVars, presetEquationRunner, waveEqs, waveIdx) {
+                      globalVars, presetEquationRunner, waveEqs) {
     if (waveEqs && this.generateWaveform(timeArrayL, timeArrayR, freqArrayL, freqArrayR,
-                                         globalVars, presetEquationRunner, waveEqs, waveIdx,
+                                         globalVars, presetEquationRunner, waveEqs,
                                          blendProgress)) {
       this.gl.useProgram(this.shaderProgram);
 

@@ -769,8 +769,7 @@ export default class Renderer {
                                     this.audio.freqArrayR,
                                     globalVars,
                                     this.presetEquationRunner,
-                                    this.preset.waves[i],
-                                    i);
+                                    this.preset.waves[i]);
       });
     }
 

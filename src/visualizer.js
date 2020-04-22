@@ -163,6 +163,13 @@ export default class Visualizer {
         );
       });
 
+      Object.keys(this.waveBaseValsDefaults).forEach((key) => {
+        wasmGlobals[key] = new WebAssembly.Global(
+          { value: 'f64', mutable: true },
+          0
+        );
+      });
+
       const globalVars = [
         ...Utils.range(1, 33).map((x) => `q${x}`),
         ...Utils.range(1, 9).map((x) => `t${x}`),
@@ -173,6 +180,7 @@ export default class Visualizer {
           return `reg${x}`;
         }),
         'old_wave_mode',
+        // globals
         'frame',
         'time',
         'fps',
@@ -190,10 +198,15 @@ export default class Visualizer {
         'pixelsy',
         'rand_start',
         'rand_preset',
+        // for pixel eqs
         'x',
         'y',
         'rad',
-        'ang'
+        'ang',
+        // for wave eqs
+        'sample',
+        'value1',
+        'value2',
       ];
 
       globalVars.forEach((key) => {
@@ -203,8 +216,6 @@ export default class Visualizer {
         );
       });
 
-      // initialize megabuf/gmegabuf
-
       const wasmFunctions = {
         presetInit: preset.init_eqs_eel,
         perFrame: preset.frame_eqs_eel,
@@ -212,6 +223,17 @@ export default class Visualizer {
 
       if (preset.pixel_eqs_eel !== '') {
         wasmFunctions.perPixel = preset.pixel_eqs_eel;
+      }
+
+      for (let i = 0; i < preset.waves.length; i++) {
+        if (preset.waves[i].baseVals.enabled !== 0) {
+          wasmFunctions[`wave_${i}_init_eqs`] = preset.waves[i].init_eqs_eel;
+          wasmFunctions[`wave_${i}_frame_eqs`] = preset.waves[i].frame_eqs_eel;
+
+          if (preset.waves[i].point_eqs_eel && preset.waves[i].point_eqs_eel !== '') {
+            wasmFunctions[`wave_${i}_point_eqs`] = preset.waves[i].point_eqs_eel;
+          }
+        }
       }
 
       const mod = await loadModule({
@@ -226,6 +248,23 @@ export default class Visualizer {
         preset.pixel_eqs = () => mod.exports.perPixel();
       } else {
         preset.pixel_eqs = '';
+      }
+
+      for (let i = 0; i < preset.waves.length; i++) {
+        if (preset.waves[i].baseVals.enabled !== 0) {
+          const wave = {
+            init_eqs: mod.exports[`wave_${i}_init_eqs`],
+            frame_eqs: mod.exports[`wave_${i}_frame_eqs`],
+          };
+
+          if (preset.waves[i].point_eqs_eel && preset.waves[i].point_eqs_eel !== '') {
+            wave.point_eqs = mod.exports[`wave_${i}_point_eqs`];
+          } else {
+            wave.point_eqs = '';
+          }
+
+          preset.waves[i] = Object.assign({}, preset.waves[i], wave);
+        }
       }
     } else if (typeof preset.init_eqs !== 'function') {
       /* eslint-disable no-param-reassign, no-new-func */

@@ -41,6 +41,9 @@
       var audioContext = null;
       var sourceNode = null;
       var delayedAudible = null;
+      const presetNames = ['Flexi, martin + geiss - dedicated to the sherwin maxawow.json', 'fiShbRaiN - witchcraft.json'];
+      var parsedPresets = null;
+      var currPresetIdx = null;
       var canvas = document.getElementById('canvas');
 
       function connectToAudioAnalyzer(sourceNode) {
@@ -140,6 +143,35 @@
         });
       });
 
+      $('#useWASM').change(() => {
+        startPreset(currPresetIdx);
+      });
+
+      $('#presetSelect').change((evt) => {
+        startPreset(parseInt($('#presetSelect').val()));
+      });
+
+      function startPreset (presetIdx) {
+        currPresetIdx = presetIdx;
+        const preset = parsedPresets[presetIdx];
+        preset.useWASM = $('#useWASM').is(':checked');;
+        visualizer.loadPreset(preset, 3)
+      }
+
+      function loadPreset(fileName) {
+        return fetch(fileName)
+        .then((response) => {
+          return response.json();
+        });
+      }
+
+      function loadPresets() {
+        Promise.all(presetNames.map(preset => loadPreset(preset))).then((presets) => {
+          parsedPresets = presets;
+          startPreset(0);
+        });
+      }
+
       function initPlayer() {
         audioContext = new AudioContext();
         visualizer = butterchurn.default.createVisualizer(audioContext, canvas , {
@@ -149,14 +181,15 @@
           textureRatio: 1,
         });
 
-        fetch('./Flexi, martin + geiss - dedicated to the sherwin maxawow.json')
-        .then((response) => {
-          return response.json();
-        })
-        .then((data) => {
-          data.useWASM = true;
-          visualizer.loadPreset(data)
-        });
+        loadPresets();
+
+        var presetSelect = document.getElementById('presetSelect');
+        for(var i = 0; i < presetNames.length; i++) {
+            var opt = document.createElement('option');
+            opt.innerHTML = presetNames[i];
+            opt.value = i;
+            presetSelect.appendChild(opt);
+        }
       }
 
       initPlayer();
@@ -172,6 +205,10 @@
       <div id="micSelect">
         <span>Use Mic</span>
       </div>
+    </div>
+    <div id="presetControls">
+      <div>Preset: <select id="presetSelect"></select></div>
+      <div>Use WASM: <input type="checkbox" id="useWASM" checked></input></div>
     </div>
     <canvas id='canvas' width='800' height='600'>
     </canvas>

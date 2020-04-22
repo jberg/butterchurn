@@ -40,7 +40,7 @@ export default class Utils {
   static setWasm (wasmGlobals, obj, keys) {
     keys.forEach((key) => {
       // eslint-disable-next-line no-param-reassign
-      wasmGlobals[key].value = obj[key] || 0;
+      wasmGlobals[key].value = obj[key];
     });
   }
 

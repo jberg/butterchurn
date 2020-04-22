@@ -38,8 +38,6 @@ export default class PresetEquationRunnerWASM {
     this.mdVSFrameMapShapes = null;
 
     this.mdVSWaves = null;
-    this.mdVSUserKeysWaves = null;
-    this.mdVSFrameMapWaves = null;
 
     this.mdVSQAfterFrame = null;
 
@@ -85,8 +83,27 @@ export default class PresetEquationRunnerWASM {
     this.mdVSQAfterFrame = this.getQVars();
     this.mdVSRegs = this.getRegVars();
 
-    // user vars need to be copied between frames
-    // this.mdVSUserKeys = Object.keys(Utils.omit(this.mdVSFrame, nonUserKeys));
+    this.mdVSTWaveInits = [];
+    if (this.preset.waves && this.preset.waves.length > 0) {
+      for (let i = 0; i < this.preset.waves.length; i++) {
+        const wave = this.preset.waves[i];
+        const baseVals = wave.baseVals;
+        if (baseVals.enabled !== 0) {
+          Utils.setWasm(this.preset.globals, baseVals, Object.keys(baseVals));
+          if (wave.init_eqs) {
+            wave.init_eqs();
+
+            this.mdVSRegs = this.getRegVars();
+
+            // base vals need to be reset
+            Utils.setWasm(this.preset.globals, baseVals, Object.keys(baseVals));
+          }
+          this.mdVSTWaveInits.push(this.getTVars());
+        } else {
+          this.mdVSTWaveInits.push({});
+        }
+      }
+    }
   }
 
   updatePreset (preset, globalVars) {
@@ -153,10 +170,36 @@ export default class PresetEquationRunnerWASM {
   }
 
   runWaveFrameEquations (waveIdx, mdVSWave) {
-    return this.preset.waves[waveIdx].frame_eqs(mdVSWave);
+    Utils.setWasm(this.preset.globals, mdVSWave, Object.keys(mdVSWave));
+    this.preset.waves[waveIdx].frame_eqs();
+    return Utils.pickWasm(this.preset.globals, [
+      'sep',
+      'scaling',
+      'spectrum',
+      'smoothing',
+      'usedots',
+      'thick',
+      'additive',
+      'r',
+      'g',
+      'b',
+      'a'
+    ]);
   }
 
   runWavePointEquations (waveIdx, mdVSWaveFrame) {
-    return this.preset.waves[waveIdx].point_eqs(mdVSWaveFrame);
+    Utils.setWasm(this.preset.globals, mdVSWaveFrame, Object.keys(mdVSWaveFrame));
+    this.preset.waves[waveIdx].point_eqs();
+    return Utils.pickWasm(this.preset.globals, [
+      'x',
+      'y',
+      'r',
+      'g',
+      'b',
+      'a',
+      'usedots',
+      'thick',
+      'additive',
+    ]);
   }
 }
