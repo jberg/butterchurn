@@ -153,7 +153,7 @@
 
       function startPreset (presetIdx) {
         currPresetIdx = presetIdx;
-        const preset = parsedPresets[presetIdx];
+        const preset = _.cloneDeep(parsedPresets[presetIdx]);
         preset.useWASM = $('#useWASM').is(':checked');;
         visualizer.loadPreset(preset, 3)
       }
