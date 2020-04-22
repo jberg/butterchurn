@@ -132,18 +132,29 @@ export default class CustomShape {
     this.thickOffsetLoc = this.gl.getUniformLocation(this.shaderProgram, 'thickOffset');
   }
 
-  drawCustomShape (blendProgress, globalVars, presetEquationRunner, shapeEqs, shapeIdx,
-                   prevTexture) {
+  drawCustomShape (blendProgress, globalVars, presetEquationRunner, shapeEqs, prevTexture) {
     if (shapeEqs.baseVals.enabled !== 0) {
-      this.setupShapeBuffers(presetEquationRunner.mdVSFrame);
+      if (presetEquationRunner.preset.useWASM) {
+        this.setupShapeBuffers(presetEquationRunner.preset.globals.wrap.value);
+      } else {
+        this.setupShapeBuffers(presetEquationRunner.mdVSFrame.wrap);
+      }
 
-      const mdVSShape = Object.assign({},
-                                      presetEquationRunner.mdVSShapes[this.index],
-                                      presetEquationRunner.mdVSFrameMapShapes[this.index],
-                                      presetEquationRunner.mdVSQAfterFrame,
-                                      presetEquationRunner.mdVSTShapeInits[this.index],
-                                      globalVars);
-
+      let mdVSShape;
+      if (presetEquationRunner.preset.useWASM) {
+        mdVSShape = Object.assign({},
+                                  shapeEqs.baseVals,
+                                  presetEquationRunner.mdVSQAfterFrame,
+                                  presetEquationRunner.mdVSTShapeInits[this.index],
+                                  globalVars);
+      } else {
+        mdVSShape = Object.assign({},
+                                  presetEquationRunner.mdVSShapes[this.index],
+                                  presetEquationRunner.mdVSFrameMapShapes[this.index],
+                                  presetEquationRunner.mdVSQAfterFrame,
+                                  presetEquationRunner.mdVSTShapeInits[this.index],
+                                  globalVars);
+      }
       const mdVSShapeBaseVals = Utils.cloneVars(mdVSShape);
 
       const numInst = Math.clamp(mdVSShape.num_inst, 1, 1024);
@@ -171,7 +182,7 @@ export default class CustomShape {
         mdVSShape.tex_ang = mdVSShapeBaseVals.tex_ang;
         mdVSShape.additive = mdVSShapeBaseVals.additive;
 
-        const mdVSShapeFrame = presetEquationRunner.runShapeFrameEquations(shapeIdx, mdVSShape);
+        const mdVSShapeFrame = presetEquationRunner.runShapeFrameEquations(this.index, mdVSShape);
 
         let sides = mdVSShapeFrame.sides;
         sides = Math.clamp(sides, 3, 100);
@@ -260,15 +271,17 @@ export default class CustomShape {
                                      isAdditive);
       }
 
-      const mdVSUserKeysShape = presetEquationRunner.mdVSUserKeysShapes[this.index];
-      const mdVSNewFrameMapShape = Utils.pick(this.mdVSShapeFrame, mdVSUserKeysShape);
+      if (!presetEquationRunner.preset.useWASM) {
+        const mdVSUserKeysShape = presetEquationRunner.mdVSUserKeysShapes[this.index];
+        const mdVSNewFrameMapShape = Utils.pick(this.mdVSShapeFrame, mdVSUserKeysShape);
 
-      // eslint-disable-next-line no-param-reassign
-      presetEquationRunner.mdVSFrameMapShapes[this.index] = mdVSNewFrameMapShape;
+        // eslint-disable-next-line no-param-reassign
+        presetEquationRunner.mdVSFrameMapShapes[this.index] = mdVSNewFrameMapShape;
+      }
     }
   }
 
-  setupShapeBuffers (mdVSFrame) {
+  setupShapeBuffers (wrap) {
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.positionVertexBuf);
     this.gl.bufferData(this.gl.ARRAY_BUFFER, this.positions, this.gl.DYNAMIC_DRAW);
 
@@ -293,7 +306,7 @@ export default class CustomShape {
     this.gl.vertexAttribPointer(this.aBorderPosLoc, 3, this.gl.FLOAT, false, 0, 0);
     this.gl.enableVertexAttribArray(this.aBorderPosLoc);
 
-    const wrapping = (mdVSFrame.wrap !== 0) ? this.gl.REPEAT : this.gl.CLAMP_TO_EDGE;
+    const wrapping = (wrap !== 0) ? this.gl.REPEAT : this.gl.CLAMP_TO_EDGE;
     this.gl.samplerParameteri(this.mainSampler, this.gl.TEXTURE_WRAP_S, wrapping);
     this.gl.samplerParameteri(this.mainSampler, this.gl.TEXTURE_WRAP_T, wrapping);
   }

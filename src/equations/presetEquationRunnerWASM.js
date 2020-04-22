@@ -121,6 +121,31 @@ export default class PresetEquationRunnerWASM {
       'rot'
     ];
 
+    this.shapeFrameKeys = [
+      'sides',
+      'x',
+      'y',
+      'rad',
+      'ang',
+      'r',
+      'g',
+      'b',
+      'a',
+      'r2',
+      'g2',
+      'b2',
+      'a2',
+      'border_r',
+      'border_g',
+      'border_b',
+      'border_a',
+      'thickoutline',
+      'textured',
+      'tex_zoom',
+      'tex_ang',
+      'additive'
+    ];
+
     this.waveFrameKeys = [
       'sep',
       'scaling',
@@ -156,14 +181,6 @@ export default class PresetEquationRunnerWASM {
     this.mdVSQInit = null;
     this.mdVSRegs = null;
     this.mdVSFrame = null;
-    this.mdVSUserKeys = null;
-
-    this.mdVSShapes = null;
-    this.mdVSUserKeysShapes = null;
-    this.mdVSFrameMapShapes = null;
-
-    this.mdVSWaves = null;
-
     this.mdVSQAfterFrame = null;
 
     const mdVSBase = {
@@ -229,6 +246,28 @@ export default class PresetEquationRunnerWASM {
         }
       }
     }
+
+    this.mdVSTShapeInits = [];
+    if (this.preset.shapes && this.preset.shapes.length > 0) {
+      for (let i = 0; i < this.preset.shapes.length; i++) {
+        const shape = this.preset.shapes[i];
+        const baseVals = shape.baseVals;
+        if (baseVals.enabled !== 0) {
+          Utils.setWasm(this.preset.globals, baseVals, Object.keys(baseVals));
+          if (shape.init_eqs) {
+            shape.init_eqs();
+
+            this.mdVSRegs = this.getRegVars();
+
+            // base vals need to be reset
+            Utils.setWasm(this.preset.globals, baseVals, Object.keys(baseVals));
+          }
+          this.mdVSTShapeInits.push(this.getTVars());
+        } else {
+          this.mdVSTShapeInits.push({});
+        }
+      }
+    }
   }
 
   updatePreset (preset, globalVars) {
@@ -280,7 +319,9 @@ export default class PresetEquationRunnerWASM {
   }
 
   runShapeFrameEquations (shapeIdx, mdVSShape) {
-    return this.preset.shapes[shapeIdx].frame_eqs(mdVSShape);
+    Utils.setWasm(this.preset.globals, mdVSShape, Object.keys(mdVSShape));
+    this.preset.shapes[shapeIdx].frame_eqs();
+    return Utils.pickWasm(this.preset.globals, this.shapeFrameKeys);
   }
 
   runWaveFrameEquations (waveIdx, mdVSWave) {

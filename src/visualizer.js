@@ -163,6 +163,13 @@ export default class Visualizer {
         );
       });
 
+      Object.keys(this.shapeBaseValsDefaults).forEach((key) => {
+        wasmGlobals[key] = new WebAssembly.Global(
+          { value: 'f64', mutable: true },
+          this.shapeBaseValsDefaults[key]
+        );
+      });
+
       Object.keys(this.waveBaseValsDefaults).forEach((key) => {
         wasmGlobals[key] = new WebAssembly.Global(
           { value: 'f64', mutable: true },
@@ -207,6 +214,8 @@ export default class Visualizer {
         'sample',
         'value1',
         'value2',
+        // for shape eqs
+        'instance',
       ];
 
       globalVars.forEach((key) => {
@@ -225,13 +234,21 @@ export default class Visualizer {
         wasmFunctions.perPixel = preset.pixel_eqs_eel;
       }
 
+
+      for (let i = 0; i < preset.shapes.length; i++) {
+        if (preset.shapes[i].baseVals.enabled !== 0) {
+          wasmFunctions[`shapes_${i}_init_eqs`] = preset.shapes[i].init_eqs_eel;
+          wasmFunctions[`shapes_${i}_frame_eqs`] = preset.shapes[i].frame_eqs_eel;
+        }
+      }
+
       for (let i = 0; i < preset.waves.length; i++) {
         if (preset.waves[i].baseVals.enabled !== 0) {
-          wasmFunctions[`wave_${i}_init_eqs`] = preset.waves[i].init_eqs_eel;
-          wasmFunctions[`wave_${i}_frame_eqs`] = preset.waves[i].frame_eqs_eel;
+          wasmFunctions[`waves_${i}_init_eqs`] = preset.waves[i].init_eqs_eel;
+          wasmFunctions[`waves_${i}_frame_eqs`] = preset.waves[i].frame_eqs_eel;
 
           if (preset.waves[i].point_eqs_eel && preset.waves[i].point_eqs_eel !== '') {
-            wasmFunctions[`wave_${i}_point_eqs`] = preset.waves[i].point_eqs_eel;
+            wasmFunctions[`waves_${i}_point_eqs`] = preset.waves[i].point_eqs_eel;
           }
         }
       }
@@ -250,15 +267,22 @@ export default class Visualizer {
         preset.pixel_eqs = '';
       }
 
+      for (let i = 0; i < preset.shapes.length; i++) {
+        if (preset.shapes[i].baseVals.enabled !== 0) {
+          preset.shapes[i].init_eqs = mod.exports[`shapes_${i}_init_eqs`];
+          preset.shapes[i].frame_eqs = mod.exports[`shapes_${i}_frame_eqs`];
+        }
+      }
+
       for (let i = 0; i < preset.waves.length; i++) {
         if (preset.waves[i].baseVals.enabled !== 0) {
           const wave = {
-            init_eqs: mod.exports[`wave_${i}_init_eqs`],
-            frame_eqs: mod.exports[`wave_${i}_frame_eqs`],
+            init_eqs: mod.exports[`waves_${i}_init_eqs`],
+            frame_eqs: mod.exports[`waves_${i}_frame_eqs`],
           };
 
           if (preset.waves[i].point_eqs_eel && preset.waves[i].point_eqs_eel !== '') {
-            wave.point_eqs = mod.exports[`wave_${i}_point_eqs`];
+            wave.point_eqs = mod.exports[`waves_${i}_point_eqs`];
           } else {
             wave.point_eqs = '';
           }

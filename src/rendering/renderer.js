@@ -756,7 +756,6 @@ export default class Renderer {
                               globalVars,
                               this.presetEquationRunner,
                               this.preset.shapes[i],
-                              i,
                               this.prevTexture);
       });
     }
@@ -781,7 +780,6 @@ export default class Renderer {
                                 prevGlobalVars,
                                 this.prevPresetEquationRunner,
                                 this.prevPreset.shapes[i],
-                                i,
                                 this.prevTexture);
         });
       }
@@ -795,8 +793,7 @@ export default class Renderer {
                                       this.audio.freqArrayR,
                                       prevGlobalVars,
                                       this.prevPresetEquationRunner,
-                                      this.prevPreset.waves[i],
-                                      i);
+                                      this.prevPreset.waves[i]);
         });
       }
     }
