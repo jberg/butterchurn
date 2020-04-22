@@ -22,6 +22,131 @@ export default class PresetEquationRunnerWASM {
       return `reg${x}`;
     });
 
+    this.frameKeys = [
+      'decay',
+      'wave_a',
+      'wave_r',
+      'wave_g',
+      'wave_b',
+      'wave_x',
+      'wave_y',
+      'wave_mode',
+      'old_wave_mode',
+      'wave_mystery',
+      'ob_size',
+      'ob_r',
+      'ob_g',
+      'ob_b',
+      'ob_a',
+      'ib_size',
+      'ib_r',
+      'ib_g',
+      'ib_b',
+      'ib_a',
+      'mv_x',
+      'mv_y',
+      'mv_dx',
+      'mv_dy',
+      'mv_l',
+      'mv_r',
+      'mv_g',
+      'mv_b',
+      'mv_a',
+      'echo_zoom',
+      'echo_alpha',
+      'echo_orient',
+      'wave_dots',
+      'wave_thick',
+      'additivewave',
+      'wave_brighten',
+      'modwavealphabyvolume',
+      'modwavealphastart',
+      'modwavealphaend',
+      'darken_center',
+      'gammaadj',
+      'warp',
+      'warpanimspeed',
+      'warpscale',
+      'zoom',
+      'zoomexp',
+      'rot',
+      'cx',
+      'cy',
+      'dx',
+      'dy',
+      'sx',
+      'sy',
+      'fshader',
+      'wrap',
+      'invert',
+      'brighten',
+      'darken',
+      'solarize',
+      'b1n',
+      'b2n',
+      'b3n',
+      'b1x',
+      'b2x',
+      'b3x',
+      'b1ed',
+      // globals
+      'frame',
+      'time',
+      'fps',
+      'bass',
+      'bass_att',
+      'mid',
+      'mid_att',
+      'treb',
+      'treb_att',
+      'meshx',
+      'meshy',
+      'aspectx',
+      'aspecty',
+      'pixelsx',
+      'pixelsy',
+      ...this.qs,
+    ];
+
+    this.vertexKeys = [
+      'warp',
+      'zoom',
+      'zoomexp',
+      'cx',
+      'cy',
+      'sx',
+      'sy',
+      'dx',
+      'dy',
+      'rot'
+    ];
+
+    this.waveFrameKeys = [
+      'sep',
+      'scaling',
+      'spectrum',
+      'smoothing',
+      'usedots',
+      'thick',
+      'additive',
+      'r',
+      'g',
+      'b',
+      'a'
+    ];
+
+    this.wavePointKeys = [
+      'x',
+      'y',
+      'r',
+      'g',
+      'b',
+      'a',
+      'usedots',
+      'thick',
+      'additive',
+    ];
+
     this.initializeEquations(globalVars);
   }
 
@@ -61,7 +186,7 @@ export default class PresetEquationRunnerWASM {
 
     this.mdVS = Object.assign({}, this.preset.baseVals, mdVSBase);
 
-    Utils.setWasm(this.preset.globals, mdVSBase, Object.keys(mdVSBase));
+    Utils.setWasm(this.preset.globals, this.mdVS, Object.keys(this.mdVS));
 
     this.rand_start = new Float32Array([
       Math.random(), Math.random(), Math.random(), Math.random()
@@ -129,7 +254,7 @@ export default class PresetEquationRunnerWASM {
 
     this.mdVSQAfterFrame = this.getQVars();
 
-    const mdVSFrame = Utils.pickWasm(this.preset.globals, Object.keys(this.preset.baseVals));
+    const mdVSFrame = Utils.pickWasm(this.preset.globals, this.frameKeys);
     mdVSFrame.rand_preset = this.rand_preset;
     mdVSFrame.rand_start = this.rand_start;
 
@@ -139,18 +264,7 @@ export default class PresetEquationRunnerWASM {
   runPixelEquations (mdVSVertex) {
     Utils.setWasm(this.preset.globals, mdVSVertex, Object.keys(mdVSVertex));
     this.preset.pixel_eqs();
-    return Utils.pickWasm(this.preset.globals, [
-      'warp',
-      'zoom',
-      'zoomexp',
-      'cx',
-      'cy',
-      'sx',
-      'sy',
-      'dx',
-      'dy',
-      'rot'
-    ]);
+    return Utils.pickWasm(this.preset.globals, this.vertexKeys);
   }
 
   getQVars () {
@@ -172,34 +286,12 @@ export default class PresetEquationRunnerWASM {
   runWaveFrameEquations (waveIdx, mdVSWave) {
     Utils.setWasm(this.preset.globals, mdVSWave, Object.keys(mdVSWave));
     this.preset.waves[waveIdx].frame_eqs();
-    return Utils.pickWasm(this.preset.globals, [
-      'sep',
-      'scaling',
-      'spectrum',
-      'smoothing',
-      'usedots',
-      'thick',
-      'additive',
-      'r',
-      'g',
-      'b',
-      'a'
-    ]);
+    return Utils.pickWasm(this.preset.globals, this.waveFrameKeys);
   }
 
   runWavePointEquations (waveIdx, mdVSWaveFrame) {
     Utils.setWasm(this.preset.globals, mdVSWaveFrame, Object.keys(mdVSWaveFrame));
     this.preset.waves[waveIdx].point_eqs();
-    return Utils.pickWasm(this.preset.globals, [
-      'x',
-      'y',
-      'r',
-      'g',
-      'b',
-      'a',
-      'usedots',
-      'thick',
-      'additive',
-    ]);
+    return Utils.pickWasm(this.preset.globals, this.wavePointKeys);
   }
 }

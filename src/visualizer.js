@@ -166,7 +166,7 @@ export default class Visualizer {
       Object.keys(this.waveBaseValsDefaults).forEach((key) => {
         wasmGlobals[key] = new WebAssembly.Global(
           { value: 'f64', mutable: true },
-          0
+          this.waveBaseValsDefaults[key]
         );
       });
 
