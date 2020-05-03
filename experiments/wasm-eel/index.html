@@ -255,6 +255,23 @@
         startPreset(parseInt($('#presetSelect').val()));
       });
 
+      $(document).keydown((e) => {
+        let newPresetVal;
+        if (e.which === 32 || e.which === 39) {
+          newPresetVal = (currPresetIdx + 1) % presetNames.length;
+        } else if (e.which === 8 || e.which === 37) {
+          if (currPresetIdx === 0) {
+            newPresetVal = presetNames.length - 1;
+          } else {
+            newPresetVal = currPresetIdx - 1;
+          }
+        }
+        if (newPresetVal != undefined) {
+          $('#presetSelect').val(newPresetVal);
+          startPreset(newPresetVal);
+        }
+      });
+
       function startPreset (presetIdx) {
         currPresetIdx = presetIdx;
         const preset = _.cloneDeep(parsedPresets[presetIdx]);
