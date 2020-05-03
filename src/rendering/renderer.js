@@ -719,18 +719,21 @@ export default class Renderer {
       this.warpShader.renderQuadTexture(false, this.prevTexture,
                                         this.blurTexture1, this.blurTexture2, this.blurTexture3,
                                         blurMins, blurMaxs,
-                                        mdVSFrame, this.warpUVs, this.warpColor);
+                                        mdVSFrame, this.presetEquationRunner.mdVSQAfterFrame,
+                                        this.warpUVs, this.warpColor);
     } else {
       this.prevWarpShader.renderQuadTexture(false, this.prevTexture,
                                             this.blurTexture1, this.blurTexture2,
                                             this.blurTexture3, blurMins, blurMaxs,
                                             this.prevMDVSFrame,
+                                            this.prevPresetEquationRunner.mdVSQAfterFrame,
                                             this.warpUVs, this.warpColor);
 
       this.warpShader.renderQuadTexture(true, this.prevTexture,
                                         this.blurTexture1, this.blurTexture2, this.blurTexture3,
                                         blurMins, blurMaxs,
-                                        mdVSFrameMixed, this.warpUVs, this.warpColor);
+                                        mdVSFrameMixed, this.presetEquationRunner.mdVSQAfterFrame,
+                                        this.warpUVs, this.warpColor);
     }
 
     if (this.numBlurPasses > 0) {
@@ -848,18 +851,22 @@ export default class Renderer {
       this.compShader.renderQuadTexture(false, this.targetTexture,
                                         this.blurTexture1, this.blurTexture2, this.blurTexture3,
                                         blurMins, blurMaxs,
-                                        this.mdVSFrame, this.warpColor);
+                                        this.mdVSFrame, this.presetEquationRunner.mdVSQAfterFrame,
+                                        this.warpColor);
     } else {
       this.prevCompShader.renderQuadTexture(false, this.targetTexture,
                                             this.blurTexture1, this.blurTexture2, this.blurTexture3,
                                             blurMins, blurMaxs,
                                             this.prevMDVSFrame,
+                                            this.prevPresetEquationRunner.mdVSQAfterFrame,
                                             this.warpColor);
 
       this.compShader.renderQuadTexture(true, this.targetTexture,
                                         this.blurTexture1, this.blurTexture2, this.blurTexture3,
                                         blurMins, blurMaxs,
-                                        this.mdVSFrameMixed, this.warpColor);
+                                        this.mdVSFrameMixed,
+                                        this.presetEquationRunner.mdVSQAfterFrame,
+                                        this.warpColor);
     }
 
     if (this.supertext.startTime >= 0) {
@@ -900,7 +907,8 @@ export default class Renderer {
     this.compShader.renderQuadTexture(false, this.targetTexture,
       this.blurTexture1, this.blurTexture2, this.blurTexture3,
       blurMins, blurMaxs,
-      this.mdVSFrame, this.warpColor);
+      this.mdVSFrame, this.presetEquationRunner.mdVSQAfterFrame,
+      this.warpColor);
 
     this.gl.readPixels(0, 0, this.texsizeX, this.texsizeY,
       this.gl.RGBA, this.gl.UNSIGNED_BYTE, data);

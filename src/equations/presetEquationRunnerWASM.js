@@ -22,6 +22,24 @@ export default class PresetEquationRunnerWASM {
       return `reg${x}`;
     });
 
+    this.globalKeys = [
+      'frame',
+      'time',
+      'fps',
+      'bass',
+      'bass_att',
+      'mid',
+      'mid_att',
+      'treb',
+      'treb_att',
+      'meshx',
+      'meshy',
+      'aspectx',
+      'aspecty',
+      'pixelsx',
+      'pixelsy',
+    ];
+
     this.frameKeys = [
       'decay',
       'wave_a',
@@ -107,7 +125,6 @@ export default class PresetEquationRunnerWASM {
       'aspecty',
       'pixelsx',
       'pixelsy',
-      ...this.qs,
     ];
 
     this.vertexKeys = [
@@ -224,6 +241,7 @@ export default class PresetEquationRunnerWASM {
 
     this.preset.frame_eqs();
 
+    this.mdVS = Utils.pickWasm(this.preset.globals, this.frameKeys);
     this.mdVSQAfterFrame = this.getQVars();
     this.mdVSRegs = this.getRegVars();
 
@@ -289,7 +307,9 @@ export default class PresetEquationRunnerWASM {
   }
 
   runFrameEquations (globalVars) {
-    Utils.setWasm(this.preset.globals, globalVars, Object.keys(globalVars));
+    Utils.setWasm(this.preset.globals, this.mdVS, this.frameKeys);
+    Utils.setWasm(this.preset.globals, this.mdVSQInit, this.qs);
+    Utils.setWasm(this.preset.globals, globalVars, this.globalKeys);
 
     this.preset.frame_eqs();
 
