@@ -323,6 +323,7 @@ export default class PresetEquationRunnerWASM {
   }
 
   runPixelEquations (mdVSVertex) {
+    // XXX - narrow down keys
     Utils.setWasm(this.preset.globals, mdVSVertex, Object.keys(mdVSVertex));
     this.preset.pixel_eqs();
     return Utils.pickWasm(this.preset.globals, this.vertexKeys);
@@ -341,18 +342,21 @@ export default class PresetEquationRunnerWASM {
   }
 
   runShapeFrameEquations (shapeIdx, mdVSShape) {
+    // XXX - narrow down keys
     Utils.setWasm(this.preset.globals, mdVSShape, Object.keys(mdVSShape));
     this.preset.shapes[shapeIdx].frame_eqs();
     return Utils.pickWasm(this.preset.globals, this.shapeFrameKeys);
   }
 
   runWaveFrameEquations (waveIdx, mdVSWave) {
+    // XXX - narrow down keys
     Utils.setWasm(this.preset.globals, mdVSWave, Object.keys(mdVSWave));
     this.preset.waves[waveIdx].frame_eqs();
     return Utils.pickWasm(this.preset.globals, this.waveFrameKeys);
   }
 
   runWavePointEquations (waveIdx, mdVSWaveFrame) {
+    // XXX - narrow down keys
     Utils.setWasm(this.preset.globals, mdVSWaveFrame, Object.keys(mdVSWaveFrame));
     this.preset.waves[waveIdx].point_eqs();
     return Utils.pickWasm(this.preset.globals, this.wavePointKeys);
