@@ -140,6 +140,23 @@ export default class PresetEquationRunnerWASM {
       'rot'
     ];
 
+    this.vertexInputKeys = [
+      'x',
+      'y',
+      'rad',
+      'ang',
+      'zoom',
+      'zoomexp',
+      'rot',
+      'warp',
+      'cx',
+      'cy',
+      'dx',
+      'dy',
+      'sx',
+      'sy',
+    ];
+
     this.shapeFrameKeys = [
       'sides',
       'x',
@@ -165,6 +182,12 @@ export default class PresetEquationRunnerWASM {
       'additive'
     ];
 
+    this.shapeFrameInputKeys = [
+      ...this.shapeFrameKeys,
+      'instance',
+      'num_inst',
+    ];
+
     this.waveFrameKeys = [
       'sep',
       'scaling',
@@ -173,6 +196,14 @@ export default class PresetEquationRunnerWASM {
       'usedots',
       'thick',
       'additive',
+      'r',
+      'g',
+      'b',
+      'a'
+    ];
+
+    this.waveFrameInputKeys = [
+      'samples',
       'r',
       'g',
       'b',
@@ -189,6 +220,18 @@ export default class PresetEquationRunnerWASM {
       'usedots',
       'thick',
       'additive',
+    ];
+
+    this.wavePointInputKeys = [
+      'sample',
+      'value1',
+      'value2',
+      'x',
+      'y',
+      'r',
+      'g',
+      'b',
+      'a',
     ];
 
     this.initializeEquations(globalVars);
@@ -323,8 +366,7 @@ export default class PresetEquationRunnerWASM {
   }
 
   runPixelEquations (mdVSVertex) {
-    // XXX - narrow down keys
-    Utils.setWasm(this.preset.globals, mdVSVertex, Object.keys(mdVSVertex));
+    Utils.setWasm(this.preset.globals, mdVSVertex, this.vertexInputKeys);
     this.preset.pixel_eqs();
     return Utils.pickWasm(this.preset.globals, this.vertexKeys);
   }
@@ -342,22 +384,25 @@ export default class PresetEquationRunnerWASM {
   }
 
   runShapeFrameEquations (shapeIdx, mdVSShape) {
-    // XXX - narrow down keys
-    Utils.setWasm(this.preset.globals, mdVSShape, Object.keys(mdVSShape));
+    Utils.setWasm(this.preset.globals, mdVSShape, this.globalKeys);
+    Utils.setWasm(this.preset.globals, this.mdVSQAfterFrame, this.qs);
+    Utils.setWasm(this.preset.globals, this.mdVSTShapeInits[shapeIdx], this.ts);
+    Utils.setWasm(this.preset.globals, mdVSShape, this.shapeFrameInputKeys);
     this.preset.shapes[shapeIdx].frame_eqs();
     return Utils.pickWasm(this.preset.globals, this.shapeFrameKeys);
   }
 
   runWaveFrameEquations (waveIdx, mdVSWave) {
-    // XXX - narrow down keys
-    Utils.setWasm(this.preset.globals, mdVSWave, Object.keys(mdVSWave));
+    Utils.setWasm(this.preset.globals, mdVSWave, this.globalKeys);
+    Utils.setWasm(this.preset.globals, this.mdVSQAfterFrame, this.qs);
+    Utils.setWasm(this.preset.globals, this.mdVSTWaveInits[waveIdx], this.ts);
+    Utils.setWasm(this.preset.globals, mdVSWave, this.waveFrameInputKeys);
     this.preset.waves[waveIdx].frame_eqs();
     return Utils.pickWasm(this.preset.globals, this.waveFrameKeys);
   }
 
   runWavePointEquations (waveIdx, mdVSWaveFrame) {
-    // XXX - narrow down keys
-    Utils.setWasm(this.preset.globals, mdVSWaveFrame, Object.keys(mdVSWaveFrame));
+    Utils.setWasm(this.preset.globals, mdVSWaveFrame, this.wavePointInputKeys);
     this.preset.waves[waveIdx].point_eqs();
     return Utils.pickWasm(this.preset.globals, this.wavePointKeys);
   }

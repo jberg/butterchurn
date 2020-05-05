@@ -86,10 +86,7 @@ export default class CustomWaveform {
     if (waveEqs.baseVals.enabled !== 0 && timeArrayL.length > 0) {
       let mdVSWaveFrame;
       if (presetEquationRunner.preset.useWASM) {
-        const mdVSWave = Object.assign({},
-                                       presetEquationRunner.mdVSQAfterFrame,
-                                       presetEquationRunner.mdVSTWaveInits[this.index],
-                                       globalVars);
+        const mdVSWave = Object.assign({}, waveEqs.baseVals, globalVars);
         mdVSWaveFrame = presetEquationRunner.runWaveFrameEquations(this.index, mdVSWave);
       } else {
         const mdVSWave = Object.assign({},

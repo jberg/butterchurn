@@ -142,11 +142,7 @@ export default class CustomShape {
 
       let mdVSShape;
       if (presetEquationRunner.preset.useWASM) {
-        mdVSShape = Object.assign({},
-                                  shapeEqs.baseVals,
-                                  presetEquationRunner.mdVSQAfterFrame,
-                                  presetEquationRunner.mdVSTShapeInits[this.index],
-                                  globalVars);
+        mdVSShape = Object.assign({}, shapeEqs.baseVals, globalVars);
       } else {
         mdVSShape = Object.assign({},
                                   presetEquationRunner.mdVSShapes[this.index],
