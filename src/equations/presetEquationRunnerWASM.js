@@ -109,22 +109,6 @@ export default class PresetEquationRunnerWASM {
       'b2x',
       'b3x',
       'b1ed',
-      // globals
-      'frame',
-      'time',
-      'fps',
-      'bass',
-      'bass_att',
-      'mid',
-      'mid_att',
-      'treb',
-      'treb_att',
-      'meshx',
-      'meshy',
-      'aspectx',
-      'aspecty',
-      'pixelsx',
-      'pixelsy',
     ];
 
     this.vertexKeys = [
@@ -348,7 +332,7 @@ export default class PresetEquationRunnerWASM {
 
     this.mdVSQAfterFrame = this.getQVars();
 
-    const mdVSFrame = Utils.pickWasm(this.preset.globals, this.frameKeys);
+    const mdVSFrame = Utils.pickWasm(this.preset.globals, [...this.frameKeys, ...this.globalKeys]);
     mdVSFrame.rand_preset = this.rand_preset;
     mdVSFrame.rand_start = this.rand_start;
 
