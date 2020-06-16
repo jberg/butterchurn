@@ -241,8 +241,6 @@ export default class PresetEquationRunnerWASM {
     this.runVertEQs = (this.preset.pixel_eqs !== '');
 
     this.mdVSQInit = null;
-    this.mdVSRegs = null;
-    this.mdVSFrame = null;
     this.mdVSQAfterFrame = null;
 
     const mdVSBase = {
@@ -274,19 +272,15 @@ export default class PresetEquationRunnerWASM {
       Math.random(), Math.random(), Math.random(), Math.random()
     ]);
 
-    // const nonUserKeys = this.qs.concat(this.regs, Object.keys(this.mdVS));
-
     this.preset.init_eqs();
 
     // qs need to be initialized to there init values every frame
     this.mdVSQInit = this.getQVars();
-    this.mdVSRegs = this.getRegVars();
 
     this.preset.frame_eqs();
 
     this.mdVS = Utils.pickWasm(this.preset.globals, this.frameKeys);
     this.mdVSQAfterFrame = this.getQVars();
-    this.mdVSRegs = this.getRegVars();
 
     this.mdVSTWaveInits = [];
     if (this.preset.waves && this.preset.waves.length > 0) {
@@ -297,8 +291,6 @@ export default class PresetEquationRunnerWASM {
           Utils.setWasm(this.preset.globals, baseVals, Object.keys(baseVals));
           if (wave.init_eqs) {
             wave.init_eqs();
-
-            this.mdVSRegs = this.getRegVars();
 
             // base vals need to be reset
             Utils.setWasm(this.preset.globals, baseVals, Object.keys(baseVals));
@@ -319,8 +311,6 @@ export default class PresetEquationRunnerWASM {
           Utils.setWasm(this.preset.globals, baseVals, Object.keys(baseVals));
           if (shape.init_eqs) {
             shape.init_eqs();
-
-            this.mdVSRegs = this.getRegVars();
 
             // base vals need to be reset
             Utils.setWasm(this.preset.globals, baseVals, Object.keys(baseVals));

@@ -150,7 +150,9 @@ export default class Renderer {
     this.presetEquationRunner = new PresetEquationRunner(this.preset, globalVars, params);
     this.prevPresetEquationRunner = new PresetEquationRunner(this.prevPreset, globalVars, params);
 
-    this.regVars = this.presetEquationRunner.mdVSRegs;
+    if (!this.preset.useWASM) {
+      this.regVars = this.presetEquationRunner.mdVSRegs;
+    }
   }
 
   static getHighestBlur (t) {
@@ -205,7 +207,6 @@ export default class Renderer {
       this.preset.globals.old_wave_mode.value = this.prevPreset.baseVals.wave_mode;
       this.preset.baseVals.old_wave_mode = this.prevPreset.baseVals.wave_mode;
       this.presetEquationRunner = new PresetEquationRunnerWASM(this.preset, globalVars, params);
-      this.regVars = this.presetEquationRunner.mdVSRegs;
     } else {
       this.preset.baseVals.old_wave_mode = this.prevPreset.baseVals.wave_mode;
       this.presetEquationRunner = new PresetEquationRunner(this.preset, globalVars, params);
@@ -667,19 +668,16 @@ export default class Renderer {
 
     if (!this.preset.useWASM) {
       globalVars.gmegabuf = this.presetEquationRunner.gmegabuf;
+      Object.assign(globalVars, this.regVars);
     }
-
-    Object.assign(globalVars, this.regVars);
 
     const mdVSFrame = this.presetEquationRunner.runFrameEquations(globalVars);
     this.runPixelEquations(this.presetEquationRunner, mdVSFrame, false);
 
-    if (this.preset.useWASM) {
-      Object.assign(this.regVars, this.presetEquationRunner.getRegVars());
-    } else {
+    if (!this.preset.useWASM) {
       Object.assign(this.regVars, Utils.pick(this.mdVSVertex, this.regs));
+      Object.assign(globalVars, this.regVars);
     }
-    Object.assign(globalVars, this.regVars);
 
     let mdVSFrameMixed;
     if (this.blending) {
