@@ -168,11 +168,11 @@ export default class PresetEquationRunnerWASM {
 
     this.shapeFrameInputKeys = [
       ...this.shapeFrameKeys,
-      'instance',
       'num_inst',
     ];
 
     this.waveFrameKeys = [
+      'samples',
       'sep',
       'scaling',
       'spectrum',
@@ -201,9 +201,6 @@ export default class PresetEquationRunnerWASM {
       'g',
       'b',
       'a',
-      'usedots',
-      'thick',
-      'additive',
     ];
 
     this.wavePointInputKeys = [
@@ -357,20 +354,23 @@ export default class PresetEquationRunnerWASM {
     return Utils.pickWasm(this.preset.globals, this.regs);
   }
 
-  runShapeFrameEquations (shapeIdx, mdVSShape) {
-    Utils.setWasm(this.preset.globals, mdVSShape, this.globalKeys);
+  runShapeFrameEquations (shapeIdx, instance, globalVars) {
+    const baseVals = this.preset.shapes[shapeIdx].baseVals;
+    this.preset.globals.instance.value = instance;
+    Utils.setWasm(this.preset.globals, baseVals, this.shapeFrameInputKeys);
     Utils.setWasm(this.preset.globals, this.mdVSQAfterFrame, this.qs);
     Utils.setWasm(this.preset.globals, this.mdVSTShapeInits[shapeIdx], this.ts);
-    Utils.setWasm(this.preset.globals, mdVSShape, this.shapeFrameInputKeys);
+    Utils.setWasm(this.preset.globals, globalVars, this.globalKeys);
     this.preset.shapes[shapeIdx].frame_eqs();
     return Utils.pickWasm(this.preset.globals, this.shapeFrameKeys);
   }
 
-  runWaveFrameEquations (waveIdx, mdVSWave) {
-    Utils.setWasm(this.preset.globals, mdVSWave, this.globalKeys);
+  runWaveFrameEquations (waveIdx, globalVars) {
+    const baseVals = this.preset.waves[waveIdx].baseVals;
+    Utils.setWasm(this.preset.globals, baseVals, this.waveFrameInputKeys);
     Utils.setWasm(this.preset.globals, this.mdVSQAfterFrame, this.qs);
     Utils.setWasm(this.preset.globals, this.mdVSTWaveInits[waveIdx], this.ts);
-    Utils.setWasm(this.preset.globals, mdVSWave, this.waveFrameInputKeys);
+    Utils.setWasm(this.preset.globals, globalVars, this.globalKeys);
     this.preset.waves[waveIdx].frame_eqs();
     return Utils.pickWasm(this.preset.globals, this.waveFrameKeys);
   }

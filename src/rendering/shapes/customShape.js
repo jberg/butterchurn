@@ -142,7 +142,7 @@ export default class CustomShape {
 
       let mdVSShape;
       if (presetEquationRunner.preset.useWASM) {
-        mdVSShape = Object.assign({}, shapeEqs.baseVals, globalVars);
+        mdVSShape = Object.assign({}, globalVars);
       } else {
         mdVSShape = Object.assign({},
                                   presetEquationRunner.mdVSShapes[this.index],
@@ -151,34 +151,34 @@ export default class CustomShape {
                                   presetEquationRunner.mdVSTShapeInits[this.index],
                                   globalVars);
       }
-      const mdVSShapeBaseVals = Utils.cloneVars(mdVSShape);
+      const baseVals = presetEquationRunner.preset.shapes[this.index].baseVals;
 
-      const numInst = Math.clamp(mdVSShape.num_inst, 1, 1024);
+      const numInst = Math.clamp(baseVals.num_inst, 1, 1024);
       for (let j = 0; j < numInst; j++) {
         mdVSShape.instance = j;
-        mdVSShape.x = mdVSShapeBaseVals.x;
-        mdVSShape.y = mdVSShapeBaseVals.y;
-        mdVSShape.rad = mdVSShapeBaseVals.rad;
-        mdVSShape.ang = mdVSShapeBaseVals.ang;
-        mdVSShape.r = mdVSShapeBaseVals.r;
-        mdVSShape.g = mdVSShapeBaseVals.g;
-        mdVSShape.b = mdVSShapeBaseVals.b;
-        mdVSShape.a = mdVSShapeBaseVals.a;
-        mdVSShape.r2 = mdVSShapeBaseVals.r2;
-        mdVSShape.g2 = mdVSShapeBaseVals.g2;
-        mdVSShape.b2 = mdVSShapeBaseVals.b2;
-        mdVSShape.a2 = mdVSShapeBaseVals.a2;
-        mdVSShape.border_r = mdVSShapeBaseVals.border_r;
-        mdVSShape.border_g = mdVSShapeBaseVals.border_g;
-        mdVSShape.border_b = mdVSShapeBaseVals.border_b;
-        mdVSShape.border_a = mdVSShapeBaseVals.border_a;
-        mdVSShape.thickoutline = mdVSShapeBaseVals.thickoutline;
-        mdVSShape.textured = mdVSShapeBaseVals.textured;
-        mdVSShape.tex_zoom = mdVSShapeBaseVals.tex_zoom;
-        mdVSShape.tex_ang = mdVSShapeBaseVals.tex_ang;
-        mdVSShape.additive = mdVSShapeBaseVals.additive;
+        mdVSShape.x = baseVals.x;
+        mdVSShape.y = baseVals.y;
+        mdVSShape.rad = baseVals.rad;
+        mdVSShape.ang = baseVals.ang;
+        mdVSShape.r = baseVals.r;
+        mdVSShape.g = baseVals.g;
+        mdVSShape.b = baseVals.b;
+        mdVSShape.a = baseVals.a;
+        mdVSShape.r2 = baseVals.r2;
+        mdVSShape.g2 = baseVals.g2;
+        mdVSShape.b2 = baseVals.b2;
+        mdVSShape.a2 = baseVals.a2;
+        mdVSShape.border_r = baseVals.border_r;
+        mdVSShape.border_g = baseVals.border_g;
+        mdVSShape.border_b = baseVals.border_b;
+        mdVSShape.border_a = baseVals.border_a;
+        mdVSShape.thickoutline = baseVals.thickoutline;
+        mdVSShape.textured = baseVals.textured;
+        mdVSShape.tex_zoom = baseVals.tex_zoom;
+        mdVSShape.tex_ang = baseVals.tex_ang;
+        mdVSShape.additive = baseVals.additive;
 
-        const mdVSShapeFrame = presetEquationRunner.runShapeFrameEquations(this.index, mdVSShape);
+        const mdVSShapeFrame = presetEquationRunner.runShapeFrameEquations(this.index, j, mdVSShape);
 
         let sides = mdVSShapeFrame.sides;
         sides = Math.clamp(sides, 3, 100);

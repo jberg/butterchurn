@@ -86,8 +86,7 @@ export default class CustomWaveform {
     if (waveEqs.baseVals.enabled !== 0 && timeArrayL.length > 0) {
       let mdVSWaveFrame;
       if (presetEquationRunner.preset.useWASM) {
-        const mdVSWave = Object.assign({}, waveEqs.baseVals, globalVars);
-        mdVSWaveFrame = presetEquationRunner.runWaveFrameEquations(this.index, mdVSWave);
+        mdVSWaveFrame = presetEquationRunner.runWaveFrameEquations(this.index, globalVars);
       } else {
         const mdVSWave = Object.assign({},
                                        presetEquationRunner.mdVSWaves[this.index],
@@ -115,15 +114,16 @@ export default class CustomWaveform {
       const scaling = mdVSWaveFrame.scaling;
       const spectrum = mdVSWaveFrame.spectrum;
       const smoothing = mdVSWaveFrame.smoothing;
+      const additive = mdVSWaveFrame.additive;
       const usedots = mdVSWaveFrame.usedots;
+      const thick = mdVSWaveFrame.thick;
 
       const frameR = mdVSWaveFrame.r;
       const frameG = mdVSWaveFrame.g;
       const frameB = mdVSWaveFrame.b;
       const frameA = mdVSWaveFrame.a;
 
-      // XXX - probably need to fix for WASM
-      const waveScale = presetEquationRunner.mdVS.wave_scale;
+      const waveScale = presetEquationRunner.preset.baseVals.wave_scale;
 
       this.samples -= sep;
 
@@ -201,6 +201,10 @@ export default class CustomWaveform {
 
           // eslint-disable-next-line no-param-reassign
           presetEquationRunner.mdVSFrameMapWaves[this.index] = mdVSNewFrameMapWave;
+        } else {
+          mdVSWaveFrame.usedots = usedots;
+          mdVSWaveFrame.thick = thick;
+          mdVSWaveFrame.additive = additive;
         }
 
         this.mdVSWaveFrame = mdVSWaveFrame;
