@@ -110,13 +110,13 @@ export default class CustomWaveform {
       }
       this.samples = Math.floor(this.samples);
 
+      const baseVals = presetEquationRunner.preset.waves[this.index].baseVals;
+
       const sep = Math.floor(mdVSWaveFrame.sep);
       const scaling = mdVSWaveFrame.scaling;
       const spectrum = mdVSWaveFrame.spectrum;
       const smoothing = mdVSWaveFrame.smoothing;
-      const additive = mdVSWaveFrame.additive;
-      const usedots = mdVSWaveFrame.usedots;
-      const thick = mdVSWaveFrame.thick;
+      const usedots = baseVals.usedots;
 
       const frameR = mdVSWaveFrame.r;
       const frameG = mdVSWaveFrame.g;
@@ -203,8 +203,8 @@ export default class CustomWaveform {
           presetEquationRunner.mdVSFrameMapWaves[this.index] = mdVSNewFrameMapWave;
         } else {
           mdVSWaveFrame.usedots = usedots;
-          mdVSWaveFrame.thick = thick;
-          mdVSWaveFrame.additive = additive;
+          mdVSWaveFrame.thick = baseVals.thick;
+          mdVSWaveFrame.additive = baseVals.additive;
         }
 
         this.mdVSWaveFrame = mdVSWaveFrame;
