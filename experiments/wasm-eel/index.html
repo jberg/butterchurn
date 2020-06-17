@@ -148,6 +148,9 @@
       ];
       var parsedPresets = null;
       var currPresetIdx = null;
+      let frameNum = 0;
+      let timeHist = [0];
+      const timeHistMax = 120;
       var canvas = document.getElementById('canvas');
 
       function connectToAudioAnalyzer(sourceNode) {
@@ -165,8 +168,28 @@
       }
 
       function startRenderer() {
-        requestAnimationFrame(() => startRenderer());
+        requestAnimationFrame(() => {
+          startRenderer();
+        });
+        frameNum += 1;
+        const renderStart = performance.now();
         visualizer.render();
+        const renderEnd = performance.now();
+        const elapsed = (renderEnd - renderStart) / 1000;
+        const newHistTime = timeHist[timeHist.length - 1] + elapsed;
+        timeHist.push(newHistTime);
+        if (timeHist.length > timeHistMax) {
+          timeHist.shift();
+        }
+        if (frameNum % timeHistMax === 0) {
+          const fps = timeHist.length / (newHistTime - timeHist[0]);
+          const useWasm = $('#useWASM').is(':checked');
+          const presetName = presetNames[currPresetIdx];
+          console.log(
+            'FPS:', fps,
+            ', WASM:' , useWasm,
+            ', name:', presetName);
+        }
       }
 
       function playBufferSource(buffer) {
@@ -275,8 +298,12 @@
       function startPreset (presetIdx) {
         currPresetIdx = presetIdx;
         const preset = _.cloneDeep(parsedPresets[presetIdx]);
-        preset.useWASM = $('#useWASM').is(':checked');;
-        visualizer.loadPreset(preset, 3)
+        preset.useWASM = $('#useWASM').is(':checked');
+        // visualizer.loadPreset(preset, 3);
+        visualizer.loadPreset(preset, 0);
+
+        frameNum = 0;
+        timeHist = [0];
       }
 
       function loadPreset(fileName) {
