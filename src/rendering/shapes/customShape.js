@@ -178,6 +178,7 @@ export default class CustomShape {
         mdVSShape.tex_ang = baseVals.tex_ang;
         mdVSShape.additive = baseVals.additive;
 
+        // eslint-disable-next-line max-len
         const mdVSShapeFrame = presetEquationRunner.runShapeFrameEquations(this.index, j, mdVSShape);
 
         let sides = mdVSShapeFrame.sides;
