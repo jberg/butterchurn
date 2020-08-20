@@ -1,0 +1,795 @@
+EatMe/JBerg/Butterchurn Milkdrop v2.6.7.1e-complete 
+https://github.com/free-music-by-eatme/butterchurn/releases/tag/v2.6.7.1e-complete 
+extended function and implementation manual - index
+
+---section 1: description
+extended function and implementation manual.txt
+---section 2: implementation example and scripts 
+    butterchurn_example_e.htm
+    butterchurn.js
+    butterchurn.min.js
+    butterchurnextraimages.min.js
+    butterchurnpresets.min.js
+    butterchurnpresetsextra.min.js
+    butterchurnpresetsextra2.min.js
+    butterchurn_initvar.js
+    jquery.min.js v1.12.4 or above
+---section 3: extended script functions 
+--part 1. Mouse functions and (Mobile/Tablet) Touch functions 
+1a. Mouse Click / Tap
+  next preset 
+1b. Right Click / Long Push
+  fullscreen 
+1c. Mouse Movement / Still
+  to optionally hide cursor 
+--part 2. Accessible visuals behaviour functions
+2a. butterVis.shufflePresets();
+2b. butterVis.forceNextPreset();  
+2c. butterVis.forcePrevPreset();  
+2d. butterVis.showTitle(title);
+--part 3. Presets 
+3a. Loading presets: 
+    butterVis.butterchurn.loadPreset(butterVis.presets[butterVis.presetKeys[presetIndex]], blendTime);
+3b. Adding your own presets
+    (undocumented)
+    https://github.com/jberg/milkdrop-preset-converter 
+    more information on adding your own MilkDrop presets unavailable in this document.
+3c. Presets in v2.6.7.1e-complete 
+    var ivariable=1;for(ivariable=0;;ivariable++){console.log(butterVis.presetKeys[ivariable].toString());}
+3d. Files containing the presets
+    butterchurnextraimages.min.js
+    butterchurnpresets.min.js
+    butterchurnpresetsextra.min.js
+    butterchurnpresetsextra2.min.js
+---section 4: How-to?
+4a. How to get this running?
+4b. How to edit this into my site?
+4c. How to implement this into Worpress or any other Content Management System?
+4d. How do I learn HTML CSS javascript jquery?
+4e. How to fix "Access-Control-Allow-Origin" error? I get no audio!
+4f. How to check or meet the system requirements?
+---section 5: license
+a MIT license for Commercial, Private, Distribution and Modification usage, 
+with No Liability Granted and No Warranty Granted under the conditions of a License and Copyright notice. 
+---section 6: links
+--part 1. project links
+--part 2. miscellaneous links for other use mentioned
+end of index
+
+EatMe/JBerg/Butterchurn Milkdrop v2.6.7.1e-complete 
+extended function and implementation manual 
+begins here 
+
+---Section 1: description
+EatMe/JBerg/Butterchurn Milkdrop v2.6.7.1e-complete 
+extended function and implementation manual for example 
+MilkDrop visuals web browser javascript html implementation 
+..easy to implement with use of
+files:
+  butterchurn_example_e.htm
+  butterchurn.js
+  butterchurn.min.js
+  butterchurnextraimages.min.js
+  butterchurnpresets.min.js
+  butterchurnpresetsextra.min.js
+  butterchurnpresetsextra2.min.js
+  butterchurn_initvar.js
+  jquery.min.js v1.12.4 or above
+..extended function description in this document.
+  butterchurn_v2.6.7.1e-complete - manual for extended functions and implementation.txt
+
+https://github.com/free-music-by-eatme/butterchurn/releases/tag/v2.6.7.1e-complete 
+see the above link for an easy to implement manual example. 
+
+This document contains extended implementation and function descriptions.
+
+--section 2: implementation example and scripts
+for live implementations: 
+see https://butterchurnviz.com/ for the original project. 
+see https://nightride.fm for an interlaced version with radiostream.  
+see http://eatme.pro/music for a right-click fullscreen with music. 
+
+Butterchurn-v2.6.7.1e complete - with HTML_butterchurn_example_e.htm
+free-music-by-eatme released this 2020-08
+
+…easy to implement manual
+
+see https://butterchurnviz.com/ for the original project.
+see nightride.fm for an interlaced version with radiostream.
+see eatme.pro/music for a right-click fullscreen with music.
+
+play audio link, html audio element and directly showing butterchurn MilkDrop visuals are in the HTML_butterchurn_example_e.htm
+butterchurn.js example
+
+?audiotoplay=(audio file or stream URL)
+in the example document parameters will load an audio file or stream. the user must press play.
+
+in this example attached:
+right click / push longer than 500 msec on mobile
+fullscreen/restore
+
+left click / tap shorter than 500 msec on mobile
+change preset
+
+needed: ((x) indicates changes were made)
+
+(x) streaming or file source with HTTP Headers set to "Access-Control-Allow-Origin: *" (being a star, shift-8)
+on the webserver to contain a HTTP Header that allows you to use the mp3 on (x) all (or your) pages.
+
+(x) butterchurn.js
+
+set the location in the script src header below
+(add a for admin) eatme.pro/filedmin/scripts/butterchurn.js as of now contains my editing version, see attached for this working
+edit butterchurn.js var section at begin of file to set screen size, if not in stylesheet, z-index (layout order)
+default: 100x100 "98" "1" fullscreen=false
+
+butterchurn.min.js - see attached
+set the location in the script src header below
+
+butterchurnExtraImages.min.js - see attached
+set the location in the script src header below
+
+butterchurnPresets.min.js - see attached
+set the location in the script src header below
+
+butterchurnPresetsExtra.min.js - see attached
+set the location in the script src header below
+
+butterchurnPresetsExtra2.min.js - see attached
+set the location in the script src header below
+
+butterchurn_initvar.js - used to be called helper.js - see attached
+set the location in the script src header below
+
+jquery 1.12.14.min.js works - ajax.googleapis has a slow response but can be multi-site cached
+set the location in the script src header below
+
+not required: butterchurn_isSupported.js - old code that is in included below in this example to check if it is supported.. 
+https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js - loaded below
+
+https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js is the newest referred by w3schools, not tested
+
+//required: jquery 1 12 14 or something min.js here from google with a slow response time
+
+EatMe/JBerg/Butterchurn v2.6.7.1e-complete (GitHub) is released under a MIT license 
+for Commercial, Private, Distribution and Modification usage, 
+with No Liability Granted and No Warranty Granted under the conditions of a License and Copyright notice. 
+https://github.com/free-music-by-eatme/butterchurn/blob/master/LICENSE 
+
+---section 3: extended script functions 
+--part 1. Mouse functions and (Mobile/Tablet) Touch functions 
+
+1a. Left Click / Tap
+  events: click touchstart touchend
+
+  events: click 
+    in butterchurn.js
+    this.canvas.addEventListener('click', this.forceNextPreset.bind(this));
+
+  events: touchstart touchend
+    in butterchurn.js
+    this.canvas.addEventListener("touchstart", this.touchstartFunc.bind(this), false);  
+    this.canvas.addEventListener("touchend", this.touchendFunc.bind(this), false);
+    code at touchstartFunc in butterchurn.js 
+    to respond with a timer, to then fire the click function on short tap.
+
+1b. Right Click / Long touch
+  events: contextmenu touchstart+touchend
+  to set: in begin of file: var touchduration = 700; //length of time we want the user to touch before we do something
+
+  events: contextmenu
+    in butterchurn.js
+    this.canvas.addEventListener('contextmenu', this.fullScreenFunc.bind(this), false);
+
+  events: touchstart touchend
+    this.canvas.addEventListener("touchstart", this.touchstartFunc.bind(this), false);
+    this.canvas.addEventListener("touchend", this.touchendFunc.bind(this), false);
+    code at touchstartFunc in butterchurn.js 
+    to respond with a timer, to then fire the right click function on long push.
+
+1c. Mouse still / Moving
+  events: mousemove 
+     in butterchurn_initvar.js
+     W.addEventListener("mousemove", (e)=> {.........
+
+  Butterchurn will set the main HTML body element class= to 
+    <body class="canHover">
+    when the mouse is touched and moved by the user.
+      be advised: set the "pointer:" value to a visible pointer 
+      if you hide it (see below).
+    
+    <body class="mouseHide">
+    when the mouse is still for a longer time.
+      the css style="pointer:" value the css style "pointer" can be hidden.
+
+
+To set behaviour and visibility of the mouse pointer. 
+
+Can be done 
+     in html element style="", 
+     in <head><style></style></head> in the top of the <html> structure, 
+     in .css stylesheet files that are loaded.
+
+In css style definition of the .canHover{} and .mouseHide{} class 
+set the "pointer:" (type); to change the onscreen mouse pointer.
+
+--part 2. Accessible visuals behaviour functions
+  "butterVis" script object.
+
+Visuals are bound to the "butterVis" script object.
+Functions for in your own custom implementation.
+
+Preset functions: See section 3. Presets to find more information.
+
+2a. butterVis.shufflePresets();
+    Randomizes, Shuffles the order of visual presets that are loaded.
+
+2b. butterVis.forceNextPreset();
+    Displays the next visual preset.
+    Used in Mouse Click / Tap described in section 1. Mouse functions and (Mobile/Tablet) Touch functions. 
+
+2c. butterVis.forcePrevPreset();
+    Displays the previous visual preset.
+
+Custom animation function.
+
+2d. butterVis.showTitle(title);
+    Shows an animated display of the title "string value".
+
+---part 3. Presets
+
+Presets in EatMe/JBerg/Butterchurn Milkdrop v2.6.7.1e-complete 
+are stored in loaded .js files included. 
+
+3a. Loading presets: 
+
+butterVis.butterchurn.loadPreset(butterVis.presets[butterVis.presetKeys[presetIndex]], blendTime);
+
+    to load a preset from the 
+        butterVis.presets[] collection
+
+    specify [presetindex] 
+        to a maximum of butterVis.presetKeys.length
+        by butterVis.presetIndex number [1]
+        or butterVis.presetKeys name ['Flexi, martin + geiss - dedicated to the sherwin maxawow']
+        
+   specify blendTime 
+        experiment with what suits best
+
+3b. Adding your own presets 
+  (undocumented)
+
+  https://github.com/jberg/milkdrop-preset-converter
+
+  a milkdrop preset converter that has features undocumented here.
+
+3c. Presets in v2.6.7.1e-complete 
+
+the following code extracts all preset names (and then crashes):
+
+  var ivariable=1;for(ivariable=0;;ivariable++){console.log(butterVis.presetKeys[ivariable].toString());}
+
+MilkDrop presets in v.2.6.7.1 are:
+
+  martin - city of shadows
+  Zylot - Paint Spill (Music Reactive Paint Mix)
+  Rovastar - Trippy Sperm (Jelly)
+  Illusion & Rovastar - Dotty Mad Space (Jelly)
+  Flexi - mindblob 2.0
+  beta106i - Brilliance (Space-Time Breaking) - mash0000 - it′s 2009 and you haven′t replaced your analog tv with digital
+  Flexi, martin + geiss - painterly rogue wave strike
+  _Mig_004_version2
+  Geiss - Cauldron - painterly 2 (saturation remix)
+  flexi - patternton, district of media, capitol of the united abstractions of fractopia
+  GreatWho - Lasershow
+  ORB - Solar Radiation
+  Geiss - Tokamak Plus 2
+  fiShbRaiN - witchcraft (necromancer remix)_phat_edit_v3
+  Flexi - piercing
+  Fumbling_Foo & Flexi, Martin, Orb, Unchained - Star Nova v7b
+  Eo.S. + Phat - cubetrace - v2
+  $$$ Royal - Mashup (307)
+  Hexcollie - Cell division
+  flexi - bouncing balls [illumination mix]
+  Telek - City Helix Lattice
+  Flexi - predator-prey-spirals
+  Flexi + stahlregen - jelly showoff parade
+  AdamFx 2 Geiss, Zylot and Flexi - Reaction Diffusion 3 (Overload Mix 2) EATIT4 (BCCNJ4)
+  Flexi + Geiss + Demon Lord - unholy tokamak clot-plot
+  Eo.S. - glowsticks v2 05 and proton lights (+Krash′s beat code) _Phat_remix02b
+  cope - digital sea
+  _Geiss - Artifact 03
+  Flexi, fishbrain, Geiss + Martin - tokamak witchery
+  martin - witchcraft reloaded
+  Cope - The Neverending Explosion of Red Liquid Fire
+  LuxXx - Subtle HipHopFlake
+  Martin - disco mix 3 -fast
+  Flexi + fiShbRaiN - operation fatcap II
+  Phat + Zylot + Eo.S. - work with lines
+  _Flexi, martin + geiss - painterly rogue wave strike (color emboss mix)
+  _Mig_028
+  Aderrasi - Potion of Spirits
+  martin + stahlregen - martin in da mash 14
+  Stahlregen & flexi + Geiss + Rovastar + Shifter - Fractal Feedback (for Hexcollie)
+  yin - 190 - Temporal fluctuations
+  Geiss - 3 layers (Tunnel Mix)
+  $$$ Royal - Mashup (326)
+  martin - glassball dance
+  ORB - Magma Pool
+  Zylot - In death there is life (Geiss Layered Mix)
+  _Mig_Oscilloscope008
+  Flexi + Martin - astral projection
+  goody + martin - crystal palace - schizotoxin - the wild iris bloom - 16 iterations
+  Rovastar-altarsofmadness(forgottenrea
+  Flexi - smashing fractals 2.0
+  martin - another kind of groove
+  ech0 - liquid firesticks I
+  baked - River of Illusion Dillusion [Bubble]
+  LuxXx - GrindFace  225 mg dose  
+  Rovastar + Telek - Altars of Madness (Rolling Oceans Mix)
+  Geiss - Reaction Diffusion 3
+  _Mig_039
+  Flexi - alien fader
+  Flexi - alien web bouncer [26]
+  TonyMilkdrop - Magellan's Nebula [Flexi - fancy + $this shall not retain]
+  cope - the drain to heaven
+  flexi - meta4free
+  fiShbRaiN - the adventures of prismo jenkins
+  Cope - Passage (mandala mix)
+  flexi - jelly fish mandala
+  martin - stormy sea (2010 update)
+  cope - strange attractor [flexis let it grow mix] (Jelly 5.56 [volume noise zoom-in])
+  Flexi + amandio c - piercing 05 - Kopie (2) - Kopie
+  _Eo.S. - glowsticks v2 02 - Geiss HPF
+  _Mig_COLORFUL9
+  Stahlregen - Dots (Pixels - Blocky) (Jelly V2)
+  suksma - water cooled red uranium vs dotes - freeenergynow.net
+  flexi - what is the matrix
+  444
+  Flexi - crush ice 72
+  flexi - bouncing balls [double mindblob gastrointestinal mix]
+  Krash + Illusion + Geiss - Spiral Movement (Reaction Diffusion mix)
+  flexi + amandio c - organic [random mashup]
+  Hexcollie - Nautalisk - mash0000 - but officer, my fingerprint always changes
+  AdamFX Mashup 2 Martin - reflections on black tile + Raron N Flexi 
+  cope + flexi - mother-of-whirl [no fnords were hurt]
+  11
+  Ishan - Anuera
+  shifter - feathers (angel wings)_phat_remix relief 2
+  $$$ Royal - Mashup (197)
+  Martin - journey into space
+  martin - violet flash
+  flexi + fishbrain - neon mindblob grafitti
+  Aderrasi + Geiss - Airhandler (Kali Mix) - Painterly Tendrils Colorfast
+  Geiss - Desert Rose 4
+  fishbrain + flexi - stitchcraft
+  _geiss_experimental__wavefronts
+  Flexi + Martin - tunnel of supraschismatika
+  AdamFx 2 Aderrasi - Airhandler (Last Breath - Calm)Ilusional Discontent2
+  Flexi, martin + geiss - dedicated to the sherwin maxawow
+  rce-ordinary + flexi - far away distance (custom beat detection + bipolar colour ghost mix)
+  Geiss - Reaction Diffusion (Relief Mix)
+  martin - mucus cervix
+  flexi - infused with the spiral (jelly 4.x cn)
+  Geiss - Skin Dots Multi-layer 3
+  Martin - cool morning
+  shifter - escape the worm - Eo.S. + Phat - Before_It_Eats_Your_Brain_Mix_v2
+  Aderrasi - Curse of the Mirror Emu
+  flexi + geiss - pogo-cubes on tokamak matter (bccn Jelly V4)
+  158
+  Flexi + Geiss - pogo-cubes on tokamak matter (Jelly 5.55)
+  ORB - Fire and Fumes 2
+  yin - 315 - Ocean of Light (yo im peakin yo Eo.S.-Phat)
+  _Mig_056
+  martin - gate to moria
+  martin - sunset over the river
+  Krash - War Machine (Shifting Complexity Mix)
+  martin [shadow harlequins shape code] - fata morgana
+  $$$ Royal - Mashup (220)
+  LuxXx - Fuck Your Code ii
+  beta106i - Potion of Ink
+  martin, flexi, fishbrain + sto - enterstate [random mashup]
+  Eo.S. - spark C_Phat_Jester_Mix_v2
+  shifter - dark tides bdrv mix 2
+  $$$ Royal - Mashup (337)
+  beta106at shape - mash0000 - hulk spirit cum
+  Idiot - Star Of Annon
+  Geiss - Cauldron - painterly (saturation remix)
+  martin - shifter - armorial bearings of robotopia
+  Geiss - Bipolar 2 Enhanced
+  PieturP - triptrap_(ultimate-trip-mix)
+  martin - The Bridge of Khazad-Dum
+  martin - starfield sectors
+  Martin - liquid arrows
+  _Geiss - untitled
+  Geiss - Game of Life 3
+  Geiss - Spiral Artifact
+  Flexi, fishbrain + Martin - witchery
+  Geiss - Two-Pointed Pulsagon - mash0000 - bubonic super-fluid centrifuge
+  Stahlregen & Boz + Eo.S + Geiss + Phat + Rovastar + Zylot - Machine Code [Jelly]
+  Aderrasi - Storm of the Eye (Thunder) - mash0000 - quasi pseudo meta concentrics
+  TonyMilkdrop - Leonardo Da Vinci's Balloon [Flexi - merry-go-round + techstyle]
+  TonyMilkdrop - Magellan's Nebula [Flexi - you enter first + multiverse]
+  Zylot - In death there is life (Geiss Layered Mix) (Jelly)
+  Aderrasi - Veil of Steel (Steel Storm) - mash0000 - bob ross finally loses it
+  Geiss - Reaction Diffusion 3 (Lichen Mix)
+  Aderrasi + Geiss - Airhandler (Square Mix)
+  martin - the forge of Isengard
+  Krash + Illusion - Spiral Movement
+  yin - 191 - Temporal singularities
+  adam eatit fx 2 martin - disco mix, lodus, geiss, ludicrous speed,flexi, aderrasi n hexcollie
+  $$$ Royal - Mashup (441)
+  martin - reflections on black tiles
+  martin - crystal palace
+  $$$ Royal - Mashup (160)
+  _Geiss - Desert Rose 2
+  _Geiss - Brain Zoom 3 (Color Emboss Mix)
+  Flexi - area 51
+  cope - alternative energy (antimatter mod_1)4z
+  Flexi, Rovastar + Geiss - Fractopia vs bas relief
+  stahlregen + geiss + shifter - babylon
+  Flexi + Martin - dive
+  various artists - 1200774354134 - mash0000 - what the writer′s guild is doing with the extra money
+  Flexi, Geiss and Rovastar - chaos layered tokamak
+  Aderrasi + Geiss - Airhandler (Kali Mix) - Canvas Mix
+  EVET + Flexi - Rainbox Splash Poolz
+  Geiss - Color Pox (Acid Impression Mix) (color saturation remix)
+  Flexi - wild at range
+  Geiss - Thumb Drum
+  martin - ghost city
+  Rovastar + Fvese - Mosaic Waves
+  Geiss - Feedback 2
+  Unchained - Fuzzy Sciences
+  $$$ Royal - Mashup (431)
+  Rovastar + Che - Asylum Animations
+  flexi, stahlregen, geiss + tobias wolfboi - space gelatine burst - mash0000 - chromatidal pool mirror blasphemy
+  _Krash + Eo.S. - Photographic Sentinel
+  Rovastar + Flexi - Hurricane Nightmare (Moebius Mix)
+  martin - sparky caleidoscope
+  suksma - feign shoulder concern when i should be executed - everything is eternally shrinking
+  sawtooth grin roam
+  ORB - Depth Charge 2
+  martin - baby one more time
+  martin - frosty caves 2
+  Flexi + Geiss - Tokamak mindblob 2.0
+  martin - skywards
+  Geiss - Myriad Mosaics
+  flexi - splatter effects 17 the wave, a google love story written in decay roam3-2 
+  martin - soma in pink
+  $$$ Royal - Mashup (253)
+  flexi - swing out on the spiral
+  Flexi - alien fish pond
+  flexi + geiss - pogo cubes vs. tokamak vs. game of life [stahls jelly 4.5 finish]
+  Telek - Sine Wave
+  flexi + geiss - infused with the spiral (Heavy Oil Mix) nz+ rapery
+  Goody - The Wild Vort
+  martin - Flexis swarm in Martins pond [not yet a boid implementation] 
+  martin - cherry brain wall mod
+  martin - crystal alley
+  _Mig_079
+  _Mig_085
+  Milk Artist At our Best - FED - SlowFast Ft AdamFX n Martin - HD CosmoFX
+  Geiss - Brain Zoom 4
+  Rovastar - Oozing Resistance
+  Aderrasi - Airhandler (Principle of Sharing)
+  martin - infinity (2010 update)
+  Zylot - True Visionary
+  flexi - Mindblob
+  _Mig_014_version2
+  martin + stahlregen - martin in da mash 3
+  Goody - Ego Decontructor
+  Rovastar + Geiss - Hyperkaleidoscope Glow 2 motion blur (Jelly)
+  Unchained - All You Can Eat
+  flexi - bouncing balls [double mindblob neon mix]
+  fiShbRaiN + geiss - witchcraft (Grow Mix 3)
+  martin - unholy amulet 2
+  Rovastar + Geiss - Hyperspace - kaleidoscope
+  Geiss - Reaction Diffusion 2
+  martin + stahlregen - martin in da mash 12
+  Martin - QBikal - Surface Turbulence IIb
+  martin - castle in the air
+  Flexi + Rovastar - Fractopia [lovecraft]
+  Geiss, Flexi + Stahlregen - Thumbdrum Tokamak [crossfiring aftermath jelly mashup]
+  cope + geiss + stahlregen - cartune (bending gelatine mix)
+  Flexi - predator-prey-spirals [stahlregens gelatine finish]
+  Flexi - truly soft piece of software - this is generic texturing (Jelly) 
+  flexi - alien canvas [learning]
+  Martin - acid wiring
+  flexi + fishbrain - witchcraft [complex terraforming]
+  stahlregen & geiss + rovastar - fields of flowers (mashup 9 - space flower rmx) - mash0001 - pack em in, we got a long haul + flashlight
+  Martin N AdamFX Infusion = Phat+Yin+Eo.S_Mandala Chaser Ft AdamFX n Martin - The Beast Mandala Chaser FX H
+  DemonLD_-_Toxic_water_diffusion threx angela vs debi brown (nice)
+  martin - extreme heat
+  A Tribute to Martin - bombyx mori - Ft Flexi - AdamFX - StahlRegen - Krash - Rovastar -  Hd in Milk T
+  _Geiss - Explosion Mod 2b
+  Zylot - True Visionary (Final Mix)
+  cope + martin - mother-of-pearl
+  Aderrasi - Agitator
+  martin - bombyx mori
+  Rovastar + Loadus + Geiss - Tone-mapped FractalDrop 7c
+  flexi + geiss - pogo-cubes on tokamak matter [mind over matter remix]2
+  Eo.S. + flexi - glowsticks v2 05 and proton lights (+Krash′s beat code) _Phat_remix02b + illumination (Stahl′s Mix)
+  Adam Eatit Mashup FX 2 martin - disco mix + Lodus + Geiss + Ludicrous speed + Eos Ft Flexi n Hexocollie + Baked + Santa Fucking Claus
+  Rovastar + Geiss - Hurricane Nightmare (Relief Mix)
+  bdrv - ultramix2 #43
+  Martin - disco mix 6
+  martin - ludicrous speed
+  Flexi, Martin, Phat, Zylot + Eo.S - one way trip trap proof of concept [epileptic zoom tunnel edit]
+  Rovastar + Geiss - Snapshot Of Space (LSB mix)
+  martin - fruit machine
+  Unchained - Unified Drag 2
+  yin - 253 - Artificial poles of the continuum (remix #3)
+  Geiss + Flexi + Martin - disconnected
+  Geiss - Skin Dots 9
+  martin - basal ganglion
+  Phat_Zylot_Eo.S. spiral_Movements_Beatle
+  Flexi - smashing fractals [acid etching mix]
+  Eo.S. + Phat - Emergent factors
+  cope - soar (v2.0)
+  flexi - color strike
+  Martin - Diabolo
+  Flexi - mindblob mix
+  Aderrasi - Contortion (Escher′s Tunnel Mix)
+  Martin - bombyx mori mix2
+  _Mig_009
+  Eo.S. + Phat cubetrace (cybercity madness remix) - mash0000 - evaporating crystal pharma
+  martin - dark galaxy
+  Rozzor & Shreyas - Deeper Aesthetics
+  fiShbRaiN - breakfast cruiser
+  beta106i - Inhuman Emotion (Regret) - mash0000 - genetic mutant incubators in the hands of toddlers
+  Geiss - Planet 1
+  EVET - RGB Singularity
+  Eo.S. + Geiss - glowsticks v2 02 (Relief Mix)
+  martin - mandelbox explorer - high speed demo version
+  Rovastar - A Million Miles From Earth (Wormhole Mix)
+  Unchained & Rovastar - Wormhole Pillars (Hall of Shadows mix)
+  Phat+fiShbRaiN+Eo.S_Mandala_Chasers_remix
+  suksma - heretical crosscut playpen
+  Zylot - Star Ornament
+  martin - tunnel race
+  Stahlregen + martin + others - Psychedelic Metal Flower
+  LuxXx - iWhat Happened Right After I Ate That Toxic Waste beta ii
+  Eo.S. + Zylot - skylight (Stained Glass Majesty mix)
+  Flexi - blame hexcollie twice
+  Aderrasi - Songflower (Moss Posy)
+  Zylot - Crossing Over (Paint Spatter mix)
+  Eo.S. - glowsticks v2 03 music
+  Unchained - Making a Science of It 4
+  $$$ Royal - Mashup (273)
+  Rovastar - Harlequin′s Fractal Encounter - cancer of saints
+  flexi + fishbrain - witchcraft [complex terraforming - fiddling twists in the fabric of space]
+  martin - amandio c - a different view of the green machine
+  flexi + amandio c - organic12-3d-2.milk
+  _Mig_049
+  ORB - Waaa
+  Krash & Rovastar - A Million Miles from Earth (Ripple Mix)
+  fiShbRaiN - toffee cream and icing sugar
+  Flexi - mindblob [shiny mix]
+  martin - resonant twister - steel spring
+  Adam Eatit Mashup FX 2 martin - disco mix + Lodus + Geiss + Ludicrous speed + Baked Ft another AdamFX Mashup 7_1
+  fiShbRaiN + flexi - witchcraft 2.0 - mash0000 - no one cares about mi, the note (major third)
+  raron - a grayish blob - mash0000 - pungent gastric automata cloud fumes
+  Rovastar + Geiss - Hurricane Nightmare (Gold Chrome Mix)
+  Aderrasi - Airhandler (Last Breath - Calm)
+  stahlregen - old school, baby (spiral ornament)
+  flexi - inter state
+  ORB - Sandblade
+  martin - attack of the beast
+  $$$ Royal - Mashup (177)
+  suksma - Rovastar - Sunflower Passion (Enlightment Mix)_Phat_edit + flexi und martin shaders - circumflex in character classes in regular expression
+  flexi - borderline imagery
+  suksma - uninitialized variabowl (hydroponic chronic)
+  martin - chain breaker
+  martin + stahlregen - martin in da mash 12a
+  _Aderrasi - Wanderer in Curved Space - mash0000 - faclempt kibitzing meshuggana schmaltz (Geiss color mix)
+  An AdamFX n Martin Infusion 2 flexi - Why The Sky Looks Diffrent Today - AdamFx n Martin Infusion - Tack Tile Disfunction B
+  Flexi - the distant point between derivative
+  flexi - hyperspaceflight (bn cn Jelly 4)
+  martin - satellite view
+  Flexi - infused with the spiral
+  yin - 250 - Artificial poles of the continuum_Phat′s_Orbit_mix
+  martin - ice flames
+  fed - slowfast 1.1
+  martin - bombyx mori [flexi′s logarithmic edit]
+  Flexi - dimensions, projection and abstraction
+  flexi + nitorami - beat explorer (cn bc jelly 4)
+  high-altitude basket unraveling - singh grooves nitrogen argon nz+
+  fiShbRaiN + Flexi - witchcraft 2.0
+  shifter - dark tides bdrv mix
+  Flexi + Martin - cascading decay swing
+  flexi + stahlregen - jelly strike
+  martin - cope - laser dome
+  martin - angel flight
+  Aderrasi - Mother Of Pearl - mash0000 - how to piss off your eyes
+  martin, fishbrain + flexi - mandelbox explorer v1 Eo.S. optimize [bipolar witchcraft mix]
+  flexi + bdrv - acid etching (jelly v5.5)
+  martin - bring up the big guns
+  ORB - Planetary Alignment Acid Burn
+  Unchained - Rewop
+  ORB - Pastel Primer
+  Flexi - reality tunnel
+  Rovastar + Loadus + Geiss - FractalDrop (Triple Mix)
+  flexi - mom, why the sky looks different today
+  martin - move this body
+  suksma - nip tuck
+  flexi, geiss and rovastar - chaos layered sinewsed tokamak 2
+  Flexi - psychenapping
+  suksma - vector exp 1 - couldn′t not
+  martin - into the fireworks
+  Martin - charisma
+  Rocke - Answer.42 (New Mix 1) - mash0000 - slash and char p. jungle
+  beta106i - Burning Form (Seething Mass) - mash0000 - fire paint easter egg internals
+  flexi + fishbrain - warpcraft [random mashup]
+  _Geiss - Artifact 01
+  _Rovastar + Geiss - Hurricane Nightmare (Posterize Mix)
+  flexi + amandio c - organic
+  martin - elusive impressions mix2 - flacc mess proph nz+2
+  Adam Eatit Mashup FX 2 martin - disco mix + Lodus + Geiss + Ludicrous speed + Aderrasi 2_1
+  AdamFx 2 Geiss -Somewhat Distort Me 3_1
+  orb - toxic goo
+  ORB - Blue Emotion
+  martin - disco mix 4
+  Rovastar - Explosive Minds
+  Redi Jedi - i dont think those were portabello mushrooms
+  martin - glass corridor
+  martin + flexi - diamond cutter [prismaticvortex.com] - camille - i wish i wish i wish i was constrained
+  suksma - gaeomaentaec - log smell 2 - steaming wienies2
+  Rovastar - Torrid Tales
+  cope, martin + flexi - the slickery of alternative varnish
+  Rovastar + Geiss - Hurricane Nightmare
+
+3d. Files containing the presets
+
+Presets are stored in and loaded from 
+  
+  in EatMe/JBerg/Butterchurn v2.6.7.1e-complete 
+  files:
+    butterchurnPresets.min.js
+    butterchurnPresetsExtra.min.js
+    butterchurnPresetsExtra2.min.js
+    butterchurnExtraImages.min.js
+
+---section 4: How-To?
+4a. How to get this running?
+
+To open in the browser.
+From your web server or computer, 
+
+a HTML file: 
+    butterchurn_example_e.htm
+
+The HTML file (butterchurn_example_e.htm) loads scripts for all the features.
+    butterchurn.js
+    butterchurn.min.js
+    butterchurnextraimages.min.js
+    butterchurnpresets.min.js
+    butterchurnpresetsextra.min.js
+    butterchurnpresetsextra2.min.js
+    butterchurn_initvar.js
+    jquery.min.js v1.12.4 or above
+  
+* with a HTML <audio> element and the script from example:
+<audio id="theaudioelement"></audio> 
+
+  is needed for the Butterchurn Milkdrop visuals to respond to audio.
+  Well, really cool visuals when there is no audio.. It can! respond to audio.
+  First let the Buttterchurn visuals initialize.
+  Wait with a window.setTimeout before loading audio, as in the example.
+  You can access the <audio> element with script, the example link, see www.w3schools.com for help.
+
+The HTML <canvas> element is a placeholder for the visuals.
+<canvas="canvasMilkdrop" height="100" width="100"></canvas> 
+  
+  Always include a height="" and width="".
+  Set the (initial) small size, default 100x100,
+  height and width also in the begin var section of file:
+    butterchurn.js
+
+Fullscreen with right click or long push on mobiles.
+
+Change preset with left click or tap on mobiles. 
+
+See section 1. Mouse functions and (Mobile/Tablet) Touch functions 
+
+4b. How to edit this into my site?
+
+Learn HTML at http://www.w3schools.com .
+
+    butterchurn_example_e.htm
+
+From the example HTML, 
+copy the elements <audio> and <canvas> at the top
+and <noscript> and <script> elements further.
+You may remove the explaining text. 
+(See the section 5. License for a copyright and license notification on implementation.)
+Copy the HTML from the example to your website.
+If you already have an <audio> element on your website,
+edit that to have <audio id="theaudioelement"> 
+or change "theaudioelement" in the script to match with your id in <audio id="">.
+
+Copy the scripts to your website 
+    butterchurn.js
+    butterchurn.min.js
+    butterchurnextraimages.min.js
+    butterchurnpresets.min.js
+    butterchurnpresetsextra.min.js
+    butterchurnpresetsextra2.min.js
+    butterchurn_initvar.js
+
+optional to copy, otherwise get it from the ajax.googleapis.com repository:
+    jquery.min.js v1.12.4 (tested) or above .. linked in the example to load from ajax.googleapis.com
+    attached with v2.6.7.1e-complete is jquery 1.12.14 (tested) ..
+    jquery 3.5.1 (not tested) may be usable.
+
+not required to copy:
+    butterchurn_isSupported.js (which is actually a html file showing you the old .js)
+
+4c. How to implement this into Worpress or any other Content Management System?
+
+You do not need any special features. See 4b. How to edit this into my site?
+
+4d. How do I learn HTML CSS javascript jquery?
+
+    http://www.w3schools.com tells you everything about that.
+
+4e. How to fix "Access-Control-Allow-Origin" error? I get no audio!
+  Your website needs to return a HTTP Header set to "Access-Control-Allow-Origin: *" (being a star, shift-8).
+
+  This needs to be set on the webserver or in the webserver code that returns the audio.
+  This HTTP Header allows you to use the mp3 on (x) all (or your) pages.
+
+  Ask your system administrator to allow you to use the audio stream.
+  Local files from your computer are not coming from your computer with this required HTTP Header.
+
+example PHP:
+   header("Access-Control-Allow-Origin: *");
+   header('Access-Control-Allow-Origin: https://www.example.com')
+Note: as with all uses of the PHP header function, this must be before any output has been sent from the server.
+
+Or, set the HTTP Header to be returned with the audio in the configuration of your webserver.
+    Refer to the manual of your webserver software when not sending the HTTP Header with server-side script.
+
+This is a requirement. 
+
+With .php server-side scripts you can, optionally, 
+  first let your webserver code check the URL for the request. 
+  If your pages or if the correct URL is used to make a request for using the audio 
+  before allowing access and sending the correct HTTP Header from the webserver .php script.
+
+4f. How to meet the system requirements?
+HTML5, Javascript and WEBGL technology is required. 
+  Your browser should support that. Chrome works fine.
+
+The example works (immediately) with 1 error of 
+  not finding 'favicon.ico' that you can make yourself 32x32.icon
+  for example with free graphic editing program GIMP from http://gimp.org .
+
+  By including a <noscript> section you can tell users that script is required, when this is disabled.
+  The example has a <script> section,
+  with document.write for a message, WEBGL is required, if not supported,
+  with console.log for verbose messages that indicate some other things.
+
+  See section 2: implementation example and scripts 
+  See section 4a. How to get this running? 
+  See section 4b. How to edit this into my site? 
+ 
+---section 5. License
+EatMe/JBerg/Butterchurn v2.6.7.1e-complete (GitHub) is released under a MIT license 
+for Commercial, Private, Distribution and Modification usage, 
+with No Liability Granted and No Warranty Granted under the conditions of a License and Copyright notice. 
+https://github.com/free-music-by-eatme/butterchurn/blob/master/LICENSE 
+
+---section 6. links
+--part 1. project links
+https://github.com/free-music-by-eatme/butterchurn/releases/tag/v2.6.7.1e-complete
+ by EatMe (example, manual, code) - www.eatme.pro/about  - music and science and freeware
+ JBerg (port, code) - github.com/jberg - gitHub of Jonathan Berg - https://twitter.com/jnberg16 
+ Geiss (org. MilkDrop) - http://www.geisswerks.com/
+ Flexi (presets) - https://twitter.com/Flexi23
+https://github.com/jberg/butterchurn
+https://github.com/jberg/butterchurn-chrome-extension
+https://github.com/jberg/milkdrop-preset-converter
+
+--part 2. miscellaneous links for other use mentioned
+https://www.w3schools.com - learn programming websites 
+https://gimp.org - free graphic editing program 
