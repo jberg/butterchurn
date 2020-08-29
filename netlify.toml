@@ -4,7 +4,7 @@
   publish = "./"
 
   # Default build command.
-  command = "yarn build"
+  command = "yarn dev-build"
 
 # The following redirect is intended for use with most SPAs that handle
 # routing internally.

@@ -12,7 +12,8 @@
   ],
   "scripts": {
     "build": "webpack --config config/webpack.config.js --env prod",
-    "dev": "webpack --config config/webpack.config.js --progress --colors --watch --env dev"
+    "dev": "webpack --config config/webpack.config.js --progress --colors --watch --env dev",
+    "dev-build": "webpack --config config/webpack.config.js --progress --colors --env dev"
   },
   "repository": {
     "type": "git",
