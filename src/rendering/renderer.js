@@ -204,7 +204,7 @@ export default class Renderer {
     };
 
     if (preset.useWASM) {
-      this.preset.globals.old_wave_mode.value = this.prevPreset.baseVals.wave_mode;
+      this.preset.globalPools.perFrame.old_wave_mode.value = this.prevPreset.baseVals.wave_mode;
       this.preset.baseVals.old_wave_mode = this.prevPreset.baseVals.wave_mode;
       this.presetEquationRunner = new PresetEquationRunnerWASM(this.preset, globalVars, params);
     } else {

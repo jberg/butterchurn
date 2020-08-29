@@ -129,6 +129,114 @@ export default class Visualizer {
       additive: 0,
     };
 
+    const qs = Utils.range(1, 33).map((x) => `q${x}`);
+    const ts = Utils.range(1, 9).map((x) => `t${x}`);
+
+    this.globalPerFrameVars = [
+      ...qs,
+      'old_wave_mode',
+      // globals
+      'frame',
+      'time',
+      'fps',
+      'bass',
+      'bass_att',
+      'mid',
+      'mid_att',
+      'treb',
+      'treb_att',
+      'meshx',
+      'meshy',
+      'aspectx',
+      'aspecty',
+      'pixelsx',
+      'pixelsy',
+      'rand_start',
+      'rand_preset',
+    ];
+
+    this.globalPerPixelVars = [
+      ...qs,
+      // globals
+      'frame',
+      'time',
+      'fps',
+      'bass',
+      'bass_att',
+      'mid',
+      'mid_att',
+      'treb',
+      'treb_att',
+      'meshx',
+      'meshy',
+      'aspectx',
+      'aspecty',
+      'pixelsx',
+      'pixelsy',
+      'rand_start',
+      'rand_preset',
+      // for pixel eqs
+      'x',
+      'y',
+      'rad',
+      'ang'
+    ];
+
+
+    this.globalShapeVars = [
+      ...qs,
+      ...ts,
+      // globals
+      'frame',
+      'time',
+      'fps',
+      'bass',
+      'bass_att',
+      'mid',
+      'mid_att',
+      'treb',
+      'treb_att',
+      'meshx',
+      'meshy',
+      'aspectx',
+      'aspecty',
+      'pixelsx',
+      'pixelsy',
+      'rand_start',
+      'rand_preset',
+      // for shape eqs
+      'instance',
+    ];
+
+    this.globalWaveVars = [
+      ...qs,
+      ...ts,
+      // globals
+      'frame',
+      'time',
+      'fps',
+      'bass',
+      'bass_att',
+      'mid',
+      'mid_att',
+      'treb',
+      'treb_att',
+      'meshx',
+      'meshy',
+      'aspectx',
+      'aspecty',
+      'pixelsx',
+      'pixelsy',
+      'rand_start',
+      'rand_preset',
+      // for wave eqs
+      'x',
+      'y',
+      'sample',
+      'value1',
+      'value2',
+    ];
+
     this.renderer = new Renderer(gl, this.audio, opts);
   }
 
@@ -139,6 +247,106 @@ export default class Visualizer {
 
   disconnectAudio (audioNode) {
     this.audio.disconnectAudio(audioNode);
+  }
+
+  createPerFramePool (baseVals) {
+    const wasmVars = {};
+
+    Object.keys(baseVals).forEach((key) => {
+      wasmVars[key] = new WebAssembly.Global(
+        { value: 'f64', mutable: true },
+        baseVals[key]
+      );
+    });
+
+    this.globalPerFrameVars.forEach((key) => {
+      wasmVars[key] = new WebAssembly.Global(
+        { value: 'f64', mutable: true },
+        0
+      );
+    });
+
+    return wasmVars;
+  }
+
+  createPerPixelPool (baseVals) {
+    const wasmVars = {};
+
+    Object.keys(baseVals).forEach((key) => {
+      wasmVars[key] = new WebAssembly.Global(
+        { value: 'f64', mutable: true },
+        baseVals[key]
+      );
+    });
+
+    this.globalPerPixelVars.forEach((key) => {
+      wasmVars[key] = new WebAssembly.Global(
+        { value: 'f64', mutable: true },
+        0
+      );
+    });
+
+    return wasmVars;
+  }
+
+  createCustomShapePerFramePool () {
+    const wasmVars = {};
+
+    Object.keys(this.shapeBaseValsDefaults).forEach((key) => {
+      wasmVars[key] = new WebAssembly.Global(
+        { value: 'f64', mutable: true },
+        this.shapeBaseValsDefaults[key]
+      );
+    });
+
+    this.globalShapeVars.forEach((key) => {
+      wasmVars[key] = new WebAssembly.Global(
+        { value: 'f64', mutable: true },
+        0
+      );
+    });
+
+    return wasmVars;
+  }
+
+  createCustomWavePerFramePool () {
+    const wasmVars = {};
+
+    Object.keys(this.waveBaseValsDefaults).forEach((key) => {
+      wasmVars[key] = new WebAssembly.Global(
+        { value: 'f64', mutable: true },
+        this.waveBaseValsDefaults[key]
+      );
+    });
+
+    this.globalWaveVars.forEach((key) => {
+      wasmVars[key] = new WebAssembly.Global(
+        { value: 'f64', mutable: true },
+        0
+      );
+    });
+
+    return wasmVars;
+  }
+
+  createCustomWavePerPointPool () {
+    const wasmVars = {};
+
+    Object.keys(this.waveBaseValsDefaults).forEach((key) => {
+      wasmVars[key] = new WebAssembly.Global(
+        { value: 'f64', mutable: true },
+        this.waveBaseValsDefaults[key]
+      );
+    });
+
+    this.globalWaveVars.forEach((key) => {
+      wasmVars[key] = new WebAssembly.Global(
+        { value: 'f64', mutable: true },
+        0
+      );
+    });
+
+    return wasmVars;
   }
 
   async loadPreset (presetMap, blendTime = 0) {
@@ -155,110 +363,50 @@ export default class Visualizer {
     }
 
     if (preset.useWASM) {
-      const wasmGlobals = {};
-      Object.keys(preset.baseVals).forEach((key) => {
-        wasmGlobals[key] = new WebAssembly.Global(
-          { value: 'f64', mutable: true },
-          preset.baseVals[key]
-        );
-      });
-
-      Object.keys(this.shapeBaseValsDefaults).forEach((key) => {
-        wasmGlobals[key] = new WebAssembly.Global(
-          { value: 'f64', mutable: true },
-          this.shapeBaseValsDefaults[key]
-        );
-      });
-
-      Object.keys(this.waveBaseValsDefaults).forEach((key) => {
-        wasmGlobals[key] = new WebAssembly.Global(
-          { value: 'f64', mutable: true },
-          this.waveBaseValsDefaults[key]
-        );
-      });
-
-      const globalVars = [
-        ...Utils.range(1, 33).map((x) => `q${x}`),
-        ...Utils.range(1, 9).map((x) => `t${x}`),
-        ...Utils.range(0, 100).map((x) => {
-          if (x < 10) {
-            return `reg0${x}`;
-          }
-          return `reg${x}`;
-        }),
-        'old_wave_mode',
-        // globals
-        'frame',
-        'time',
-        'fps',
-        'bass',
-        'bass_att',
-        'mid',
-        'mid_att',
-        'treb',
-        'treb_att',
-        'meshx',
-        'meshy',
-        'aspectx',
-        'aspecty',
-        'pixelsx',
-        'pixelsy',
-        'rand_start',
-        'rand_preset',
-        // for pixel eqs
-        'x',
-        'y',
-        'rad',
-        'ang',
-        // for wave eqs
-        'sample',
-        'value1',
-        'value2',
-        // for shape eqs
-        'instance',
-      ];
-
-      globalVars.forEach((key) => {
-        wasmGlobals[key] = new WebAssembly.Global(
-          { value: 'f64', mutable: true },
-          0
-        );
-      });
+      const wasmVarPools = {
+        perFrame: this.createPerFramePool(preset.baseVals),
+        perPixel: this.createPerPixelPool(preset.baseVals),
+      };
 
       const wasmFunctions = {
-        presetInit: preset.init_eqs_eel,
-        perFrame: preset.frame_eqs_eel,
+        presetInit: { pool: 'perFrame', code: preset.init_eqs_eel },
+        perFrame: { pool: 'perFrame', code: preset.frame_eqs_eel },
       };
 
       if (preset.pixel_eqs_eel !== '') {
-        wasmFunctions.perPixel = preset.pixel_eqs_eel;
+        wasmFunctions.perPixel = { pool: 'perPixel', code: preset.pixel_eqs_eel };
       }
 
 
+      /* eslint-disable max-len */
       for (let i = 0; i < preset.shapes.length; i++) {
         if (preset.shapes[i].baseVals.enabled !== 0) {
-          wasmFunctions[`shapes_${i}_init_eqs`] = preset.shapes[i].init_eqs_eel;
-          wasmFunctions[`shapes_${i}_frame_eqs`] = preset.shapes[i].frame_eqs_eel;
+          wasmVarPools[`shapePerFrame${i}`] = this.createCustomShapePerFramePool();
+          wasmFunctions[`shapes_${i}_init_eqs`] = { pool: `shapePerFrame${i}`, code: preset.shapes[i].init_eqs_eel };
+          wasmFunctions[`shapes_${i}_frame_eqs`] = { pool: `shapePerFrame${i}`, code: preset.shapes[i].frame_eqs_eel };
         }
       }
 
       for (let i = 0; i < preset.waves.length; i++) {
         if (preset.waves[i].baseVals.enabled !== 0) {
-          wasmFunctions[`waves_${i}_init_eqs`] = preset.waves[i].init_eqs_eel;
-          wasmFunctions[`waves_${i}_frame_eqs`] = preset.waves[i].frame_eqs_eel;
+          wasmVarPools[`wavePerFrame${i}`] = this.createCustomWavePerFramePool();
+          wasmFunctions[`waves_${i}_init_eqs`] = { pool: `wavePerFrame${i}`, code: preset.waves[i].init_eqs_eel };
+          wasmFunctions[`waves_${i}_frame_eqs`] = { pool: `wavePerFrame${i}`, code: preset.waves[i].frame_eqs_eel };
 
           if (preset.waves[i].point_eqs_eel && preset.waves[i].point_eqs_eel !== '') {
-            wasmFunctions[`waves_${i}_point_eqs`] = preset.waves[i].point_eqs_eel;
+            wasmVarPools[`wavePerPoint${i}`] = this.createCustomWavePerPointPool();
+            wasmFunctions[`waves_${i}_point_eqs`] = { pool: `wavePerPoint${i}`, code: preset.waves[i].point_eqs_eel };
           }
         }
       }
+      /* eslint-enable max-len */
 
       const mod = await loadModule({
-        globals: wasmGlobals,
+        pools: wasmVarPools,
         functions: wasmFunctions,
       });
 
-      preset.globals = wasmGlobals;
+      preset.globalPools = wasmVarPools;
       preset.init_eqs = () => mod.exports.presetInit();
       preset.frame_eqs = () => mod.exports.perFrame();
       if (preset.pixel_eqs_eel !== '') {

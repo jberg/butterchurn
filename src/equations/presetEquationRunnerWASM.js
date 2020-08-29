@@ -241,7 +241,8 @@ export default class PresetEquationRunnerWASM {
 
     this.mdVS = Object.assign({}, this.preset.baseVals, mdVSBase);
 
-    Utils.setWasm(this.preset.globals, this.mdVS, Object.keys(this.mdVS));
+    // eslint-disable-next-line max-len
+    Utils.setWasm(this.preset.globalPools.perFrame, this.mdVS, Object.keys(this.mdVS));
 
     this.rand_start = new Float32Array([
       Math.random(), Math.random(), Math.random(), Math.random()
@@ -253,12 +254,12 @@ export default class PresetEquationRunnerWASM {
     this.preset.init_eqs();
 
     // qs need to be initialized to there init values every frame
-    this.mdVSQInit = this.getQVars();
+    this.mdVSQInit = this.getQVars('perFrame');
 
     this.preset.frame_eqs();
 
-    this.mdVS = Utils.pickWasm(this.preset.globals, this.frameKeys);
-    this.mdVSQAfterFrame = this.getQVars();
+    this.mdVS = Utils.pickWasm(this.preset.globalPools.perFrame, this.frameKeys);
+    this.mdVSQAfterFrame = this.getQVars('perFrame');
 
     this.mdVSTWaveInits = [];
     if (this.preset.waves && this.preset.waves.length > 0) {
@@ -266,14 +267,16 @@ export default class PresetEquationRunnerWASM {
         const wave = this.preset.waves[i];
         const baseVals = wave.baseVals;
         if (baseVals.enabled !== 0) {
-          Utils.setWasm(this.preset.globals, baseVals, Object.keys(baseVals));
+          // eslint-disable-next-line max-len
+          Utils.setWasm(this.preset.globalPools[`wavePerFrame${i}`], baseVals, Object.keys(baseVals));
           if (wave.init_eqs) {
             wave.init_eqs();
 
             // base vals need to be reset
-            Utils.setWasm(this.preset.globals, baseVals, Object.keys(baseVals));
+            // eslint-disable-next-line max-len
+            Utils.setWasm(this.preset.globalPools[`wavePerFrame${i}`], baseVals, Object.keys(baseVals));
           }
-          this.mdVSTWaveInits.push(this.getTVars());
+          this.mdVSTWaveInits.push(this.getTVars(`wavePerFrame${i}`));
         } else {
           this.mdVSTWaveInits.push({});
         }
@@ -286,14 +289,16 @@ export default class PresetEquationRunnerWASM {
         const shape = this.preset.shapes[i];
         const baseVals = shape.baseVals;
         if (baseVals.enabled !== 0) {
-          Utils.setWasm(this.preset.globals, baseVals, Object.keys(baseVals));
+          // eslint-disable-next-line max-len
+          Utils.setWasm(this.preset.globalPools[`shapePerFrame${i}`], baseVals, Object.keys(baseVals));
           if (shape.init_eqs) {
             shape.init_eqs();
 
             // base vals need to be reset
-            Utils.setWasm(this.preset.globals, baseVals, Object.keys(baseVals));
+            // eslint-disable-next-line max-len
+            Utils.setWasm(this.preset.globalPools[`shapePerFrame${i}`], baseVals, Object.keys(baseVals));
           }
-          this.mdVSTShapeInits.push(this.getTVars());
+          this.mdVSTShapeInits.push(this.getTVars(`shapePerFrame${i}`));
         } else {
           this.mdVSTShapeInits.push({});
         }
@@ -318,15 +323,16 @@ export default class PresetEquationRunnerWASM {
   }
 
   runFrameEquations (globalVars) {
-    Utils.setWasm(this.preset.globals, this.mdVS, this.frameKeys);
-    Utils.setWasm(this.preset.globals, this.mdVSQInit, this.qs);
-    Utils.setWasm(this.preset.globals, globalVars, this.globalKeys);
+    Utils.setWasm(this.preset.globalPools.perFrame, this.mdVS, this.frameKeys);
+    Utils.setWasm(this.preset.globalPools.perFrame, this.mdVSQInit, this.qs);
+    Utils.setWasm(this.preset.globalPools.perFrame, globalVars, this.globalKeys);
 
     this.preset.frame_eqs();
 
-    this.mdVSQAfterFrame = this.getQVars();
+    this.mdVSQAfterFrame = this.getQVars('perFrame');
 
-    const mdVSFrame = Utils.pickWasm(this.preset.globals, [...this.frameKeys, ...this.globalKeys]);
+    // eslint-disable-next-line max-len
+    const mdVSFrame = Utils.pickWasm(this.preset.globalPools.perFrame, [...this.frameKeys, ...this.globalKeys]);
     mdVSFrame.rand_preset = this.rand_preset;
     mdVSFrame.rand_start = this.rand_start;
 
@@ -334,47 +340,45 @@ export default class PresetEquationRunnerWASM {
   }
 
   runPixelEquations (mdVSVertex) {
-    Utils.setWasm(this.preset.globals, mdVSVertex, this.vertexInputKeys);
+    Utils.setWasm(this.preset.globalPools.perPixel, mdVSVertex, this.vertexInputKeys);
     this.preset.pixel_eqs();
-    return Utils.pickWasm(this.preset.globals, this.vertexKeys);
+    return Utils.pickWasm(this.preset.globalPools.perPixel, this.vertexKeys);
   }
 
-  getQVars () {
-    return Utils.pickWasm(this.preset.globals, this.qs);
+  getQVars (pool) {
+    return Utils.pickWasm(this.preset.globalPools[pool], this.qs);
   }
 
-  getTVars () {
-    return Utils.pickWasm(this.preset.globals, this.ts);
+  getTVars (pool) {
+    return Utils.pickWasm(this.preset.globalPools[pool], this.ts);
   }
 
-  getRegVars () {
-    return Utils.pickWasm(this.preset.globals, this.regs);
-  }
-
+  /* eslint-disable max-len */
   runShapeFrameEquations (shapeIdx, instance, globalVars) {
     const baseVals = this.preset.shapes[shapeIdx].baseVals;
-    this.preset.globals.instance.value = instance;
-    Utils.setWasm(this.preset.globals, baseVals, this.shapeFrameInputKeys);
-    Utils.setWasm(this.preset.globals, this.mdVSQAfterFrame, this.qs);
-    Utils.setWasm(this.preset.globals, this.mdVSTShapeInits[shapeIdx], this.ts);
-    Utils.setWasm(this.preset.globals, globalVars, this.globalKeys);
+    this.preset.globalPools[`shapePerFrame${shapeIdx}`].instance.value = instance;
+    Utils.setWasm(this.preset.globalPools[`shapePerFrame${shapeIdx}`], baseVals, this.shapeFrameInputKeys);
+    Utils.setWasm(this.preset.globalPools[`shapePerFrame${shapeIdx}`], this.mdVSQAfterFrame, this.qs);
+    Utils.setWasm(this.preset.globalPools[`shapePerFrame${shapeIdx}`], this.mdVSTShapeInits[shapeIdx], this.ts);
+    Utils.setWasm(this.preset.globalPools[`shapePerFrame${shapeIdx}`], globalVars, this.globalKeys);
     this.preset.shapes[shapeIdx].frame_eqs();
-    return Utils.pickWasm(this.preset.globals, this.shapeFrameKeys);
+    return Utils.pickWasm(this.preset.globalPools[`shapePerFrame${shapeIdx}`], this.shapeFrameKeys);
   }
 
   runWaveFrameEquations (waveIdx, globalVars) {
     const baseVals = this.preset.waves[waveIdx].baseVals;
-    Utils.setWasm(this.preset.globals, baseVals, this.waveFrameInputKeys);
-    Utils.setWasm(this.preset.globals, this.mdVSQAfterFrame, this.qs);
-    Utils.setWasm(this.preset.globals, this.mdVSTWaveInits[waveIdx], this.ts);
-    Utils.setWasm(this.preset.globals, globalVars, this.globalKeys);
+    Utils.setWasm(this.preset.globalPools[`wavePerFrame${waveIdx}`], baseVals, this.waveFrameInputKeys);
+    Utils.setWasm(this.preset.globalPools[`wavePerFrame${waveIdx}`], this.mdVSQAfterFrame, this.qs);
+    Utils.setWasm(this.preset.globalPools[`wavePerFrame${waveIdx}`], this.mdVSTWaveInits[waveIdx], this.ts);
+    Utils.setWasm(this.preset.globalPools[`wavePerFrame${waveIdx}`], globalVars, this.globalKeys);
     this.preset.waves[waveIdx].frame_eqs();
-    return Utils.pickWasm(this.preset.globals, this.waveFrameKeys);
+    return Utils.pickWasm(this.preset.globalPools[`wavePerFrame${waveIdx}`], this.waveFrameKeys);
   }
 
   runWavePointEquations (waveIdx, mdVSWaveFrame) {
-    Utils.setWasm(this.preset.globals, mdVSWaveFrame, this.wavePointInputKeys);
+    Utils.setWasm(this.preset.globalPools[`wavePerPoint${waveIdx}`], mdVSWaveFrame, this.wavePointInputKeys);
     this.preset.waves[waveIdx].point_eqs();
-    return Utils.pickWasm(this.preset.globals, this.wavePointKeys);
+    return Utils.pickWasm(this.preset.globalPools[`wavePerPoint${waveIdx}`], this.wavePointKeys);
   }
+  /* eslint-enable max-len */
 }

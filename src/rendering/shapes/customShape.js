@@ -135,7 +135,8 @@ export default class CustomShape {
   drawCustomShape (blendProgress, globalVars, presetEquationRunner, shapeEqs, prevTexture) {
     if (shapeEqs.baseVals.enabled !== 0) {
       if (presetEquationRunner.preset.useWASM) {
-        this.setupShapeBuffers(presetEquationRunner.preset.globals.wrap.value);
+        // eslint-disable-next-line max-len
+        this.setupShapeBuffers(presetEquationRunner.preset.globalPools.perFrame.wrap.value);
       } else {
         this.setupShapeBuffers(presetEquationRunner.mdVSFrame.wrap);
       }

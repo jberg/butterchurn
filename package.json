@@ -30,7 +30,7 @@
   "dependencies": {
     "@babel/runtime": "^7.0.0",
     "ecma-proposal-math-extensions": "0.0.2",
-    "eel-wasm": "^0.0.8"
+    "eel-wasm": "^0.0.9"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0",
