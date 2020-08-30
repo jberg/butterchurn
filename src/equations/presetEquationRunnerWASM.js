@@ -340,9 +340,9 @@ export default class PresetEquationRunnerWASM {
   }
 
   runPixelEquations (mdVSVertex) {
-    Utils.setWasm(this.preset.globalPools.perPixel, mdVSVertex, this.vertexInputKeys);
+    Utils.setWasm(this.preset.globalPools.perFrame, mdVSVertex, this.vertexInputKeys);
     this.preset.pixel_eqs();
-    return Utils.pickWasm(this.preset.globalPools.perPixel, this.vertexKeys);
+    return Utils.pickWasm(this.preset.globalPools.perFrame, this.vertexKeys);
   }
 
   getQVars (pool) {
@@ -376,9 +376,9 @@ export default class PresetEquationRunnerWASM {
   }
 
   runWavePointEquations (waveIdx, mdVSWaveFrame) {
-    Utils.setWasm(this.preset.globalPools[`wavePerPoint${waveIdx}`], mdVSWaveFrame, this.wavePointInputKeys);
+    Utils.setWasm(this.preset.globalPools[`wavePerFrame${waveIdx}`], mdVSWaveFrame, this.wavePointInputKeys);
     this.preset.waves[waveIdx].point_eqs();
-    return Utils.pickWasm(this.preset.globalPools[`wavePerPoint${waveIdx}`], this.wavePointKeys);
+    return Utils.pickWasm(this.preset.globalPools[`wavePerFrame${waveIdx}`], this.wavePointKeys);
   }
   /* eslint-enable max-len */
 }

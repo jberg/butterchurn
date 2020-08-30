@@ -153,6 +153,11 @@ export default class Visualizer {
       'pixelsy',
       'rand_start',
       'rand_preset',
+      // for pixel eqs
+      'x',
+      'y',
+      'rad',
+      'ang'
     ];
 
     this.globalPerPixelVars = [
@@ -269,26 +274,6 @@ export default class Visualizer {
     return wasmVars;
   }
 
-  createPerPixelPool (baseVals) {
-    const wasmVars = {};
-
-    Object.keys(baseVals).forEach((key) => {
-      wasmVars[key] = new WebAssembly.Global(
-        { value: 'f64', mutable: true },
-        baseVals[key]
-      );
-    });
-
-    this.globalPerPixelVars.forEach((key) => {
-      wasmVars[key] = new WebAssembly.Global(
-        { value: 'f64', mutable: true },
-        0
-      );
-    });
-
-    return wasmVars;
-  }
-
   createCustomShapePerFramePool () {
     const wasmVars = {};
 
@@ -329,26 +314,6 @@ export default class Visualizer {
     return wasmVars;
   }
 
-  createCustomWavePerPointPool () {
-    const wasmVars = {};
-
-    Object.keys(this.waveBaseValsDefaults).forEach((key) => {
-      wasmVars[key] = new WebAssembly.Global(
-        { value: 'f64', mutable: true },
-        this.waveBaseValsDefaults[key]
-      );
-    });
-
-    this.globalWaveVars.forEach((key) => {
-      wasmVars[key] = new WebAssembly.Global(
-        { value: 'f64', mutable: true },
-        0
-      );
-    });
-
-    return wasmVars;
-  }
-
   async loadPreset (presetMap, blendTime = 0) {
     const preset = Object.assign({}, presetMap);
     preset.baseVals = Object.assign({}, this.baseValsDefaults, preset.baseVals);
@@ -365,7 +330,6 @@ export default class Visualizer {
     if (preset.useWASM) {
       const wasmVarPools = {
         perFrame: this.createPerFramePool(preset.baseVals),
-        perPixel: this.createPerPixelPool(preset.baseVals),
       };
 
       const wasmFunctions = {
@@ -374,7 +338,7 @@ export default class Visualizer {
       };
 
       if (preset.pixel_eqs_eel !== '') {
-        wasmFunctions.perPixel = { pool: 'perPixel', code: preset.pixel_eqs_eel };
+        wasmFunctions.perPixel = { pool: 'perFrame', code: preset.pixel_eqs_eel };
       }
 
 
@@ -394,8 +358,7 @@ export default class Visualizer {
           wasmFunctions[`waves_${i}_frame_eqs`] = { pool: `wavePerFrame${i}`, code: preset.waves[i].frame_eqs_eel };
 
           if (preset.waves[i].point_eqs_eel && preset.waves[i].point_eqs_eel !== '') {
-            wasmVarPools[`wavePerPoint${i}`] = this.createCustomWavePerPointPool();
-            wasmFunctions[`waves_${i}_point_eqs`] = { pool: `wavePerPoint${i}`, code: preset.waves[i].point_eqs_eel };
+            wasmFunctions[`waves_${i}_point_eqs`] = { pool: `wavePerFrame${i}`, code: preset.waves[i].point_eqs_eel };
           }
         }
       }
