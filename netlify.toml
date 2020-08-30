@@ -4,4 +4,11 @@
   publish = "./"
 
   # Default build command.
-  command = "yarn dev-build"
+  command = "yarn run dev-build"
+
+# The following redirect is intended for use with most SPAs that handle
+# routing internally.
+[[redirects]]
+  from = "/*"
+  to = "/experiments/wasm-eel/index.html"
+  status = 200
