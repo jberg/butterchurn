@@ -374,11 +374,5 @@ export default class PresetEquationRunnerWASM {
     this.preset.waves[waveIdx].frame_eqs();
     return Utils.pickWasm(this.preset.globalPools[`wavePerFrame${waveIdx}`], this.waveFrameKeys);
   }
-
-  runWavePointEquations (waveIdx, mdVSWaveFrame) {
-    Utils.setWasm(this.preset.globalPools[`wavePerFrame${waveIdx}`], mdVSWaveFrame, this.wavePointInputKeys);
-    this.preset.waves[waveIdx].point_eqs();
-    return Utils.pickWasm(this.preset.globalPools[`wavePerFrame${waveIdx}`], this.wavePointKeys);
-  }
   /* eslint-enable max-len */
 }

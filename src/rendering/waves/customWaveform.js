@@ -159,39 +159,77 @@ export default class CustomWaveform {
           this.pointsData[1][j] *= scale;
         }
 
-        for (let j = 0; j < this.samples; j++) {
-          const value1 = this.pointsData[0][j];
-          const value2 = this.pointsData[1][j];
+        if (!presetEquationRunner.preset.useWASM) {
+          for (let j = 0; j < this.samples; j++) {
+            const value1 = this.pointsData[0][j];
+            const value2 = this.pointsData[1][j];
 
-          mdVSWaveFrame.sample = j / (this.samples - 1);
-          mdVSWaveFrame.value1 = value1;
-          mdVSWaveFrame.value2 = value2;
-          mdVSWaveFrame.x = 0.5 + value1;
-          mdVSWaveFrame.y = 0.5 + value2;
-          mdVSWaveFrame.r = frameR;
-          mdVSWaveFrame.g = frameG;
-          mdVSWaveFrame.b = frameB;
-          mdVSWaveFrame.a = frameA;
+            mdVSWaveFrame.sample = j / (this.samples - 1);
+            mdVSWaveFrame.value1 = value1;
+            mdVSWaveFrame.value2 = value2;
+            mdVSWaveFrame.x = 0.5 + value1;
+            mdVSWaveFrame.y = 0.5 + value2;
+            mdVSWaveFrame.r = frameR;
+            mdVSWaveFrame.g = frameG;
+            mdVSWaveFrame.b = frameB;
+            mdVSWaveFrame.a = frameA;
 
-          if (waveEqs.point_eqs !== '') {
-            mdVSWaveFrame = presetEquationRunner.runWavePointEquations(this.index, mdVSWaveFrame);
+            if (waveEqs.point_eqs !== '') {
+              mdVSWaveFrame = presetEquationRunner.runWavePointEquations(this.index, mdVSWaveFrame);
+            }
+
+            const x = ((mdVSWaveFrame.x * 2) - 1) * this.invAspectx;
+            const y = ((mdVSWaveFrame.y * -2) + 1) * this.invAspecty;
+            const r = mdVSWaveFrame.r;
+            const g = mdVSWaveFrame.g;
+            const b = mdVSWaveFrame.b;
+            const a = mdVSWaveFrame.a;
+
+            this.positions[(j * 3) + 0] = x;
+            this.positions[(j * 3) + 1] = y;
+            this.positions[(j * 3) + 2] = 0;
+
+            this.colors[(j * 4) + 0] = r;
+            this.colors[(j * 4) + 1] = g;
+            this.colors[(j * 4) + 2] = b;
+            this.colors[(j * 4) + 3] = a * alphaMult;
           }
+        } else {
+          const varPool = presetEquationRunner.preset.globalPools[`wavePerFrame${this.index}`];
+          for (let j = 0; j < this.samples; j++) {
+            const value1 = this.pointsData[0][j];
+            const value2 = this.pointsData[1][j];
 
-          const x = ((mdVSWaveFrame.x * 2) - 1) * this.invAspectx;
-          const y = ((mdVSWaveFrame.y * -2) + 1) * this.invAspecty;
-          const r = mdVSWaveFrame.r;
-          const g = mdVSWaveFrame.g;
-          const b = mdVSWaveFrame.b;
-          const a = mdVSWaveFrame.a;
+            varPool.sample.value = j / (this.samples - 1);
+            varPool.value1.value = value1;
+            varPool.value2.value = value2;
+            varPool.x.value = 0.5 + value1;
+            varPool.y.value = 0.5 + value2;
+            varPool.r.value = frameR;
+            varPool.g.value = frameG;
+            varPool.b.value = frameB;
+            varPool.a.value = frameA;
 
-          this.positions[(j * 3) + 0] = x;
-          this.positions[(j * 3) + 1] = y;
-          this.positions[(j * 3) + 2] = 0;
+            if (waveEqs.point_eqs !== '') {
+              presetEquationRunner.preset.waves[this.index].point_eqs();
+            }
 
-          this.colors[(j * 4) + 0] = r;
-          this.colors[(j * 4) + 1] = g;
-          this.colors[(j * 4) + 2] = b;
-          this.colors[(j * 4) + 3] = a * alphaMult;
+            const x = ((varPool.x.value * 2) - 1) * this.invAspectx;
+            const y = ((varPool.y.value * -2) + 1) * this.invAspecty;
+            const r = varPool.r.value;
+            const g = varPool.g.value;
+            const b = varPool.b.value;
+            const a = varPool.a.value;
+
+            this.positions[(j * 3) + 0] = x;
+            this.positions[(j * 3) + 1] = y;
+            this.positions[(j * 3) + 2] = 0;
+
+            this.colors[(j * 4) + 0] = r;
+            this.colors[(j * 4) + 1] = g;
+            this.colors[(j * 4) + 2] = b;
+            this.colors[(j * 4) + 3] = a * alphaMult;
+          }
         }
 
         // this needs to be after per point (check fishbrain - witchcraft)
