@@ -111,36 +111,6 @@ export default class PresetEquationRunnerWASM {
       'b1ed',
     ];
 
-    this.vertexKeys = [
-      'warp',
-      'zoom',
-      'zoomexp',
-      'cx',
-      'cy',
-      'sx',
-      'sy',
-      'dx',
-      'dy',
-      'rot'
-    ];
-
-    this.vertexInputKeys = [
-      'x',
-      'y',
-      'rad',
-      'ang',
-      'zoom',
-      'zoomexp',
-      'rot',
-      'warp',
-      'cx',
-      'cy',
-      'dx',
-      'dy',
-      'sx',
-      'sy',
-    ];
-
     this.shapeFrameKeys = [
       'sides',
       'x',
@@ -189,27 +159,6 @@ export default class PresetEquationRunnerWASM {
       'g',
       'b',
       'a'
-    ];
-
-    this.wavePointKeys = [
-      'x',
-      'y',
-      'r',
-      'g',
-      'b',
-      'a',
-    ];
-
-    this.wavePointInputKeys = [
-      'sample',
-      'value1',
-      'value2',
-      'x',
-      'y',
-      'r',
-      'g',
-      'b',
-      'a',
     ];
 
     this.initializeEquations(globalVars);
@@ -337,12 +286,6 @@ export default class PresetEquationRunnerWASM {
     mdVSFrame.rand_start = this.rand_start;
 
     return mdVSFrame;
-  }
-
-  runPixelEquations (mdVSVertex) {
-    Utils.setWasm(this.preset.globalPools.perFrame, mdVSVertex, this.vertexInputKeys);
-    this.preset.pixel_eqs();
-    return Utils.pickWasm(this.preset.globalPools.perFrame, this.vertexKeys);
   }
 
   getQVars (pool) {
