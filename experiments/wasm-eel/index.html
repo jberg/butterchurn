@@ -7,6 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <script type="text/javascript" src="../../lib/butterchurn.js"></script>
+  <script type="text/javascript" src="../../lib/butterchurnExtraImages.js"></script>
   <script type="text/javascript" src="https://unpkg.com/lodash"></script>
   <!-- <script type="text/javascript" src="https://unpkg.com/butterchurn"></script> -->
   <script
@@ -474,7 +475,7 @@
         "Zylot - True Visionary (Final Mix).json",
         "Zylot - True Visionary.json",
       ];
-      var parsedPresets = null;
+      var parsedPresets = [];
       var currPresetIdx = null;
       let frameNum = 0;
       let timeHist = [0];
@@ -646,27 +647,29 @@
       });
 
       function startPreset (presetIdx) {
-        currPresetIdx = presetIdx;
-        const preset = _.cloneDeep(parsedPresets[presetIdx]);
-        preset.useWASM = $('#useWASM').is(':checked');
-        // visualizer.loadPreset(preset, 3);
-        visualizer.loadPreset(preset, 0);
+        loadPreset(presetIdx).then((preset) => {
+          currPresetIdx = presetIdx;
+          const clonedPreset = _.cloneDeep(preset);
+          clonedPreset.useWASM = $('#useWASM').is(':checked');
+          // visualizer.loadPreset(preset, 3);
+          visualizer.loadPreset(clonedPreset, 0);
 
-        frameNum = 0;
-        timeHist = [0];
-      }
-
-      function loadPreset(fileName) {
-        return fetch('/experiments/wasm-eel/presets/' + fileName)
-        .then((response) => {
-          return response.json();
+          frameNum = 0;
+          timeHist = [0];
         });
       }
 
-      function loadPresets() {
-        Promise.all(presetNames.map(preset => loadPreset(preset))).then((presets) => {
-          parsedPresets = presets;
-          startPreset(0);
+      function loadPreset(idx) {
+        if (parsedPresets[idx]) {
+          return Promise.resolve(parsedPresets[idx]);
+        }
+
+        return fetch('/experiments/wasm-eel/presets/' + presetNames[idx])
+        .then((response) => {
+          return response.json();
+        }).then((parsedPreset) => {
+          parsedPresets[idx] = parsedPreset;
+          return parsedPreset;
         });
       }
 
@@ -679,7 +682,9 @@
           textureRatio: 1,
         });
 
-        loadPresets();
+        visualizer.loadExtraImages(butterchurnExtraImages.default.getImages());
+
+        startPreset(0);
 
         var presetSelect = document.getElementById('presetSelect');
         for(var i = 0; i < presetNames.length; i++) {
