@@ -1891,10 +1891,10 @@ ecma-proposal-math-extensions@0.0.2:
   resolved "https://registry.yarnpkg.com/ecma-proposal-math-extensions/-/ecma-proposal-math-extensions-0.0.2.tgz#a6a3d64819db70cee0d2e1976b6315d00e4714a0"
   integrity sha1-pqPWSBnbcM7g0uGXa2MV0A5HFKA=
 
-eel-wasm@^0.0.9:
-  version "0.0.9"
-  resolved "https://registry.yarnpkg.com/eel-wasm/-/eel-wasm-0.0.9.tgz#f6a07af83dfba712e498a746db24e5b781aeedf9"
-  integrity sha512-0FQdbdOfR+dZpXvRr+kxj/E5kCyzV7DLyeP6mFb36SmcqyCbA1Zaitfdz/aJoZuo7xgnZ0oHUpuoxEe0gfSkxA==
+eel-wasm@^0.0.10:
+  version "0.0.10"
+  resolved "https://registry.yarnpkg.com/eel-wasm/-/eel-wasm-0.0.10.tgz#76196e24103a0f63bace51ea10105d65d7d731f9"
+  integrity sha512-W+1aAvMgeBm7U36c8/dHSWk080q6VO1aAzNqeueJqyTQFrNAHJjv24AfqSJtRhnQtT+9aHvaQYQjzNbLuAoaeQ==
 
 electron-to-chromium@^1.3.523:
   version "1.3.554"
