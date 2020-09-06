@@ -85,7 +85,8 @@ export default class MotionVectors {
   }
 
   generateMotionVectors (mdVSFrame, warpUVs) {
-    const mvA = mdVSFrame.mv_a;
+    const mvOn = mdVSFrame.bmotionvectorson;
+    const mvA = mvOn === 0 ? 0 : mdVSFrame.mv_a;
     let nX = Math.floor(mdVSFrame.mv_x);
     let nY = Math.floor(mdVSFrame.mv_y);
 

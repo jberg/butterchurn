@@ -102,6 +102,7 @@ export default class PresetEquationRunnerWASM {
       'brighten',
       'darken',
       'solarize',
+      'bmotionvectorson',
       'b1n',
       'b2n',
       'b3n',

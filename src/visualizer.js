@@ -28,6 +28,7 @@ export default class Visualizer {
       darken_center: 0,
       solarize: 0,
       invert: 0,
+      bmotionvectorson: 1,
       fshader: 0,
       b1n: 0,
       b2n: 0,
