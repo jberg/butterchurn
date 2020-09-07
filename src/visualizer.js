@@ -255,10 +255,25 @@ export default class Visualizer {
     this.audio.disconnectAudio(audioNode);
   }
 
+  // Override defaults, but only include variables in default map
+  static overrideDefaultVars (baseValsDefaults, baseVals) {
+    const combinedVals = {};
+
+    Object.keys(baseValsDefaults).forEach((key) => {
+      if (Object.prototype.hasOwnProperty.call(baseVals, key)) {
+        combinedVals[key] = baseVals[key];
+      } else {
+        combinedVals[key] = baseValsDefaults[key];
+      }
+    });
+
+    return combinedVals;
+  }
+
   createPerFramePool (baseVals) {
     const wasmVars = {};
 
-    Object.keys(baseVals).forEach((key) => {
+    Object.keys(this.baseValsDefaults).forEach((key) => {
       wasmVars[key] = new WebAssembly.Global(
         { value: 'f64', mutable: true },
         baseVals[key]
@@ -275,13 +290,13 @@ export default class Visualizer {
     return wasmVars;
   }
 
-  createCustomShapePerFramePool () {
+  createCustomShapePerFramePool (baseVals) {
     const wasmVars = {};
 
     Object.keys(this.shapeBaseValsDefaults).forEach((key) => {
       wasmVars[key] = new WebAssembly.Global(
         { value: 'f64', mutable: true },
-        this.shapeBaseValsDefaults[key]
+        baseVals[key]
       );
     });
 
@@ -295,13 +310,13 @@ export default class Visualizer {
     return wasmVars;
   }
 
-  createCustomWavePerFramePool () {
+  createCustomWavePerFramePool (baseVals) {
     const wasmVars = {};
 
     Object.keys(this.waveBaseValsDefaults).forEach((key) => {
       wasmVars[key] = new WebAssembly.Global(
         { value: 'f64', mutable: true },
-        this.waveBaseValsDefaults[key]
+        baseVals[key]
       );
     });
 
@@ -317,15 +332,15 @@ export default class Visualizer {
 
   async loadPreset (presetMap, blendTime = 0) {
     const preset = Object.assign({}, presetMap);
-    preset.baseVals = Object.assign({}, this.baseValsDefaults, preset.baseVals);
+    preset.baseVals = Visualizer.overrideDefaultVars(this.baseValsDefaults, preset.baseVals);
     for (let i = 0; i < preset.shapes.length; i++) {
-      preset.shapes[i].baseVals = Object.assign({}, this.shapeBaseValsDefaults,
-                                                    preset.shapes[i].baseVals);
+      preset.shapes[i].baseVals = Visualizer.overrideDefaultVars(this.shapeBaseValsDefaults,
+                                                                 preset.shapes[i].baseVals);
     }
 
     for (let i = 0; i < preset.waves.length; i++) {
-      preset.waves[i].baseVals = Object.assign({}, this.waveBaseValsDefaults,
-                                                   preset.waves[i].baseVals);
+      preset.waves[i].baseVals = Visualizer.overrideDefaultVars(this.waveBaseValsDefaults,
+                                                                preset.waves[i].baseVals);
     }
 
     if (preset.useWASM) {
@@ -346,7 +361,7 @@ export default class Visualizer {
       /* eslint-disable max-len */
       for (let i = 0; i < preset.shapes.length; i++) {
         if (preset.shapes[i].baseVals.enabled !== 0) {
-          wasmVarPools[`shapePerFrame${i}`] = this.createCustomShapePerFramePool();
+          wasmVarPools[`shapePerFrame${i}`] = this.createCustomShapePerFramePool(preset.shapes[i].baseVals);
           wasmFunctions[`shapes_${i}_init_eqs`] = { pool: `shapePerFrame${i}`, code: preset.shapes[i].init_eqs_eel };
           wasmFunctions[`shapes_${i}_frame_eqs`] = { pool: `shapePerFrame${i}`, code: preset.shapes[i].frame_eqs_eel };
         }
@@ -354,7 +369,7 @@ export default class Visualizer {
 
       for (let i = 0; i < preset.waves.length; i++) {
         if (preset.waves[i].baseVals.enabled !== 0) {
-          wasmVarPools[`wavePerFrame${i}`] = this.createCustomWavePerFramePool();
+          wasmVarPools[`wavePerFrame${i}`] = this.createCustomWavePerFramePool(preset.waves[i].baseVals);
           wasmFunctions[`waves_${i}_init_eqs`] = { pool: `wavePerFrame${i}`, code: preset.waves[i].init_eqs_eel };
           wasmFunctions[`waves_${i}_frame_eqs`] = { pool: `wavePerFrame${i}`, code: preset.waves[i].frame_eqs_eel };
 
