@@ -134,147 +134,291 @@ export default class CustomShape {
 
   drawCustomShape (blendProgress, globalVars, presetEquationRunner, shapeEqs, prevTexture) {
     if (shapeEqs.baseVals.enabled !== 0) {
-      if (presetEquationRunner.preset.useWASM) {
-        // eslint-disable-next-line max-len
-        this.setupShapeBuffers(presetEquationRunner.preset.globalPools.perFrame.wrap.value);
-      } else {
+      if (!presetEquationRunner.preset.useWASM) {
         this.setupShapeBuffers(presetEquationRunner.mdVSFrame.wrap);
-      }
 
-      let mdVSShape;
-      if (presetEquationRunner.preset.useWASM) {
-        mdVSShape = Object.assign({}, globalVars);
-      } else {
-        mdVSShape = Object.assign({},
-                                  presetEquationRunner.mdVSShapes[this.index],
-                                  presetEquationRunner.mdVSFrameMapShapes[this.index],
-                                  presetEquationRunner.mdVSQAfterFrame,
-                                  presetEquationRunner.mdVSTShapeInits[this.index],
-                                  globalVars);
-      }
-      const baseVals = presetEquationRunner.preset.shapes[this.index].baseVals;
+        let mdVSShape = Object.assign({},
+                                      presetEquationRunner.mdVSShapes[this.index],
+                                      presetEquationRunner.mdVSFrameMapShapes[this.index],
+                                      globalVars);
 
-      const numInst = Math.clamp(baseVals.num_inst, 1, 1024);
-      for (let j = 0; j < numInst; j++) {
-        mdVSShape.instance = j;
-        mdVSShape.x = baseVals.x;
-        mdVSShape.y = baseVals.y;
-        mdVSShape.rad = baseVals.rad;
-        mdVSShape.ang = baseVals.ang;
-        mdVSShape.r = baseVals.r;
-        mdVSShape.g = baseVals.g;
-        mdVSShape.b = baseVals.b;
-        mdVSShape.a = baseVals.a;
-        mdVSShape.r2 = baseVals.r2;
-        mdVSShape.g2 = baseVals.g2;
-        mdVSShape.b2 = baseVals.b2;
-        mdVSShape.a2 = baseVals.a2;
-        mdVSShape.border_r = baseVals.border_r;
-        mdVSShape.border_g = baseVals.border_g;
-        mdVSShape.border_b = baseVals.border_b;
-        mdVSShape.border_a = baseVals.border_a;
-        mdVSShape.thickoutline = baseVals.thickoutline;
-        mdVSShape.textured = baseVals.textured;
-        mdVSShape.tex_zoom = baseVals.tex_zoom;
-        mdVSShape.tex_ang = baseVals.tex_ang;
-        mdVSShape.additive = baseVals.additive;
-
-        // eslint-disable-next-line max-len
-        const mdVSShapeFrame = presetEquationRunner.runShapeFrameEquations(this.index, j, mdVSShape);
-
-        let sides = mdVSShapeFrame.sides;
-        sides = Math.clamp(sides, 3, 100);
-        sides = Math.floor(sides);
-
-        const rad = mdVSShapeFrame.rad;
-        const ang = mdVSShapeFrame.ang;
-
-        const x = (mdVSShapeFrame.x * 2) - 1;
-        const y = (mdVSShapeFrame.y * -2) + 1;
-
-        const r = mdVSShapeFrame.r;
-        const g = mdVSShapeFrame.g;
-        const b = mdVSShapeFrame.b;
-        const a = mdVSShapeFrame.a;
-        const r2 = mdVSShapeFrame.r2;
-        const g2 = mdVSShapeFrame.g2;
-        const b2 = mdVSShapeFrame.b2;
-        const a2 = mdVSShapeFrame.a2;
-
-        const borderR = mdVSShapeFrame.border_r;
-        const borderG = mdVSShapeFrame.border_g;
-        const borderB = mdVSShapeFrame.border_b;
-        const borderA = mdVSShapeFrame.border_a;
-        this.borderColor = [borderR, borderG, borderB, borderA * blendProgress];
-
-        const thickoutline = mdVSShapeFrame.thickoutline;
-
-        const textured = mdVSShapeFrame.textured;
-        const texZoom = mdVSShapeFrame.tex_zoom;
-        const texAng = mdVSShapeFrame.tex_ang;
-
-        const additive = mdVSShapeFrame.additive;
-
-        const hasBorder = this.borderColor[3] > 0;
-        const isTextured = Math.abs(textured) >= 1;
-        const isBorderThick = Math.abs(thickoutline) >= 1;
-        const isAdditive = Math.abs(additive) >= 1;
-
-        this.positions[0] = x;
-        this.positions[1] = y;
-        this.positions[2] = 0;
-
-        this.colors[0] = r;
-        this.colors[1] = g;
-        this.colors[2] = b;
-        this.colors[3] = a * blendProgress;
-
-        if (isTextured) {
-          this.uvs[0] = 0.5;
-          this.uvs[1] = 0.5;
+        // If we aren't setting these every instance, set them initially
+        if (presetEquationRunner.preset.shapes[this.index].frame_eqs_str === '') {
+          mdVSShape = Object.assign(mdVSShape,
+                                    presetEquationRunner.mdVSQAfterFrame,
+                                    presetEquationRunner.mdVSTShapeInits[this.index]);
         }
 
-        const quarterPi = Math.PI * 0.25;
-        for (let k = 1; k <= (sides + 1); k++) {
-          const p = ((k - 1) / sides);
-          const pTwoPi = p * 2 * Math.PI;
+        const baseVals = presetEquationRunner.preset.shapes[this.index].baseVals;
 
-          const angSum = pTwoPi + ang + quarterPi;
-          this.positions[(k * 3) + 0] = x + (rad * Math.cos(angSum) * this.aspecty);
-          this.positions[(k * 3) + 1] = y + (rad * Math.sin(angSum));
-          this.positions[(k * 3) + 2] = 0;
+        const numInst = Math.clamp(baseVals.num_inst, 1, 1024);
+        for (let j = 0; j < numInst; j++) {
+          mdVSShape.instance = j;
+          mdVSShape.x = baseVals.x;
+          mdVSShape.y = baseVals.y;
+          mdVSShape.rad = baseVals.rad;
+          mdVSShape.ang = baseVals.ang;
+          mdVSShape.r = baseVals.r;
+          mdVSShape.g = baseVals.g;
+          mdVSShape.b = baseVals.b;
+          mdVSShape.a = baseVals.a;
+          mdVSShape.r2 = baseVals.r2;
+          mdVSShape.g2 = baseVals.g2;
+          mdVSShape.b2 = baseVals.b2;
+          mdVSShape.a2 = baseVals.a2;
+          mdVSShape.border_r = baseVals.border_r;
+          mdVSShape.border_g = baseVals.border_g;
+          mdVSShape.border_b = baseVals.border_b;
+          mdVSShape.border_a = baseVals.border_a;
+          mdVSShape.thickoutline = baseVals.thickoutline;
+          mdVSShape.textured = baseVals.textured;
+          mdVSShape.tex_zoom = baseVals.tex_zoom;
+          mdVSShape.tex_ang = baseVals.tex_ang;
+          mdVSShape.additive = baseVals.additive;
 
-          this.colors[(k * 4) + 0] = r2;
-          this.colors[(k * 4) + 1] = g2;
-          this.colors[(k * 4) + 2] = b2;
-          this.colors[(k * 4) + 3] = a2 * blendProgress;
+
+          let mdVSShapeFrame;
+          if (presetEquationRunner.preset.shapes[this.index].frame_eqs_str !== '') {
+            mdVSShape = Object.assign(mdVSShape,
+                                      presetEquationRunner.mdVSQAfterFrame,
+                                      presetEquationRunner.mdVSTShapeInits[this.index]);
+
+            mdVSShapeFrame = presetEquationRunner.runShapeFrameEquations(this.index, j, mdVSShape);
+          } else {
+            mdVSShapeFrame = mdVSShape;
+          }
+
+          let sides = mdVSShapeFrame.sides;
+          sides = Math.clamp(sides, 3, 100);
+          sides = Math.floor(sides);
+
+          const rad = mdVSShapeFrame.rad;
+          const ang = mdVSShapeFrame.ang;
+
+          const x = (mdVSShapeFrame.x * 2) - 1;
+          const y = (mdVSShapeFrame.y * -2) + 1;
+
+          const r = mdVSShapeFrame.r;
+          const g = mdVSShapeFrame.g;
+          const b = mdVSShapeFrame.b;
+          const a = mdVSShapeFrame.a;
+          const r2 = mdVSShapeFrame.r2;
+          const g2 = mdVSShapeFrame.g2;
+          const b2 = mdVSShapeFrame.b2;
+          const a2 = mdVSShapeFrame.a2;
+
+          const borderR = mdVSShapeFrame.border_r;
+          const borderG = mdVSShapeFrame.border_g;
+          const borderB = mdVSShapeFrame.border_b;
+          const borderA = mdVSShapeFrame.border_a;
+          this.borderColor = [borderR, borderG, borderB, borderA * blendProgress];
+
+          const thickoutline = mdVSShapeFrame.thickoutline;
+
+          const textured = mdVSShapeFrame.textured;
+          const texZoom = mdVSShapeFrame.tex_zoom;
+          const texAng = mdVSShapeFrame.tex_ang;
+
+          const additive = mdVSShapeFrame.additive;
+
+          const hasBorder = this.borderColor[3] > 0;
+          const isTextured = Math.abs(textured) >= 1;
+          const isBorderThick = Math.abs(thickoutline) >= 1;
+          const isAdditive = Math.abs(additive) >= 1;
+
+          this.positions[0] = x;
+          this.positions[1] = y;
+          this.positions[2] = 0;
+
+          this.colors[0] = r;
+          this.colors[1] = g;
+          this.colors[2] = b;
+          this.colors[3] = a * blendProgress;
 
           if (isTextured) {
-            const texAngSum = pTwoPi + texAng + quarterPi;
-            this.uvs[(k * 2) + 0] = 0.5 + (((0.5 * Math.cos(texAngSum)) / texZoom) *
-                                           this.aspecty);
-            this.uvs[(k * 2) + 1] = 0.5 + ((0.5 * Math.sin(texAngSum)) / texZoom);
+            this.uvs[0] = 0.5;
+            this.uvs[1] = 0.5;
           }
 
-          if (hasBorder) {
-            this.borderPositions[((k - 1) * 3) + 0] = this.positions[(k * 3) + 0];
-            this.borderPositions[((k - 1) * 3) + 1] = this.positions[(k * 3) + 1];
-            this.borderPositions[((k - 1) * 3) + 2] = this.positions[(k * 3) + 2];
+          const quarterPi = Math.PI * 0.25;
+          for (let k = 1; k <= (sides + 1); k++) {
+            const p = ((k - 1) / sides);
+            const pTwoPi = p * 2 * Math.PI;
+
+            const angSum = pTwoPi + ang + quarterPi;
+            this.positions[(k * 3) + 0] = x + (rad * Math.cos(angSum) * this.aspecty);
+            this.positions[(k * 3) + 1] = y + (rad * Math.sin(angSum));
+            this.positions[(k * 3) + 2] = 0;
+
+            this.colors[(k * 4) + 0] = r2;
+            this.colors[(k * 4) + 1] = g2;
+            this.colors[(k * 4) + 2] = b2;
+            this.colors[(k * 4) + 3] = a2 * blendProgress;
+
+            if (isTextured) {
+              const texAngSum = pTwoPi + texAng + quarterPi;
+              this.uvs[(k * 2) + 0] = 0.5 + (((0.5 * Math.cos(texAngSum)) / texZoom) *
+                                            this.aspecty);
+              this.uvs[(k * 2) + 1] = 0.5 + ((0.5 * Math.sin(texAngSum)) / texZoom);
+            }
+
+            if (hasBorder) {
+              this.borderPositions[((k - 1) * 3) + 0] = this.positions[(k * 3) + 0];
+              this.borderPositions[((k - 1) * 3) + 1] = this.positions[(k * 3) + 1];
+              this.borderPositions[((k - 1) * 3) + 2] = this.positions[(k * 3) + 2];
+            }
           }
+
+          this.mdVSShapeFrame = mdVSShapeFrame;
+
+          this.drawCustomShapeInstance(prevTexture, sides, isTextured, hasBorder, isBorderThick,
+                                       isAdditive);
         }
 
-        this.mdVSShapeFrame = mdVSShapeFrame;
-
-        this.drawCustomShapeInstance(prevTexture, sides, isTextured, hasBorder, isBorderThick,
-                                     isAdditive);
-      }
-
-      if (!presetEquationRunner.preset.useWASM) {
         const mdVSUserKeysShape = presetEquationRunner.mdVSUserKeysShapes[this.index];
         const mdVSNewFrameMapShape = Utils.pick(this.mdVSShapeFrame, mdVSUserKeysShape);
 
         // eslint-disable-next-line no-param-reassign
         presetEquationRunner.mdVSFrameMapShapes[this.index] = mdVSNewFrameMapShape;
+      } else {
+        // eslint-disable-next-line max-len
+        this.setupShapeBuffers(presetEquationRunner.preset.globalPools.perFrame.wrap.value);
+
+
+        const baseVals = presetEquationRunner.preset.shapes[this.index].baseVals;
+        const varPool = presetEquationRunner.preset.globalPools[`shapePerFrame${this.index}`];
+        Utils.setWasm(varPool, globalVars, presetEquationRunner.globalKeys);
+
+        // If we aren't setting these every instance, set them initially
+        if (presetEquationRunner.preset.shapes[this.index].frame_eqs_eel === '') {
+          Utils.setWasm(varPool,
+                        presetEquationRunner.mdVSQAfterFrame,
+                        presetEquationRunner.qs);
+          Utils.setWasm(varPool,
+                        presetEquationRunner.mdVSTShapeInits[this.index],
+                        presetEquationRunner.ts);
+        }
+
+        const numInst = Math.clamp(baseVals.num_inst, 1, 1024);
+        for (let j = 0; j < numInst; j++) {
+          varPool.instance.value = j;
+          varPool.x.value = baseVals.x;
+          varPool.y.value = baseVals.y;
+          varPool.rad.value = baseVals.rad;
+          varPool.ang.value = baseVals.ang;
+          varPool.r.value = baseVals.r;
+          varPool.g.value = baseVals.g;
+          varPool.b.value = baseVals.b;
+          varPool.a.value = baseVals.a;
+          varPool.r2.value = baseVals.r2;
+          varPool.g2.value = baseVals.g2;
+          varPool.b2.value = baseVals.b2;
+          varPool.a2.value = baseVals.a2;
+          varPool.border_r.value = baseVals.border_r;
+          varPool.border_g.value = baseVals.border_g;
+          varPool.border_b.value = baseVals.border_b;
+          varPool.border_a.value = baseVals.border_a;
+          varPool.thickoutline.value = baseVals.thickoutline;
+          varPool.textured.value = baseVals.textured;
+          varPool.tex_zoom.value = baseVals.tex_zoom;
+          varPool.tex_ang.value = baseVals.tex_ang;
+          varPool.additive.value = baseVals.additive;
+
+          if (presetEquationRunner.preset.shapes[this.index].frame_eqs_eel !== '') {
+            Utils.setWasm(varPool,
+                          presetEquationRunner.mdVSQAfterFrame,
+                          presetEquationRunner.qs);
+            Utils.setWasm(varPool,
+                          presetEquationRunner.mdVSTShapeInits[this.index],
+                          presetEquationRunner.ts);
+
+            presetEquationRunner.preset.shapes[this.index].frame_eqs();
+          }
+
+          let sides = varPool.sides.value;
+          sides = Math.clamp(sides, 3, 100);
+          sides = Math.floor(sides);
+
+          const rad = varPool.rad.value;
+          const ang = varPool.ang.value;
+
+          const x = (varPool.x.value * 2) - 1;
+          const y = (varPool.y.value * -2) + 1;
+
+          const r = varPool.r.value;
+          const g = varPool.g.value;
+          const b = varPool.b.value;
+          const a = varPool.a.value;
+          const r2 = varPool.r2.value;
+          const g2 = varPool.g2.value;
+          const b2 = varPool.b2.value;
+          const a2 = varPool.a2.value;
+
+          const borderR = varPool.border_r.value;
+          const borderG = varPool.border_g.value;
+          const borderB = varPool.border_b.value;
+          const borderA = varPool.border_a.value;
+          this.borderColor = [borderR, borderG, borderB, borderA * blendProgress];
+
+          const thickoutline = varPool.thickoutline.value;
+
+          const textured = varPool.textured.value;
+          const texZoom = varPool.tex_zoom.value;
+          const texAng = varPool.tex_ang.value;
+
+          const additive = varPool.additive.value;
+
+          const hasBorder = this.borderColor[3] > 0;
+          const isTextured = Math.abs(textured) >= 1;
+          const isBorderThick = Math.abs(thickoutline) >= 1;
+          const isAdditive = Math.abs(additive) >= 1;
+
+          this.positions[0] = x;
+          this.positions[1] = y;
+          this.positions[2] = 0;
+
+          this.colors[0] = r;
+          this.colors[1] = g;
+          this.colors[2] = b;
+          this.colors[3] = a * blendProgress;
+
+          if (isTextured) {
+            this.uvs[0] = 0.5;
+            this.uvs[1] = 0.5;
+          }
+
+          const quarterPi = Math.PI * 0.25;
+          for (let k = 1; k <= (sides + 1); k++) {
+            const p = ((k - 1) / sides);
+            const pTwoPi = p * 2 * Math.PI;
+
+            const angSum = pTwoPi + ang + quarterPi;
+            this.positions[(k * 3) + 0] = x + (rad * Math.cos(angSum) * this.aspecty);
+            this.positions[(k * 3) + 1] = y + (rad * Math.sin(angSum));
+            this.positions[(k * 3) + 2] = 0;
+
+            this.colors[(k * 4) + 0] = r2;
+            this.colors[(k * 4) + 1] = g2;
+            this.colors[(k * 4) + 2] = b2;
+            this.colors[(k * 4) + 3] = a2 * blendProgress;
+
+            if (isTextured) {
+              const texAngSum = pTwoPi + texAng + quarterPi;
+              this.uvs[(k * 2) + 0] = 0.5 + (((0.5 * Math.cos(texAngSum)) / texZoom) *
+                                            this.aspecty);
+              this.uvs[(k * 2) + 1] = 0.5 + ((0.5 * Math.sin(texAngSum)) / texZoom);
+            }
+
+            if (hasBorder) {
+              this.borderPositions[((k - 1) * 3) + 0] = this.positions[(k * 3) + 0];
+              this.borderPositions[((k - 1) * 3) + 1] = this.positions[(k * 3) + 1];
+              this.borderPositions[((k - 1) * 3) + 2] = this.positions[(k * 3) + 2];
+            }
+          }
+
+          this.drawCustomShapeInstance(prevTexture, sides, isTextured, hasBorder, isBorderThick,
+                                       isAdditive);
+        }
       }
     }
   }
