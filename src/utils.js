@@ -23,7 +23,7 @@ export default class Utils {
     const newObj = {};
     for (let i = 0; i < keys.length; i++) {
       const key = keys[i];
-      newObj[key] = obj[key];
+      newObj[key] = obj[key] || 0;
     }
     return newObj;
   }
