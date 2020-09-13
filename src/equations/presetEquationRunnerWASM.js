@@ -298,17 +298,6 @@ export default class PresetEquationRunnerWASM {
   }
 
   /* eslint-disable max-len */
-  runShapeFrameEquations (shapeIdx, instance, globalVars) {
-    const baseVals = this.preset.shapes[shapeIdx].baseVals;
-    this.preset.globalPools[`shapePerFrame${shapeIdx}`].instance.value = instance;
-    Utils.setWasm(this.preset.globalPools[`shapePerFrame${shapeIdx}`], baseVals, this.shapeFrameInputKeys);
-    Utils.setWasm(this.preset.globalPools[`shapePerFrame${shapeIdx}`], this.mdVSQAfterFrame, this.qs);
-    Utils.setWasm(this.preset.globalPools[`shapePerFrame${shapeIdx}`], this.mdVSTShapeInits[shapeIdx], this.ts);
-    Utils.setWasm(this.preset.globalPools[`shapePerFrame${shapeIdx}`], globalVars, this.globalKeys);
-    this.preset.shapes[shapeIdx].frame_eqs();
-    return Utils.pickWasm(this.preset.globalPools[`shapePerFrame${shapeIdx}`], this.shapeFrameKeys);
-  }
-
   runWaveFrameEquations (waveIdx, globalVars) {
     const baseVals = this.preset.waves[waveIdx].baseVals;
     Utils.setWasm(this.preset.globalPools[`wavePerFrame${waveIdx}`], baseVals, this.waveFrameInputKeys);
