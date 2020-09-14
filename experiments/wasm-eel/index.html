@@ -560,6 +560,7 @@
         const audio = new Audio();
         audio.crossOrigin = "anonymous";
         audio.src = url;
+        audio.loop = true;
         if (sourceNode) {
           sourceNode.disconnect();
         }
