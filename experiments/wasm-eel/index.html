@@ -652,6 +652,9 @@
           } else {
             newPresetVal = currPresetIdx - 1;
           }
+        } else if (e.which === 87) {
+          $('#useWASM').click();
+          newPresetVal = currPresetIdx;
         }
         if (newPresetVal != undefined) {
           $('#presetSelect').val(newPresetVal);
