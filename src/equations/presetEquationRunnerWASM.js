@@ -208,7 +208,6 @@ export default class PresetEquationRunnerWASM {
 
     this.preset.frame_eqs();
 
-    this.mdVS = Utils.pickWasm(this.preset.globalPools.perFrame, this.frameKeys);
     this.mdVSQAfterFrame = this.getQVars('perFrame');
 
     this.mdVSTWaveInits = [];
