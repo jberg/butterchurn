@@ -511,7 +511,7 @@ export default class Renderer {
 
       this.mdVSVertex = mdVSVertex;
     } else {
-      const varPool = this.presetEquationRunner.preset.globalPools.perVertex;
+      const varPool = presetEquationRunner.preset.globalPools.perVertex;
 
       Utils.setWasm(varPool, globalVars, presetEquationRunner.globalKeys);
       Utils.setWasm(varPool, presetEquationRunner.mdVSQAfterFrame, presetEquationRunner.qs);
