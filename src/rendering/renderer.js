@@ -364,7 +364,7 @@ export default class Renderer {
     }
   }
 
-  runPixelEquations (presetEquationRunner, mdVSFrame, blending) {
+  runPixelEquations (presetEquationRunner, mdVSFrame, globalVars, blending) {
     const gridX = this.mesh_width;
     const gridZ = this.mesh_height;
 
@@ -511,18 +511,21 @@ export default class Renderer {
 
       this.mdVSVertex = mdVSVertex;
     } else {
-      const varPool = this.presetEquationRunner.preset.globalPools.perFrame;
+      const varPool = this.presetEquationRunner.preset.globalPools.perVertex;
 
-      let warp = varPool.warp.value;
-      let zoom = varPool.zoom.value;
-      let zoomExp = varPool.zoomexp.value;
-      let cx = varPool.cx.value;
-      let cy = varPool.cy.value;
-      let sx = varPool.sx.value;
-      let sy = varPool.sy.value;
-      let dx = varPool.dx.value;
-      let dy = varPool.dy.value;
-      let rot = varPool.rot.value;
+      Utils.setWasm(varPool, globalVars, presetEquationRunner.globalKeys);
+      Utils.setWasm(varPool, presetEquationRunner.mdVSQAfterFrame, presetEquationRunner.qs);
+
+      let warp = mdVSFrame.warp;
+      let zoom = mdVSFrame.zoom;
+      let zoomExp = mdVSFrame.zoomexp;
+      let cx = mdVSFrame.cx;
+      let cy = mdVSFrame.cy;
+      let sx = mdVSFrame.sx;
+      let sy = mdVSFrame.sy;
+      let dx = mdVSFrame.dx;
+      let dy = mdVSFrame.dy;
+      let rot = mdVSFrame.rot;
 
       for (let iz = 0; iz < gridZ1; iz++) {
         for (let ix = 0; ix < gridX1; ix++) {
@@ -806,7 +809,7 @@ export default class Renderer {
     }
 
     const mdVSFrame = this.presetEquationRunner.runFrameEquations(globalVars);
-    this.runPixelEquations(this.presetEquationRunner, mdVSFrame, false);
+    this.runPixelEquations(this.presetEquationRunner, mdVSFrame, globalVars, false);
 
     if (!this.preset.useWASM) {
       Object.assign(this.regVars, Utils.pick(this.mdVSVertex, this.regs));
@@ -818,6 +821,7 @@ export default class Renderer {
       this.prevMDVSFrame = this.prevPresetEquationRunner.runFrameEquations(prevGlobalVars);
       this.runPixelEquations(this.prevPresetEquationRunner,
                              this.prevMDVSFrame,
+                             prevGlobalVars,
                              true);
 
       mdVSFrameMixed = Renderer.mixFrameEquations(this.blendProgress,

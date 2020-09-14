@@ -154,11 +154,6 @@ export default class Visualizer {
       'pixelsy',
       'rand_start',
       'rand_preset',
-      // for pixel eqs
-      'x',
-      'y',
-      'rad',
-      'ang'
     ];
 
     this.globalPerPixelVars = [
@@ -290,6 +285,26 @@ export default class Visualizer {
     return wasmVars;
   }
 
+  createPerPixelPool (baseVals) {
+    const wasmVars = {};
+
+    Object.keys(this.baseValsDefaults).forEach((key) => {
+      wasmVars[key] = new WebAssembly.Global(
+        { value: 'f64', mutable: true },
+        baseVals[key]
+      );
+    });
+
+    this.globalPerPixelVars.forEach((key) => {
+      wasmVars[key] = new WebAssembly.Global(
+        { value: 'f64', mutable: true },
+        0
+      );
+    });
+
+    return wasmVars;
+  }
+
   createCustomShapePerFramePool (baseVals) {
     const wasmVars = {};
 
@@ -346,6 +361,7 @@ export default class Visualizer {
     if (preset.useWASM) {
       const wasmVarPools = {
         perFrame: this.createPerFramePool(preset.baseVals),
+        perVertex: this.createPerPixelPool(preset.baseVals),
       };
 
       const wasmFunctions = {
@@ -354,7 +370,7 @@ export default class Visualizer {
       };
 
       if (preset.pixel_eqs_eel !== '') {
-        wasmFunctions.perPixel = { pool: 'perFrame', code: preset.pixel_eqs_eel };
+        wasmFunctions.perPixel = { pool: 'perVertex', code: preset.pixel_eqs_eel };
       }
 
 
