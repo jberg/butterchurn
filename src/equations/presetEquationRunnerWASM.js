@@ -135,6 +135,14 @@ export default class PresetEquationRunnerWASM {
     this.initializeEquations(globalVars);
   }
 
+  getQVars (pool) {
+    return Utils.pickWasm(this.preset.globalPools[pool], this.qs);
+  }
+
+  getTVars (pool) {
+    return Utils.pickWasm(this.preset.globalPools[pool], this.ts);
+  }
+
   initializeEquations (globalVars) {
     this.runVertEQs = (this.preset.pixel_eqs !== '');
 
@@ -256,14 +264,6 @@ export default class PresetEquationRunnerWASM {
     mdVSFrame.rand_start = this.rand_start;
 
     return mdVSFrame;
-  }
-
-  getQVars (pool) {
-    return Utils.pickWasm(this.preset.globalPools[pool], this.qs);
-  }
-
-  getTVars (pool) {
-    return Utils.pickWasm(this.preset.globalPools[pool], this.ts);
   }
 
   /* eslint-disable max-len */
