@@ -112,36 +112,6 @@ export default class PresetEquationRunnerWASM {
       'b1ed',
     ];
 
-    this.shapeFrameKeys = [
-      'sides',
-      'x',
-      'y',
-      'rad',
-      'ang',
-      'r',
-      'g',
-      'b',
-      'a',
-      'r2',
-      'g2',
-      'b2',
-      'a2',
-      'border_r',
-      'border_g',
-      'border_b',
-      'border_a',
-      'thickoutline',
-      'textured',
-      'tex_zoom',
-      'tex_ang',
-      'additive'
-    ];
-
-    this.shapeFrameInputKeys = [
-      ...this.shapeFrameKeys,
-      'num_inst',
-    ];
-
     this.waveFrameKeys = [
       'samples',
       'sep',
