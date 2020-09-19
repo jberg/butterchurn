@@ -183,7 +183,7 @@ export default class CustomShape {
                                       presetEquationRunner.mdVSQAfterFrame,
                                       presetEquationRunner.mdVSTShapeInits[this.index]);
 
-            mdVSShapeFrame = presetEquationRunner.runShapeFrameEquations(this.index, j, mdVSShape);
+            mdVSShapeFrame = presetEquationRunner.runShapeFrameEquations(this.index, mdVSShape);
           } else {
             mdVSShapeFrame = mdVSShape;
           }

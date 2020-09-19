@@ -213,7 +213,7 @@ export default class PresetEquationRunner {
     return this.preset.pixel_eqs(mdVSVertex);
   }
 
-  runShapeFrameEquations (shapeIdx, instance, mdVSShape) {
+  runShapeFrameEquations (shapeIdx, mdVSShape) {
     return this.preset.shapes[shapeIdx].frame_eqs(mdVSShape);
   }
 
