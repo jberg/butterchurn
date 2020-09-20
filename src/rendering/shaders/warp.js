@@ -171,153 +171,157 @@ export default class WarpShader {
     const vertShader = this.gl.createShader(this.gl.VERTEX_SHADER);
     this.gl.shaderSource(
       vertShader,
-      `#version 300 es
-                                      precision ${this.floatPrecision} float;
-                                      const vec2 halfmad = vec2(0.5);
-                                      in vec2 aPos;
-                                      in vec2 aWarpUv;
-                                      in vec4 aWarpColor;
-                                      out vec2 uv;
-                                      out vec2 uv_orig;
-                                      out vec4 vColor;
-                                      void main(void) {
-                                        gl_Position = vec4(aPos, 0.0, 1.0);
-                                        uv_orig = aPos * halfmad + halfmad;
-                                        uv = aWarpUv;
-                                        vColor = aWarpColor;
-                                      }`
+      `
+      #version 300 es
+      precision ${this.floatPrecision} float;
+      const vec2 halfmad = vec2(0.5);
+      in vec2 aPos;
+      in vec2 aWarpUv;
+      in vec4 aWarpColor;
+      out vec2 uv;
+      out vec2 uv_orig;
+      out vec4 vColor;
+      void main(void) {
+        gl_Position = vec4(aPos, 0.0, 1.0);
+        uv_orig = aPos * halfmad + halfmad;
+        uv = aWarpUv;
+        vColor = aWarpColor;
+      }
+      `
     );
     this.gl.compileShader(vertShader);
 
     const fragShader = this.gl.createShader(this.gl.FRAGMENT_SHADER);
     this.gl.shaderSource(
       fragShader,
-      `#version 300 es
-                                      precision ${this.floatPrecision} float;
-                                      precision highp int;
-                                      precision mediump sampler2D;
-                                      precision mediump sampler3D;
+      `
+      #version 300 es
+      precision ${this.floatPrecision} float;
+      precision highp int;
+      precision mediump sampler2D;
+      precision mediump sampler3D;
 
-                                      in vec2 uv;
-                                      in vec2 uv_orig;
-                                      in vec4 vColor;
-                                      out vec4 fragColor;
-                                      uniform sampler2D sampler_main;
-                                      uniform sampler2D sampler_fw_main;
-                                      uniform sampler2D sampler_fc_main;
-                                      uniform sampler2D sampler_pw_main;
-                                      uniform sampler2D sampler_pc_main;
-                                      uniform sampler2D sampler_blur1;
-                                      uniform sampler2D sampler_blur2;
-                                      uniform sampler2D sampler_blur3;
-                                      uniform sampler2D sampler_noise_lq;
-                                      uniform sampler2D sampler_noise_lq_lite;
-                                      uniform sampler2D sampler_noise_mq;
-                                      uniform sampler2D sampler_noise_hq;
-                                      uniform sampler2D sampler_pw_noise_lq;
-                                      uniform sampler3D sampler_noisevol_lq;
-                                      uniform sampler3D sampler_noisevol_hq;
-                                      uniform float time;
-                                      uniform float decay;
-                                      uniform vec2 resolution;
-                                      uniform vec4 aspect;
-                                      uniform vec4 texsize;
-                                      uniform vec4 texsize_noise_lq;
-                                      uniform vec4 texsize_noise_mq;
-                                      uniform vec4 texsize_noise_hq;
-                                      uniform vec4 texsize_noise_lq_lite;
-                                      uniform vec4 texsize_noisevol_lq;
-                                      uniform vec4 texsize_noisevol_hq;
+      in vec2 uv;
+      in vec2 uv_orig;
+      in vec4 vColor;
+      out vec4 fragColor;
+      uniform sampler2D sampler_main;
+      uniform sampler2D sampler_fw_main;
+      uniform sampler2D sampler_fc_main;
+      uniform sampler2D sampler_pw_main;
+      uniform sampler2D sampler_pc_main;
+      uniform sampler2D sampler_blur1;
+      uniform sampler2D sampler_blur2;
+      uniform sampler2D sampler_blur3;
+      uniform sampler2D sampler_noise_lq;
+      uniform sampler2D sampler_noise_lq_lite;
+      uniform sampler2D sampler_noise_mq;
+      uniform sampler2D sampler_noise_hq;
+      uniform sampler2D sampler_pw_noise_lq;
+      uniform sampler3D sampler_noisevol_lq;
+      uniform sampler3D sampler_noisevol_hq;
+      uniform float time;
+      uniform float decay;
+      uniform vec2 resolution;
+      uniform vec4 aspect;
+      uniform vec4 texsize;
+      uniform vec4 texsize_noise_lq;
+      uniform vec4 texsize_noise_mq;
+      uniform vec4 texsize_noise_hq;
+      uniform vec4 texsize_noise_lq_lite;
+      uniform vec4 texsize_noisevol_lq;
+      uniform vec4 texsize_noisevol_hq;
 
-                                      uniform float bass;
-                                      uniform float mid;
-                                      uniform float treb;
-                                      uniform float vol;
-                                      uniform float bass_att;
-                                      uniform float mid_att;
-                                      uniform float treb_att;
-                                      uniform float vol_att;
+      uniform float bass;
+      uniform float mid;
+      uniform float treb;
+      uniform float vol;
+      uniform float bass_att;
+      uniform float mid_att;
+      uniform float treb_att;
+      uniform float vol_att;
 
-                                      uniform float frame;
-                                      uniform float fps;
+      uniform float frame;
+      uniform float fps;
 
-                                      uniform vec4 _qa;
-                                      uniform vec4 _qb;
-                                      uniform vec4 _qc;
-                                      uniform vec4 _qd;
-                                      uniform vec4 _qe;
-                                      uniform vec4 _qf;
-                                      uniform vec4 _qg;
-                                      uniform vec4 _qh;
+      uniform vec4 _qa;
+      uniform vec4 _qb;
+      uniform vec4 _qc;
+      uniform vec4 _qd;
+      uniform vec4 _qe;
+      uniform vec4 _qf;
+      uniform vec4 _qg;
+      uniform vec4 _qh;
 
-                                      #define q1 _qa.x
-                                      #define q2 _qa.y
-                                      #define q3 _qa.z
-                                      #define q4 _qa.w
-                                      #define q5 _qb.x
-                                      #define q6 _qb.y
-                                      #define q7 _qb.z
-                                      #define q8 _qb.w
-                                      #define q9 _qc.x
-                                      #define q10 _qc.y
-                                      #define q11 _qc.z
-                                      #define q12 _qc.w
-                                      #define q13 _qd.x
-                                      #define q14 _qd.y
-                                      #define q15 _qd.z
-                                      #define q16 _qd.w
-                                      #define q17 _qe.x
-                                      #define q18 _qe.y
-                                      #define q19 _qe.z
-                                      #define q20 _qe.w
-                                      #define q21 _qf.x
-                                      #define q22 _qf.y
-                                      #define q23 _qf.z
-                                      #define q24 _qf.w
-                                      #define q25 _qg.x
-                                      #define q26 _qg.y
-                                      #define q27 _qg.z
-                                      #define q28 _qg.w
-                                      #define q29 _qh.x
-                                      #define q30 _qh.y
-                                      #define q31 _qh.z
-                                      #define q32 _qh.w
+      #define q1 _qa.x
+      #define q2 _qa.y
+      #define q3 _qa.z
+      #define q4 _qa.w
+      #define q5 _qb.x
+      #define q6 _qb.y
+      #define q7 _qb.z
+      #define q8 _qb.w
+      #define q9 _qc.x
+      #define q10 _qc.y
+      #define q11 _qc.z
+      #define q12 _qc.w
+      #define q13 _qd.x
+      #define q14 _qd.y
+      #define q15 _qd.z
+      #define q16 _qd.w
+      #define q17 _qe.x
+      #define q18 _qe.y
+      #define q19 _qe.z
+      #define q20 _qe.w
+      #define q21 _qf.x
+      #define q22 _qf.y
+      #define q23 _qf.z
+      #define q24 _qf.w
+      #define q25 _qg.x
+      #define q26 _qg.y
+      #define q27 _qg.z
+      #define q28 _qg.w
+      #define q29 _qh.x
+      #define q30 _qh.y
+      #define q31 _qh.z
+      #define q32 _qh.w
 
-                                      uniform vec4 slow_roam_cos;
-                                      uniform vec4 roam_cos;
-                                      uniform vec4 slow_roam_sin;
-                                      uniform vec4 roam_sin;
+      uniform vec4 slow_roam_cos;
+      uniform vec4 roam_cos;
+      uniform vec4 slow_roam_sin;
+      uniform vec4 roam_sin;
 
-                                      uniform float blur1_min;
-                                      uniform float blur1_max;
-                                      uniform float blur2_min;
-                                      uniform float blur2_max;
-                                      uniform float blur3_min;
-                                      uniform float blur3_max;
+      uniform float blur1_min;
+      uniform float blur1_max;
+      uniform float blur2_min;
+      uniform float blur2_max;
+      uniform float blur3_min;
+      uniform float blur3_max;
 
-                                      uniform float scale1;
-                                      uniform float scale2;
-                                      uniform float scale3;
-                                      uniform float bias1;
-                                      uniform float bias2;
-                                      uniform float bias3;
+      uniform float scale1;
+      uniform float scale2;
+      uniform float scale3;
+      uniform float bias1;
+      uniform float bias2;
+      uniform float bias3;
 
-                                      uniform vec4 rand_frame;
-                                      uniform vec4 rand_preset;
+      uniform vec4 rand_frame;
+      uniform vec4 rand_preset;
 
-                                      float PI = ${Math.PI};
+      float PI = ${Math.PI};
 
-                                      ${fragShaderHeaderText}
+      ${fragShaderHeaderText}
 
-                                      void main(void) {
-                                        vec3 ret;
-                                        float rad = length(uv_orig - 0.5);
-                                        float ang = atan(uv_orig.x - 0.5, uv_orig.y - 0.5);
+      void main(void) {
+        vec3 ret;
+        float rad = length(uv_orig - 0.5);
+        float ang = atan(uv_orig.x - 0.5, uv_orig.y - 0.5);
 
-                                        ${fragShaderText}
+        ${fragShaderText}
 
-                                        fragColor = vec4(ret, 1.0) * vColor;
-                                      }`
+        fragColor = vec4(ret, 1.0) * vColor;
+      }
+      `
     );
     this.gl.compileShader(fragShader);
 

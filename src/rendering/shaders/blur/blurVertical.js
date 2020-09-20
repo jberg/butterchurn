@@ -28,14 +28,16 @@ export default class BlurVertical {
     const vertShader = this.gl.createShader(this.gl.VERTEX_SHADER);
     this.gl.shaderSource(
       vertShader,
-      `#version 300 es
-                                      const vec2 halfmad = vec2(0.5);
-                                      in vec2 aPos;
-                                      out vec2 uv;
-                                      void main(void) {
-                                        gl_Position = vec4(aPos, 0.0, 1.0);
-                                        uv = aPos * halfmad + halfmad;
-                                      }`
+      `
+      #version 300 es
+      const vec2 halfmad = vec2(0.5);
+      in vec2 aPos;
+      out vec2 uv;
+      void main(void) {
+        gl_Position = vec4(aPos, 0.0, 1.0);
+        uv = aPos * halfmad + halfmad;
+      }
+      `
     );
     this.gl.compileShader(vertShader);
 

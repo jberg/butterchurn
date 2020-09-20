@@ -59,39 +59,43 @@ export default class CustomShape {
     const vertShader = this.gl.createShader(this.gl.VERTEX_SHADER);
     this.gl.shaderSource(
       vertShader,
-      `#version 300 es
-                                      in vec3 aPos;
-                                      in vec4 aColor;
-                                      in vec2 aUv;
-                                      out vec4 vColor;
-                                      out vec2 vUv;
-                                      void main(void) {
-                                        vColor = aColor;
-                                        vUv = aUv;
-                                        gl_Position = vec4(aPos, 1.0);
-                                      }`
+      `
+      #version 300 es
+      in vec3 aPos;
+      in vec4 aColor;
+      in vec2 aUv;
+      out vec4 vColor;
+      out vec2 vUv;
+      void main(void) {
+        vColor = aColor;
+        vUv = aUv;
+        gl_Position = vec4(aPos, 1.0);
+      }
+      `
     );
     this.gl.compileShader(vertShader);
 
     const fragShader = this.gl.createShader(this.gl.FRAGMENT_SHADER);
     this.gl.shaderSource(
       fragShader,
-      `#version 300 es
-                                      precision ${this.floatPrecision} float;
-                                      precision highp int;
-                                      precision mediump sampler2D;
-                                      uniform sampler2D uTexture;
-                                      uniform float uTextured;
-                                      in vec4 vColor;
-                                      in vec2 vUv;
-                                      out vec4 fragColor;
-                                      void main(void) {
-                                        if (uTextured != 0.0) {
-                                          fragColor = texture(uTexture, vUv) * vColor;
-                                        } else {
-                                          fragColor = vColor;
-                                        }
-                                      }`
+      `
+      #version 300 es
+      precision ${this.floatPrecision} float;
+      precision highp int;
+      precision mediump sampler2D;
+      uniform sampler2D uTexture;
+      uniform float uTextured;
+      in vec4 vColor;
+      in vec2 vUv;
+      out vec4 fragColor;
+      void main(void) {
+        if (uTextured != 0.0) {
+          fragColor = texture(uTexture, vUv) * vColor;
+        } else {
+          fragColor = vColor;
+        }
+      }
+      `
     );
     this.gl.compileShader(fragShader);
 
@@ -122,28 +126,32 @@ export default class CustomShape {
     const vertShader = this.gl.createShader(this.gl.VERTEX_SHADER);
     this.gl.shaderSource(
       vertShader,
-      `#version 300 es
-                                      in vec3 aBorderPos;
-                                      uniform vec2 thickOffset;
-                                      void main(void) {
-                                        gl_Position = vec4(aBorderPos +
-                                                           vec3(thickOffset, 0.0), 1.0);
-                                      }`
+      `
+      #version 300 es
+      in vec3 aBorderPos;
+      uniform vec2 thickOffset;
+      void main(void) {
+        gl_Position = vec4(aBorderPos +
+                            vec3(thickOffset, 0.0), 1.0);
+      }
+      `
     );
     this.gl.compileShader(vertShader);
 
     const fragShader = this.gl.createShader(this.gl.FRAGMENT_SHADER);
     this.gl.shaderSource(
       fragShader,
-      `#version 300 es
-                                      precision ${this.floatPrecision} float;
-                                      precision highp int;
-                                      precision mediump sampler2D;
-                                      out vec4 fragColor;
-                                      uniform vec4 uBorderColor;
-                                      void main(void) {
-                                        fragColor = uBorderColor;
-                                      }`
+      `
+      #version 300 es
+      precision ${this.floatPrecision} float;
+      precision highp int;
+      precision mediump sampler2D;
+      out vec4 fragColor;
+      uniform vec4 uBorderColor;
+      void main(void) {
+        fragColor = uBorderColor;
+      }
+      `
     );
     this.gl.compileShader(fragShader);
 

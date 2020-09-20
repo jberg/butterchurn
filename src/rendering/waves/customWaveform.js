@@ -50,32 +50,36 @@ export default class CustomWaveform {
     const vertShader = this.gl.createShader(this.gl.VERTEX_SHADER);
     this.gl.shaderSource(
       vertShader,
-      `#version 300 es
-                                      uniform float uSize;
-                                      uniform vec2 thickOffset;
-                                      in vec3 aPos;
-                                      in vec4 aColor;
-                                      out vec4 vColor;
-                                      void main(void) {
-                                        vColor = aColor;
-                                        gl_PointSize = uSize;
-                                        gl_Position = vec4(aPos + vec3(thickOffset, 0.0), 1.0);
-                                      }`
+      `
+      #version 300 es
+      uniform float uSize;
+      uniform vec2 thickOffset;
+      in vec3 aPos;
+      in vec4 aColor;
+      out vec4 vColor;
+      void main(void) {
+        vColor = aColor;
+        gl_PointSize = uSize;
+        gl_Position = vec4(aPos + vec3(thickOffset, 0.0), 1.0);
+      }
+      `
     );
     this.gl.compileShader(vertShader);
 
     const fragShader = this.gl.createShader(this.gl.FRAGMENT_SHADER);
     this.gl.shaderSource(
       fragShader,
-      `#version 300 es
-                                      precision ${this.floatPrecision} float;
-                                      precision highp int;
-                                      precision mediump sampler2D;
-                                      in vec4 vColor;
-                                      out vec4 fragColor;
-                                      void main(void) {
-                                        fragColor = vColor;
-                                      }`
+      `
+      #version 300 es
+      precision ${this.floatPrecision} float;
+      precision highp int;
+      precision mediump sampler2D;
+      in vec4 vColor;
+      out vec4 fragColor;
+      void main(void) {
+        fragColor = vColor;
+      }
+      `
     );
     this.gl.compileShader(fragShader);
 

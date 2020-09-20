@@ -42,27 +42,31 @@ export default class BasicWaveform {
     const vertShader = this.gl.createShader(this.gl.VERTEX_SHADER);
     this.gl.shaderSource(
       vertShader,
-      `#version 300 es
-                                      in vec3 aPos;
-                                      uniform vec2 thickOffset;
-                                      void main(void) {
-                                        gl_Position = vec4(aPos + vec3(thickOffset, 0.0), 1.0);
-                                      }`
+      `
+      #version 300 es
+      in vec3 aPos;
+      uniform vec2 thickOffset;
+      void main(void) {
+        gl_Position = vec4(aPos + vec3(thickOffset, 0.0), 1.0);
+      }
+      `
     );
     this.gl.compileShader(vertShader);
 
     const fragShader = this.gl.createShader(this.gl.FRAGMENT_SHADER);
     this.gl.shaderSource(
       fragShader,
-      `#version 300 es
-                                      precision ${this.floatPrecision} float;
-                                      precision highp int;
-                                      precision mediump sampler2D;
-                                      out vec4 fragColor;
-                                      uniform vec4 u_color;
-                                      void main(void) {
-                                        fragColor = u_color;
-                                      }`
+      `
+      #version 300 es
+      precision ${this.floatPrecision} float;
+      precision highp int;
+      precision mediump sampler2D;
+      out vec4 fragColor;
+      uniform vec4 u_color;
+      void main(void) {
+        fragColor = u_color;
+      }
+      `
     );
     this.gl.compileShader(fragShader);
 
