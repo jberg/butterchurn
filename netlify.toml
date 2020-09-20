@@ -1,0 +1,14 @@
+# Settings in the [build] context are global and are applied to all contexts
+# unless otherwise overridden by more specific contexts.
+[build]
+  publish = "./"
+
+  # Default build command.
+  command = "yarn run dev-build"
+
+# The following redirect is intended for use with most SPAs that handle
+# routing internally.
+[[redirects]]
+  from = "/*"
+  to = "/experiments/wasm-eel/index.html"
+  status = 200

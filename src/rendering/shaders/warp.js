@@ -397,7 +397,7 @@ export default class WarpShader {
   }
 
   renderQuadTexture (blending, texture, blurTexture1, blurTexture2, blurTexture3,
-                     blurMins, blurMaxs, mdVSFrame, warpUVs, warpColor) {
+                     blurMins, blurMaxs, mdVSFrame, mdVSQs, warpUVs, warpColor) {
     this.gl.useProgram(this.shaderProgram);
 
     this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.indexBuf);
@@ -530,28 +530,28 @@ export default class WarpShader {
     ]));
 
     this.gl.uniform4fv(this.qaLoc, new Float32Array([
-      mdVSFrame.q1 || 0, mdVSFrame.q2 || 0, mdVSFrame.q3 || 0, mdVSFrame.q4 || 0
+      mdVSQs.q1 || 0, mdVSQs.q2 || 0, mdVSQs.q3 || 0, mdVSQs.q4 || 0
     ]));
     this.gl.uniform4fv(this.qbLoc, new Float32Array([
-      mdVSFrame.q5 || 0, mdVSFrame.q6 || 0, mdVSFrame.q7 || 0, mdVSFrame.q8 || 0
+      mdVSQs.q5 || 0, mdVSQs.q6 || 0, mdVSQs.q7 || 0, mdVSQs.q8 || 0
     ]));
     this.gl.uniform4fv(this.qcLoc, new Float32Array([
-      mdVSFrame.q9 || 0, mdVSFrame.q10 || 0, mdVSFrame.q11 || 0, mdVSFrame.q12 || 0
+      mdVSQs.q9 || 0, mdVSQs.q10 || 0, mdVSQs.q11 || 0, mdVSQs.q12 || 0
     ]));
     this.gl.uniform4fv(this.qdLoc, new Float32Array([
-      mdVSFrame.q13 || 0, mdVSFrame.q14 || 0, mdVSFrame.q15 || 0, mdVSFrame.q16 || 0
+      mdVSQs.q13 || 0, mdVSQs.q14 || 0, mdVSQs.q15 || 0, mdVSQs.q16 || 0
     ]));
     this.gl.uniform4fv(this.qeLoc, new Float32Array([
-      mdVSFrame.q17 || 0, mdVSFrame.q18 || 0, mdVSFrame.q19 || 0, mdVSFrame.q20 || 0
+      mdVSQs.q17 || 0, mdVSQs.q18 || 0, mdVSQs.q19 || 0, mdVSQs.q20 || 0
     ]));
     this.gl.uniform4fv(this.qfLoc, new Float32Array([
-      mdVSFrame.q21 || 0, mdVSFrame.q22 || 0, mdVSFrame.q23 || 0, mdVSFrame.q24 || 0
+      mdVSQs.q21 || 0, mdVSQs.q22 || 0, mdVSQs.q23 || 0, mdVSQs.q24 || 0
     ]));
     this.gl.uniform4fv(this.qgLoc, new Float32Array([
-      mdVSFrame.q25 || 0, mdVSFrame.q26 || 0, mdVSFrame.q27 || 0, mdVSFrame.q28 || 0
+      mdVSQs.q25 || 0, mdVSQs.q26 || 0, mdVSQs.q27 || 0, mdVSQs.q28 || 0
     ]));
     this.gl.uniform4fv(this.qhLoc, new Float32Array([
-      mdVSFrame.q29 || 0, mdVSFrame.q30 || 0, mdVSFrame.q31 || 0, mdVSFrame.q32 || 0
+      mdVSQs.q29 || 0, mdVSQs.q30 || 0, mdVSQs.q31 || 0, mdVSQs.q32 || 0
     ]));
     this.gl.uniform4fv(this.slowRoamCosLoc, [
       0.5 + (0.5 * Math.cos(mdVSFrame.time * 0.005)),

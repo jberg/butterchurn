@@ -205,6 +205,8 @@ export default class PresetEquationRunner {
 
     this.mdVSFrameMap = Utils.pick(this.mdVSFrame, this.mdVSUserKeys);
     this.mdVSQAfterFrame = Utils.pick(this.mdVSFrame, this.qs);
+
+    return this.mdVSFrame;
   }
 
   runPixelEquations (mdVSVertex) {

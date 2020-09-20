@@ -12,7 +12,8 @@
   ],
   "scripts": {
     "build": "webpack --config config/webpack.config.js --env prod",
-    "dev": "webpack --config config/webpack.config.js --progress --colors --watch --env dev"
+    "dev": "webpack --config config/webpack.config.js --progress --colors --watch --env dev",
+    "dev-build": "webpack --config config/webpack.config.js --progress --colors --env dev"
   },
   "repository": {
     "type": "git",
@@ -29,10 +30,12 @@
   "homepage": "https://butterchurnviz.com",
   "dependencies": {
     "@babel/runtime": "^7.0.0",
-    "ecma-proposal-math-extensions": "0.0.2"
+    "ecma-proposal-math-extensions": "0.0.2",
+    "eel-wasm": "^0.0.10"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0",
+    "@babel/plugin-transform-runtime": "^7.9.0",
     "@babel/preset-env": "^7.0.0",
     "babel-eslint": "^9.0.0",
     "babel-loader": "^8.0.0",

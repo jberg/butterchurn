@@ -82,16 +82,21 @@ export default class CustomWaveform {
   }
 
   generateWaveform (timeArrayL, timeArrayR, freqArrayL, freqArrayR,
-                    globalVars, presetEquationRunner, waveEqs, waveIdx, alphaMult) {
+                    globalVars, presetEquationRunner, waveEqs, alphaMult) {
     if (waveEqs.baseVals.enabled !== 0 && timeArrayL.length > 0) {
-      const mdVSWave = Object.assign({},
-                                     presetEquationRunner.mdVSWaves[this.index],
-                                     presetEquationRunner.mdVSFrameMapWaves[this.index],
-                                     presetEquationRunner.mdVSQAfterFrame,
-                                     presetEquationRunner.mdVSTWaveInits[this.index],
-                                     globalVars);
+      let mdVSWaveFrame;
+      if (presetEquationRunner.preset.useWASM) {
+        mdVSWaveFrame = presetEquationRunner.runWaveFrameEquations(this.index, globalVars);
+      } else {
+        const mdVSWave = Object.assign({},
+                                       presetEquationRunner.mdVSWaves[this.index],
+                                       presetEquationRunner.mdVSFrameMapWaves[this.index],
+                                       presetEquationRunner.mdVSQAfterFrame,
+                                       presetEquationRunner.mdVSTWaveInits[this.index],
+                                       globalVars);
 
-      let mdVSWaveFrame = presetEquationRunner.runWaveFrameEquations(waveIdx, mdVSWave);
+        mdVSWaveFrame = presetEquationRunner.runWaveFrameEquations(this.index, mdVSWave);
+      }
 
       const maxSamples = 512;
       if (Object.prototype.hasOwnProperty.call(mdVSWaveFrame, 'samples')) {
@@ -105,18 +110,20 @@ export default class CustomWaveform {
       }
       this.samples = Math.floor(this.samples);
 
+      const baseVals = presetEquationRunner.preset.waves[this.index].baseVals;
+
       const sep = Math.floor(mdVSWaveFrame.sep);
       const scaling = mdVSWaveFrame.scaling;
       const spectrum = mdVSWaveFrame.spectrum;
       const smoothing = mdVSWaveFrame.smoothing;
-      const usedots = mdVSWaveFrame.usedots;
+      const usedots = baseVals.usedots;
 
       const frameR = mdVSWaveFrame.r;
       const frameG = mdVSWaveFrame.g;
       const frameB = mdVSWaveFrame.b;
       const frameA = mdVSWaveFrame.a;
 
-      const waveScale = presetEquationRunner.mdVS.wave_scale;
+      const waveScale = presetEquationRunner.preset.baseVals.wave_scale;
 
       this.samples -= sep;
 
@@ -152,47 +159,91 @@ export default class CustomWaveform {
           this.pointsData[1][j] *= scale;
         }
 
-        for (let j = 0; j < this.samples; j++) {
-          const value1 = this.pointsData[0][j];
-          const value2 = this.pointsData[1][j];
+        if (!presetEquationRunner.preset.useWASM) {
+          for (let j = 0; j < this.samples; j++) {
+            const value1 = this.pointsData[0][j];
+            const value2 = this.pointsData[1][j];
 
-          mdVSWaveFrame.sample = j / (this.samples - 1);
-          mdVSWaveFrame.value1 = value1;
-          mdVSWaveFrame.value2 = value2;
-          mdVSWaveFrame.x = 0.5 + value1;
-          mdVSWaveFrame.y = 0.5 + value2;
-          mdVSWaveFrame.r = frameR;
-          mdVSWaveFrame.g = frameG;
-          mdVSWaveFrame.b = frameB;
-          mdVSWaveFrame.a = frameA;
+            mdVSWaveFrame.sample = j / (this.samples - 1);
+            mdVSWaveFrame.value1 = value1;
+            mdVSWaveFrame.value2 = value2;
+            mdVSWaveFrame.x = 0.5 + value1;
+            mdVSWaveFrame.y = 0.5 + value2;
+            mdVSWaveFrame.r = frameR;
+            mdVSWaveFrame.g = frameG;
+            mdVSWaveFrame.b = frameB;
+            mdVSWaveFrame.a = frameA;
 
-          if (waveEqs.point_eqs !== '') {
-            mdVSWaveFrame = presetEquationRunner.runWavePointEquations(waveIdx, mdVSWaveFrame);
+            if (waveEqs.point_eqs !== '') {
+              mdVSWaveFrame = presetEquationRunner.runWavePointEquations(this.index, mdVSWaveFrame);
+            }
+
+            const x = ((mdVSWaveFrame.x * 2) - 1) * this.invAspectx;
+            const y = ((mdVSWaveFrame.y * -2) + 1) * this.invAspecty;
+            const r = mdVSWaveFrame.r;
+            const g = mdVSWaveFrame.g;
+            const b = mdVSWaveFrame.b;
+            const a = mdVSWaveFrame.a;
+
+            this.positions[(j * 3) + 0] = x;
+            this.positions[(j * 3) + 1] = y;
+            this.positions[(j * 3) + 2] = 0;
+
+            this.colors[(j * 4) + 0] = r;
+            this.colors[(j * 4) + 1] = g;
+            this.colors[(j * 4) + 2] = b;
+            this.colors[(j * 4) + 3] = a * alphaMult;
           }
+        } else {
+          const varPool = presetEquationRunner.preset.globalPools[`wavePerFrame${this.index}`];
+          for (let j = 0; j < this.samples; j++) {
+            const value1 = this.pointsData[0][j];
+            const value2 = this.pointsData[1][j];
 
-          const x = ((mdVSWaveFrame.x * 2) - 1) * this.invAspectx;
-          const y = ((mdVSWaveFrame.y * -2) + 1) * this.invAspecty;
-          const r = mdVSWaveFrame.r;
-          const g = mdVSWaveFrame.g;
-          const b = mdVSWaveFrame.b;
-          const a = mdVSWaveFrame.a;
+            varPool.sample.value = j / (this.samples - 1);
+            varPool.value1.value = value1;
+            varPool.value2.value = value2;
+            varPool.x.value = 0.5 + value1;
+            varPool.y.value = 0.5 + value2;
+            varPool.r.value = frameR;
+            varPool.g.value = frameG;
+            varPool.b.value = frameB;
+            varPool.a.value = frameA;
 
-          this.positions[(j * 3) + 0] = x;
-          this.positions[(j * 3) + 1] = y;
-          this.positions[(j * 3) + 2] = 0;
+            if (waveEqs.point_eqs !== '') {
+              presetEquationRunner.preset.waves[this.index].point_eqs();
+            }
 
-          this.colors[(j * 4) + 0] = r;
-          this.colors[(j * 4) + 1] = g;
-          this.colors[(j * 4) + 2] = b;
-          this.colors[(j * 4) + 3] = a * alphaMult;
+            const x = ((varPool.x.value * 2) - 1) * this.invAspectx;
+            const y = ((varPool.y.value * -2) + 1) * this.invAspecty;
+            const r = varPool.r.value;
+            const g = varPool.g.value;
+            const b = varPool.b.value;
+            const a = varPool.a.value;
+
+            this.positions[(j * 3) + 0] = x;
+            this.positions[(j * 3) + 1] = y;
+            this.positions[(j * 3) + 2] = 0;
+
+            this.colors[(j * 4) + 0] = r;
+            this.colors[(j * 4) + 1] = g;
+            this.colors[(j * 4) + 2] = b;
+            this.colors[(j * 4) + 3] = a * alphaMult;
+          }
         }
 
         // this needs to be after per point (check fishbrain - witchcraft)
-        const mdvsUserKeysWave = presetEquationRunner.mdVSUserKeysWaves[this.index];
-        const mdVSNewFrameMapWave = Utils.pick(mdVSWaveFrame, mdvsUserKeysWave);
+        if (!presetEquationRunner.preset.useWASM) {
+          const mdvsUserKeysWave = presetEquationRunner.mdVSUserKeysWaves[this.index];
+          const mdVSNewFrameMapWave = Utils.pick(mdVSWaveFrame, mdvsUserKeysWave);
 
-        // eslint-disable-next-line no-param-reassign
-        presetEquationRunner.mdVSFrameMapWaves[this.index] = mdVSNewFrameMapWave;
+          // eslint-disable-next-line no-param-reassign
+          presetEquationRunner.mdVSFrameMapWaves[this.index] = mdVSNewFrameMapWave;
+        } else {
+          mdVSWaveFrame.usedots = usedots;
+          mdVSWaveFrame.thick = baseVals.thick;
+          mdVSWaveFrame.additive = baseVals.additive;
+        }
 
         this.mdVSWaveFrame = mdVSWaveFrame;
 
@@ -210,9 +261,9 @@ export default class CustomWaveform {
   }
 
   drawCustomWaveform (blendProgress, timeArrayL, timeArrayR, freqArrayL, freqArrayR,
-                      globalVars, presetEquationRunner, waveEqs, waveIdx) {
+                      globalVars, presetEquationRunner, waveEqs) {
     if (waveEqs && this.generateWaveform(timeArrayL, timeArrayR, freqArrayL, freqArrayR,
-                                         globalVars, presetEquationRunner, waveEqs, waveIdx,
+                                         globalVars, presetEquationRunner, waveEqs,
                                          blendProgress)) {
       this.gl.useProgram(this.shaderProgram);
 

@@ -1,6 +1,7 @@
 import AudioLevels from '../audio/audioLevels';
 import blankPreset from '../blankPreset';
 import PresetEquationRunner from '../equations/presetEquationRunner';
+import PresetEquationRunnerWASM from '../equations/presetEquationRunnerWASM';
 import BasicWaveform from './waves/basicWaveform';
 import CustomWaveform from './waves/customWaveform';
 import CustomShape from './shapes/customShape';
@@ -149,7 +150,9 @@ export default class Renderer {
     this.presetEquationRunner = new PresetEquationRunner(this.preset, globalVars, params);
     this.prevPresetEquationRunner = new PresetEquationRunner(this.prevPreset, globalVars, params);
 
-    this.regVars = this.presetEquationRunner.mdVSRegs;
+    if (!this.preset.useWASM) {
+      this.regVars = this.presetEquationRunner.mdVSRegs;
+    }
   }
 
   static getHighestBlur (t) {
@@ -175,7 +178,6 @@ export default class Renderer {
 
     this.prevPreset = this.preset;
     this.preset = preset;
-    this.preset.baseVals.old_wave_mode = this.prevPreset.baseVals.wave_mode;
 
     this.presetTime = this.time;
 
@@ -200,8 +202,16 @@ export default class Renderer {
       aspectx: this.aspectx,
       aspecty: this.aspecty,
     };
-    this.presetEquationRunner = new PresetEquationRunner(this.preset, globalVars, params);
-    this.regVars = this.presetEquationRunner.mdVSRegs;
+
+    if (preset.useWASM) {
+      this.preset.globalPools.perFrame.old_wave_mode.value = this.prevPreset.baseVals.wave_mode;
+      this.preset.baseVals.old_wave_mode = this.prevPreset.baseVals.wave_mode;
+      this.presetEquationRunner = new PresetEquationRunnerWASM(this.preset, globalVars, params);
+    } else {
+      this.preset.baseVals.old_wave_mode = this.prevPreset.baseVals.wave_mode;
+      this.presetEquationRunner = new PresetEquationRunner(this.preset, globalVars, params);
+      this.regVars = this.presetEquationRunner.mdVSRegs;
+    }
 
     const tmpWarpShader = this.prevWarpShader;
     this.prevWarpShader = this.warpShader;
@@ -354,7 +364,7 @@ export default class Renderer {
     }
   }
 
-  runPixelEquations (presetEquationRunner, mdVSFrame, blending) {
+  runPixelEquations (presetEquationRunner, mdVSFrame, globalVars, blending) {
     const gridX = this.mesh_width;
     const gridZ = this.mesh_height;
 
@@ -375,119 +385,256 @@ export default class Renderer {
     const aspectx = this.aspectx;
     const aspecty = this.aspecty;
 
-    let mdVSVertex = Utils.cloneVars(mdVSFrame);
-
     let offset = 0;
     let offsetColor = 0;
-    for (let iz = 0; iz < gridZ1; iz++) {
-      for (let ix = 0; ix < gridX1; ix++) {
-        const x = ((ix / gridX) * 2.0) - 1.0;
-        const y = ((iz / gridZ) * 2.0) - 1.0;
-        const rad = Math.sqrt((x * x * aspectx * aspectx) + (y * y * aspecty * aspecty));
+    if (!presetEquationRunner.preset.useWASM) {
+      let mdVSVertex = Utils.cloneVars(mdVSFrame);
 
-        if (presetEquationRunner.runVertEQs) {
-          let ang;
-          if (iz === gridZ / 2 && ix === gridX / 2) {
-            ang = 0;
-          } else {
-            ang = Utils.atan2(y * aspecty, x * aspectx);
+      let warp = mdVSVertex.warp;
+      let zoom = mdVSVertex.zoom;
+      let zoomExp = mdVSVertex.zoomexp;
+      let cx = mdVSVertex.cx;
+      let cy = mdVSVertex.cy;
+      let sx = mdVSVertex.sx;
+      let sy = mdVSVertex.sy;
+      let dx = mdVSVertex.dx;
+      let dy = mdVSVertex.dy;
+      let rot = mdVSVertex.rot;
+
+      for (let iz = 0; iz < gridZ1; iz++) {
+        for (let ix = 0; ix < gridX1; ix++) {
+          const x = ((ix / gridX) * 2.0) - 1.0;
+          const y = ((iz / gridZ) * 2.0) - 1.0;
+          const rad = Math.sqrt((x * x * aspectx * aspectx) + (y * y * aspecty * aspecty));
+
+          if (presetEquationRunner.runVertEQs) {
+            let ang;
+            if (iz === gridZ / 2 && ix === gridX / 2) {
+              ang = 0;
+            } else {
+              ang = Utils.atan2(y * aspecty, x * aspectx);
+            }
+
+            mdVSVertex.x = ((x * 0.5 * aspectx) + 0.5);
+            mdVSVertex.y = ((y * -0.5 * aspecty) + 0.5);
+            mdVSVertex.rad = rad;
+            mdVSVertex.ang = ang;
+
+            mdVSVertex.zoom = mdVSFrame.zoom;
+            mdVSVertex.zoomexp = mdVSFrame.zoomexp;
+            mdVSVertex.rot = mdVSFrame.rot;
+            mdVSVertex.warp = mdVSFrame.warp;
+            mdVSVertex.cx = mdVSFrame.cx;
+            mdVSVertex.cy = mdVSFrame.cy;
+            mdVSVertex.dx = mdVSFrame.dx;
+            mdVSVertex.dy = mdVSFrame.dy;
+            mdVSVertex.sx = mdVSFrame.sx;
+            mdVSVertex.sy = mdVSFrame.sy;
+
+            mdVSVertex = presetEquationRunner.runPixelEquations(mdVSVertex);
+
+            warp = mdVSVertex.warp;
+            zoom = mdVSVertex.zoom;
+            zoomExp = mdVSVertex.zoomexp;
+            cx = mdVSVertex.cx;
+            cy = mdVSVertex.cy;
+            sx = mdVSVertex.sx;
+            sy = mdVSVertex.sy;
+            dx = mdVSVertex.dx;
+            dy = mdVSVertex.dy;
+            rot = mdVSVertex.rot;
           }
 
-          mdVSVertex.x = ((x * 0.5 * aspectx) + 0.5);
-          mdVSVertex.y = ((y * -0.5 * aspecty) + 0.5);
-          mdVSVertex.rad = rad;
-          mdVSVertex.ang = ang;
+          const zoom2V = zoom ** (zoomExp ** ((rad * 2.0) - 1.0));
+          const zoom2Inv = 1.0 / zoom2V;
 
-          mdVSVertex.zoom = mdVSFrame.zoom;
-          mdVSVertex.zoomexp = mdVSFrame.zoomexp;
-          mdVSVertex.rot = mdVSFrame.rot;
-          mdVSVertex.warp = mdVSFrame.warp;
-          mdVSVertex.cx = mdVSFrame.cx;
-          mdVSVertex.cy = mdVSFrame.cy;
-          mdVSVertex.dx = mdVSFrame.dx;
-          mdVSVertex.dy = mdVSFrame.dy;
-          mdVSVertex.sx = mdVSFrame.sx;
-          mdVSVertex.sy = mdVSFrame.sy;
+          let u = (x * 0.5 * aspectx * zoom2Inv) + 0.5;
+          let v = (-y * 0.5 * aspecty * zoom2Inv) + 0.5;
 
-          mdVSVertex = presetEquationRunner.runPixelEquations(mdVSVertex);
+          u = ((u - cx) / sx) + cx;
+          v = ((v - cy) / sy) + cy;
+
+          if (warp !== 0) {
+            u += warp * 0.0035 * Math.sin((warpTimeV * 0.333) +
+                                          (warpScaleInv * ((x * warpf0) - (y * warpf3))));
+            v += warp * 0.0035 * Math.cos((warpTimeV * 0.375) -
+                                          (warpScaleInv * ((x * warpf2) + (y * warpf1))));
+            u += warp * 0.0035 * Math.cos((warpTimeV * 0.753) -
+                                          (warpScaleInv * ((x * warpf1) - (y * warpf2))));
+            v += warp * 0.0035 * Math.sin((warpTimeV * 0.825) +
+                                          (warpScaleInv * ((x * warpf0) + (y * warpf3))));
+          }
+
+          const u2 = u - cx;
+          const v2 = v - cy;
+
+          const cosRot = Math.cos(rot);
+          const sinRot = Math.sin(rot);
+          u = ((u2 * cosRot) - (v2 * sinRot)) + cx;
+          v = (u2 * sinRot) + (v2 * cosRot) + cy;
+
+          u -= dx;
+          v -= dy;
+
+          u = ((u - 0.5) / aspectx) + 0.5;
+          v = ((v - 0.5) / aspecty) + 0.5;
+
+          u += texelOffsetX;
+          v += texelOffsetY;
+
+          if (!blending) {
+            this.warpUVs[offset] = u;
+            this.warpUVs[offset + 1] = v;
+
+            this.warpColor[offsetColor + 0] = 1;
+            this.warpColor[offsetColor + 1] = 1;
+            this.warpColor[offsetColor + 2] = 1;
+            this.warpColor[offsetColor + 3] = 1;
+          } else {
+            let mix2 = (this.blendPattern.vertInfoA[offset / 2] * this.blendProgress) +
+                        this.blendPattern.vertInfoC[offset / 2];
+            mix2 = Math.clamp(mix2, 0, 1);
+
+            this.warpUVs[offset] = (this.warpUVs[offset] * mix2) + (u * (1 - mix2));
+            this.warpUVs[offset + 1] = (this.warpUVs[offset + 1] * mix2) + (v * (1 - mix2));
+
+            this.warpColor[offsetColor + 0] = 1;
+            this.warpColor[offsetColor + 1] = 1;
+            this.warpColor[offsetColor + 2] = 1;
+            this.warpColor[offsetColor + 3] = mix2;
+          }
+
+          offset += 2;
+          offsetColor += 4;
         }
+      }
 
-        const warp = mdVSVertex.warp;
-        const zoom = mdVSVertex.zoom;
-        const zoomExp = mdVSVertex.zoomexp;
-        const cx = mdVSVertex.cx;
-        const cy = mdVSVertex.cy;
-        const sx = mdVSVertex.sx;
-        const sy = mdVSVertex.sy;
-        const dx = mdVSVertex.dx;
-        const dy = mdVSVertex.dy;
-        const rot = mdVSVertex.rot;
+      this.mdVSVertex = mdVSVertex;
+    } else {
+      const varPool = presetEquationRunner.preset.globalPools.perVertex;
 
-        const zoom2V = zoom ** (zoomExp ** ((rad * 2.0) - 1.0));
-        const zoom2Inv = 1.0 / zoom2V;
+      Utils.setWasm(varPool, globalVars, presetEquationRunner.globalKeys);
+      Utils.setWasm(varPool, presetEquationRunner.mdVSQAfterFrame, presetEquationRunner.qs);
 
-        let u = (x * 0.5 * aspectx * zoom2Inv) + 0.5;
-        let v = (-y * 0.5 * aspecty * zoom2Inv) + 0.5;
+      let warp = mdVSFrame.warp;
+      let zoom = mdVSFrame.zoom;
+      let zoomExp = mdVSFrame.zoomexp;
+      let cx = mdVSFrame.cx;
+      let cy = mdVSFrame.cy;
+      let sx = mdVSFrame.sx;
+      let sy = mdVSFrame.sy;
+      let dx = mdVSFrame.dx;
+      let dy = mdVSFrame.dy;
+      let rot = mdVSFrame.rot;
 
-        u = ((u - cx) / sx) + cx;
-        v = ((v - cy) / sy) + cy;
+      for (let iz = 0; iz < gridZ1; iz++) {
+        for (let ix = 0; ix < gridX1; ix++) {
+          const x = ((ix / gridX) * 2.0) - 1.0;
+          const y = ((iz / gridZ) * 2.0) - 1.0;
+          const rad = Math.sqrt((x * x * aspectx * aspectx) + (y * y * aspecty * aspecty));
 
-        if (warp !== 0) {
-          u += warp * 0.0035 * Math.sin((warpTimeV * 0.333) +
-                                        (warpScaleInv * ((x * warpf0) - (y * warpf3))));
-          v += warp * 0.0035 * Math.cos((warpTimeV * 0.375) -
-                                        (warpScaleInv * ((x * warpf2) + (y * warpf1))));
-          u += warp * 0.0035 * Math.cos((warpTimeV * 0.753) -
-                                        (warpScaleInv * ((x * warpf1) - (y * warpf2))));
-          v += warp * 0.0035 * Math.sin((warpTimeV * 0.825) +
-                                        (warpScaleInv * ((x * warpf0) + (y * warpf3))));
+          if (presetEquationRunner.runVertEQs) {
+            let ang;
+            if (iz === gridZ / 2 && ix === gridX / 2) {
+              ang = 0;
+            } else {
+              ang = Utils.atan2(y * aspecty, x * aspectx);
+            }
+
+            varPool.x.value = ((x * 0.5 * aspectx) + 0.5);
+            varPool.y.value = ((y * -0.5 * aspecty) + 0.5);
+            varPool.rad.value = rad;
+            varPool.ang.value = ang;
+
+            varPool.zoom.value = mdVSFrame.zoom;
+            varPool.zoomexp.value = mdVSFrame.zoomexp;
+            varPool.rot.value = mdVSFrame.rot;
+            varPool.warp.value = mdVSFrame.warp;
+            varPool.cx.value = mdVSFrame.cx;
+            varPool.cy.value = mdVSFrame.cy;
+            varPool.dx.value = mdVSFrame.dx;
+            varPool.dy.value = mdVSFrame.dy;
+            varPool.sx.value = mdVSFrame.sx;
+            varPool.sy.value = mdVSFrame.sy;
+
+            presetEquationRunner.preset.pixel_eqs();
+
+            warp = varPool.warp.value;
+            zoom = varPool.zoom.value;
+            zoomExp = varPool.zoomexp.value;
+            cx = varPool.cx.value;
+            cy = varPool.cy.value;
+            sx = varPool.sx.value;
+            sy = varPool.sy.value;
+            dx = varPool.dx.value;
+            dy = varPool.dy.value;
+            rot = varPool.rot.value;
+          }
+
+          const zoom2V = zoom ** (zoomExp ** ((rad * 2.0) - 1.0));
+          const zoom2Inv = 1.0 / zoom2V;
+
+          let u = (x * 0.5 * aspectx * zoom2Inv) + 0.5;
+          let v = (-y * 0.5 * aspecty * zoom2Inv) + 0.5;
+
+          u = ((u - cx) / sx) + cx;
+          v = ((v - cy) / sy) + cy;
+
+          if (warp !== 0) {
+            u += warp * 0.0035 * Math.sin((warpTimeV * 0.333) +
+                                          (warpScaleInv * ((x * warpf0) - (y * warpf3))));
+            v += warp * 0.0035 * Math.cos((warpTimeV * 0.375) -
+                                          (warpScaleInv * ((x * warpf2) + (y * warpf1))));
+            u += warp * 0.0035 * Math.cos((warpTimeV * 0.753) -
+                                          (warpScaleInv * ((x * warpf1) - (y * warpf2))));
+            v += warp * 0.0035 * Math.sin((warpTimeV * 0.825) +
+                                          (warpScaleInv * ((x * warpf0) + (y * warpf3))));
+          }
+
+          const u2 = u - cx;
+          const v2 = v - cy;
+
+          const cosRot = Math.cos(rot);
+          const sinRot = Math.sin(rot);
+          u = ((u2 * cosRot) - (v2 * sinRot)) + cx;
+          v = (u2 * sinRot) + (v2 * cosRot) + cy;
+
+          u -= dx;
+          v -= dy;
+
+          u = ((u - 0.5) / aspectx) + 0.5;
+          v = ((v - 0.5) / aspecty) + 0.5;
+
+          u += texelOffsetX;
+          v += texelOffsetY;
+
+          if (!blending) {
+            this.warpUVs[offset] = u;
+            this.warpUVs[offset + 1] = v;
+
+            this.warpColor[offsetColor + 0] = 1;
+            this.warpColor[offsetColor + 1] = 1;
+            this.warpColor[offsetColor + 2] = 1;
+            this.warpColor[offsetColor + 3] = 1;
+          } else {
+            let mix2 = (this.blendPattern.vertInfoA[offset / 2] * this.blendProgress) +
+                        this.blendPattern.vertInfoC[offset / 2];
+            mix2 = Math.clamp(mix2, 0, 1);
+
+            this.warpUVs[offset] = (this.warpUVs[offset] * mix2) + (u * (1 - mix2));
+            this.warpUVs[offset + 1] = (this.warpUVs[offset + 1] * mix2) + (v * (1 - mix2));
+
+            this.warpColor[offsetColor + 0] = 1;
+            this.warpColor[offsetColor + 1] = 1;
+            this.warpColor[offsetColor + 2] = 1;
+            this.warpColor[offsetColor + 3] = mix2;
+          }
+
+          offset += 2;
+          offsetColor += 4;
         }
-
-        const u2 = u - cx;
-        const v2 = v - cy;
-
-        const cosRot = Math.cos(rot);
-        const sinRot = Math.sin(rot);
-        u = ((u2 * cosRot) - (v2 * sinRot)) + cx;
-        v = (u2 * sinRot) + (v2 * cosRot) + cy;
-
-        u -= dx;
-        v -= dy;
-
-        u = ((u - 0.5) / aspectx) + 0.5;
-        v = ((v - 0.5) / aspecty) + 0.5;
-
-        u += texelOffsetX;
-        v += texelOffsetY;
-
-        if (!blending) {
-          this.warpUVs[offset] = u;
-          this.warpUVs[offset + 1] = v;
-
-          this.warpColor[offsetColor + 0] = 1;
-          this.warpColor[offsetColor + 1] = 1;
-          this.warpColor[offsetColor + 2] = 1;
-          this.warpColor[offsetColor + 3] = 1;
-        } else {
-          let mix2 = (this.blendPattern.vertInfoA[offset / 2] * this.blendProgress) +
-                      this.blendPattern.vertInfoC[offset / 2];
-          mix2 = Math.clamp(mix2, 0, 1);
-
-          this.warpUVs[offset] = (this.warpUVs[offset] * mix2) + (u * (1 - mix2));
-          this.warpUVs[offset + 1] = (this.warpUVs[offset + 1] * mix2) + (v * (1 - mix2));
-
-          this.warpColor[offsetColor + 0] = 1;
-          this.warpColor[offsetColor + 1] = 1;
-          this.warpColor[offsetColor + 2] = 1;
-          this.warpColor[offsetColor + 3] = mix2;
-        }
-
-        offset += 2;
-        offsetColor += 4;
       }
     }
-
-    this.mdVSVertex = mdVSVertex;
   }
 
   static mixFrameEquations (blendProgress, mdVSFrame, mdVSFramePrev) {
@@ -652,28 +799,34 @@ export default class Renderer {
     };
 
     const prevGlobalVars = Object.assign({}, globalVars);
-    prevGlobalVars.gmegabuf = this.prevPresetEquationRunner.gmegabuf;
+    if (!this.prevPreset.useWASM) {
+      prevGlobalVars.gmegabuf = this.prevPresetEquationRunner.gmegabuf;
+    }
 
-    globalVars.gmegabuf = this.presetEquationRunner.gmegabuf;
-    Object.assign(globalVars, this.regVars);
+    if (!this.preset.useWASM) {
+      globalVars.gmegabuf = this.presetEquationRunner.gmegabuf;
+      Object.assign(globalVars, this.regVars);
+    }
 
-    this.presetEquationRunner.runFrameEquations(globalVars);
-    const mdVSFrame = this.presetEquationRunner.mdVSFrame;
-    this.runPixelEquations(this.presetEquationRunner, mdVSFrame, false);
+    const mdVSFrame = this.presetEquationRunner.runFrameEquations(globalVars);
+    this.runPixelEquations(this.presetEquationRunner, mdVSFrame, globalVars, false);
 
-    Object.assign(this.regVars, Utils.pick(this.mdVSVertex, this.regs));
-    Object.assign(globalVars, this.regVars);
+    if (!this.preset.useWASM) {
+      Object.assign(this.regVars, Utils.pick(this.mdVSVertex, this.regs));
+      Object.assign(globalVars, this.regVars);
+    }
 
     let mdVSFrameMixed;
     if (this.blending) {
-      this.prevPresetEquationRunner.runFrameEquations(prevGlobalVars);
+      this.prevMDVSFrame = this.prevPresetEquationRunner.runFrameEquations(prevGlobalVars);
       this.runPixelEquations(this.prevPresetEquationRunner,
-                             this.prevPresetEquationRunner.mdVSFrame,
+                             this.prevMDVSFrame,
+                             prevGlobalVars,
                              true);
 
       mdVSFrameMixed = Renderer.mixFrameEquations(this.blendProgress,
                                                   mdVSFrame,
-                                                  this.prevPresetEquationRunner.mdVSFrame);
+                                                  this.prevMDVSFrame);
     } else {
       mdVSFrameMixed = mdVSFrame;
     }
@@ -702,18 +855,21 @@ export default class Renderer {
       this.warpShader.renderQuadTexture(false, this.prevTexture,
                                         this.blurTexture1, this.blurTexture2, this.blurTexture3,
                                         blurMins, blurMaxs,
-                                        mdVSFrame, this.warpUVs, this.warpColor);
+                                        mdVSFrame, this.presetEquationRunner.mdVSQAfterFrame,
+                                        this.warpUVs, this.warpColor);
     } else {
       this.prevWarpShader.renderQuadTexture(false, this.prevTexture,
                                             this.blurTexture1, this.blurTexture2,
                                             this.blurTexture3, blurMins, blurMaxs,
-                                            this.prevPresetEquationRunner.mdVSFrame,
+                                            this.prevMDVSFrame,
+                                            this.prevPresetEquationRunner.mdVSQAfterFrame,
                                             this.warpUVs, this.warpColor);
 
       this.warpShader.renderQuadTexture(true, this.prevTexture,
                                         this.blurTexture1, this.blurTexture2, this.blurTexture3,
                                         blurMins, blurMaxs,
-                                        mdVSFrameMixed, this.warpUVs, this.warpColor);
+                                        mdVSFrameMixed, this.presetEquationRunner.mdVSQAfterFrame,
+                                        this.warpUVs, this.warpColor);
     }
 
     if (this.numBlurPasses > 0) {
@@ -739,7 +895,6 @@ export default class Renderer {
                               globalVars,
                               this.presetEquationRunner,
                               this.preset.shapes[i],
-                              i,
                               this.prevTexture);
       });
     }
@@ -753,8 +908,7 @@ export default class Renderer {
                                     this.audio.freqArrayR,
                                     globalVars,
                                     this.presetEquationRunner,
-                                    this.preset.waves[i],
-                                    i);
+                                    this.preset.waves[i]);
       });
     }
 
@@ -765,7 +919,6 @@ export default class Renderer {
                                 prevGlobalVars,
                                 this.prevPresetEquationRunner,
                                 this.prevPreset.shapes[i],
-                                i,
                                 this.prevTexture);
         });
       }
@@ -779,8 +932,7 @@ export default class Renderer {
                                       this.audio.freqArrayR,
                                       prevGlobalVars,
                                       this.prevPresetEquationRunner,
-                                      this.prevPreset.waves[i],
-                                      i);
+                                      this.prevPreset.waves[i]);
         });
       }
     }
@@ -835,18 +987,22 @@ export default class Renderer {
       this.compShader.renderQuadTexture(false, this.targetTexture,
                                         this.blurTexture1, this.blurTexture2, this.blurTexture3,
                                         blurMins, blurMaxs,
-                                        this.mdVSFrame, this.warpColor);
+                                        this.mdVSFrame, this.presetEquationRunner.mdVSQAfterFrame,
+                                        this.warpColor);
     } else {
       this.prevCompShader.renderQuadTexture(false, this.targetTexture,
                                             this.blurTexture1, this.blurTexture2, this.blurTexture3,
                                             blurMins, blurMaxs,
-                                            this.prevPresetEquationRunner.mdVSFrame,
+                                            this.prevMDVSFrame,
+                                            this.prevPresetEquationRunner.mdVSQAfterFrame,
                                             this.warpColor);
 
       this.compShader.renderQuadTexture(true, this.targetTexture,
                                         this.blurTexture1, this.blurTexture2, this.blurTexture3,
                                         blurMins, blurMaxs,
-                                        this.mdVSFrameMixed, this.warpColor);
+                                        this.mdVSFrameMixed,
+                                        this.presetEquationRunner.mdVSQAfterFrame,
+                                        this.warpColor);
     }
 
     if (this.supertext.startTime >= 0) {
@@ -887,7 +1043,8 @@ export default class Renderer {
     this.compShader.renderQuadTexture(false, this.targetTexture,
       this.blurTexture1, this.blurTexture2, this.blurTexture3,
       blurMins, blurMaxs,
-      this.mdVSFrame, this.warpColor);
+      this.mdVSFrame, this.presetEquationRunner.mdVSQAfterFrame,
+      this.warpColor);
 
     this.gl.readPixels(0, 0, this.texsizeX, this.texsizeY,
       this.gl.RGBA, this.gl.UNSIGNED_BYTE, data);
