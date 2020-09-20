@@ -1,5 +1,5 @@
 export default class FFT {
-  constructor (samplesIn, samplesOut, equalize = false) {
+  constructor(samplesIn, samplesOut, equalize = false) {
     this.samplesIn = samplesIn;
     this.samplesOut = samplesOut;
     this.equalize = equalize;
@@ -12,16 +12,17 @@ export default class FFT {
     this.initCosSinTable();
   }
 
-  initEqualizeTable () {
+  initEqualizeTable() {
     this.equalizeArr = new Float32Array(this.samplesOut);
     const invHalfNFREQ = 1.0 / this.samplesOut;
     for (let i = 0; i < this.samplesOut; i++) {
-      this.equalizeArr[i] = -0.02 * Math.log((this.samplesOut - i) * invHalfNFREQ);
+      this.equalizeArr[i] =
+        -0.02 * Math.log((this.samplesOut - i) * invHalfNFREQ);
     }
   }
 
   /* eslint-disable no-bitwise */
-  initBitRevTable () {
+  initBitRevTable() {
     this.bitrevtable = new Uint16Array(this.NFREQ);
 
     for (let i = 0; i < this.NFREQ; i++) {
@@ -47,7 +48,7 @@ export default class FFT {
     }
   }
 
-  initCosSinTable () {
+  initCosSinTable() {
     let dftsize = 2;
     let tabsize = 0;
     while (dftsize <= this.NFREQ) {
@@ -68,7 +69,7 @@ export default class FFT {
     }
   }
 
-  timeToFrequencyDomain (waveDataIn) {
+  timeToFrequencyDomain(waveDataIn) {
     const real = new Float32Array(this.NFREQ);
     const imag = new Float32Array(this.NFREQ);
 
@@ -94,8 +95,8 @@ export default class FFT {
       for (let m = 0; m < hdftsize; m++) {
         for (let i = m; i < this.NFREQ; i += dftsize) {
           const j = i + hdftsize;
-          const tempr = (wr * real[j]) - (wi * imag[j]);
-          const tempi = (wr * imag[j]) + (wi * real[j]);
+          const tempr = wr * real[j] - wi * imag[j];
+          const tempi = wr * imag[j] + wi * real[j];
           real[j] = real[i] - tempr;
           imag[j] = imag[i] - tempi;
           real[i] += tempr;
@@ -103,8 +104,8 @@ export default class FFT {
         }
 
         const wtemp = wr;
-        wr = (wtemp * wpr) - (wi * wpi);
-        wi = (wi * wpr) + (wtemp * wpi);
+        wr = wtemp * wpr - wi * wpi;
+        wi = wi * wpr + wtemp * wpi;
       }
 
       dftsize <<= 1;
@@ -114,16 +115,17 @@ export default class FFT {
     const spectralDataOut = new Float32Array(this.samplesOut);
     if (this.equalize) {
       for (let i = 0; i < this.samplesOut; i++) {
-        spectralDataOut[i] = this.equalizeArr[i] *
-                             Math.sqrt((real[i] * real[i]) + (imag[i] * imag[i]));
+        spectralDataOut[i] =
+          this.equalizeArr[i] *
+          Math.sqrt(real[i] * real[i] + imag[i] * imag[i]);
       }
     } else {
       for (let i = 0; i < this.samplesOut; i++) {
-        spectralDataOut[i] = Math.sqrt((real[i] * real[i]) + (imag[i] * imag[i]));
+        spectralDataOut[i] = Math.sqrt(real[i] * real[i] + imag[i] * imag[i]);
       }
     }
 
     return spectralDataOut;
   }
-/* eslint-enable no-bitwise */
+  /* eslint-enable no-bitwise */
 }

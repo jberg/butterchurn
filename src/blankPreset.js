@@ -1,6 +1,6 @@
 /* eslint-disable */
-define([], function() {
-  'use strict;';
+define([], function () {
+  "use strict;";
 
   var pmap = {
     baseVals: {
@@ -65,19 +65,19 @@ define([], function() {
       mv_r: 0.5,
       mv_g: 0.5,
       mv_b: 0.5,
-      mv_l: 0.0
+      mv_l: 0.0,
     },
-    init_eqs: function() {
+    init_eqs: function () {
       var m = {};
       return m;
     },
-    frame_eqs: function(m) {
-      m.rkeys = ['warp'];
+    frame_eqs: function (m) {
+      m.rkeys = ["warp"];
       m.zoom = 1.01 + 0.02 * m.treb_att;
       m.warp = 0.15 + 0.25 * m.bass_att;
       return m;
     },
-    pixel_eqs: function(m) {
+    pixel_eqs: function (m) {
       m.warp = m.warp + m.rad * 0.15;
       return m;
     },
@@ -96,16 +96,16 @@ define([], function() {
           r: 1.0,
           smoothing: 0.5,
           thick: 0.0,
-          sep: 0.0
+          sep: 0.0,
         },
-        init_eqs: function(m) {
+        init_eqs: function (m) {
           m.rkeys = [];
           return m;
         },
-        frame_eqs: function(m) {
+        frame_eqs: function (m) {
           return m;
         },
-        point_eqs: ''
+        point_eqs: "",
       },
       {
         baseVals: {
@@ -121,16 +121,16 @@ define([], function() {
           r: 1.0,
           smoothing: 0.5,
           thick: 0.0,
-          sep: 0.0
+          sep: 0.0,
         },
-        init_eqs: function(m) {
+        init_eqs: function (m) {
           m.rkeys = [];
           return m;
         },
-        frame_eqs: function(m) {
+        frame_eqs: function (m) {
           return m;
         },
-        point_eqs: ''
+        point_eqs: "",
       },
       {
         baseVals: {
@@ -146,16 +146,16 @@ define([], function() {
           r: 1.0,
           smoothing: 0.5,
           thick: 0.0,
-          sep: 0.0
+          sep: 0.0,
         },
-        init_eqs: function(m) {
+        init_eqs: function (m) {
           m.rkeys = [];
           return m;
         },
-        frame_eqs: function(m) {
+        frame_eqs: function (m) {
           return m;
         },
-        point_eqs: ''
+        point_eqs: "",
       },
       {
         baseVals: {
@@ -171,17 +171,17 @@ define([], function() {
           r: 1.0,
           smoothing: 0.5,
           thick: 0.0,
-          sep: 0.0
+          sep: 0.0,
         },
-        init_eqs: function(m) {
+        init_eqs: function (m) {
           m.rkeys = [];
           return m;
         },
-        frame_eqs: function(m) {
+        frame_eqs: function (m) {
           return m;
         },
-        point_eqs: ''
-      }
+        point_eqs: "",
+      },
     ],
     shapes: [
       {
@@ -208,15 +208,15 @@ define([], function() {
           y: 0.5,
           ang: 0.0,
           sides: 4.0,
-          border_r: 1.0
+          border_r: 1.0,
         },
-        init_eqs: function(m) {
+        init_eqs: function (m) {
           m.rkeys = [];
           return m;
         },
-        frame_eqs: function(m) {
+        frame_eqs: function (m) {
           return m;
-        }
+        },
       },
       {
         baseVals: {
@@ -242,15 +242,15 @@ define([], function() {
           y: 0.5,
           ang: 0.0,
           sides: 4.0,
-          border_r: 1.0
+          border_r: 1.0,
         },
-        init_eqs: function(m) {
+        init_eqs: function (m) {
           m.rkeys = [];
           return m;
         },
-        frame_eqs: function(m) {
+        frame_eqs: function (m) {
           return m;
-        }
+        },
       },
       {
         baseVals: {
@@ -276,15 +276,15 @@ define([], function() {
           y: 0.5,
           ang: 0.0,
           sides: 4.0,
-          border_r: 1.0
+          border_r: 1.0,
         },
-        init_eqs: function(m) {
+        init_eqs: function (m) {
           m.rkeys = [];
           return m;
         },
-        frame_eqs: function(m) {
+        frame_eqs: function (m) {
           return m;
-        }
+        },
       },
       {
         baseVals: {
@@ -310,19 +310,21 @@ define([], function() {
           y: 0.5,
           ang: 0.0,
           sides: 4.0,
-          border_r: 1.0
+          border_r: 1.0,
         },
-        init_eqs: function(m) {
+        init_eqs: function (m) {
           m.rkeys = [];
           return m;
         },
-        frame_eqs: function(m) {
+        frame_eqs: function (m) {
           return m;
-        }
-      }
+        },
+      },
     ],
-    warp: 'shader_body {\nret = texture2D(sampler_main, uv).rgb;\nret -= 0.004;\n}\n',
-    comp: 'shader_body {\nret = texture2D(sampler_main, uv).rgb;\nret *= hue_shader;\n}\n'
+    warp:
+      "shader_body {\nret = texture2D(sampler_main, uv).rgb;\nret -= 0.004;\n}\n",
+    comp:
+      "shader_body {\nret = texture2D(sampler_main, uv).rgb;\nret *= hue_shader;\n}\n",
   };
 
   return pmap;

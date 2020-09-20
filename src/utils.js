@@ -1,25 +1,25 @@
 export default class Utils {
-  static atan2 (x, y) {
+  static atan2(x, y) {
     let a = Math.atan2(x, y);
     if (a < 0) {
-      a += (2 * Math.PI);
+      a += 2 * Math.PI;
     }
     return a;
   }
 
-  static cloneVars (vars) {
+  static cloneVars(vars) {
     return Object.assign({}, vars);
   }
 
-  static range (start, end) {
+  static range(start, end) {
     if (end === undefined) {
       return [...Array(start).keys()];
     }
 
-    return Array.from({ length: (end - start) }, (_, i) => i + start);
+    return Array.from({ length: end - start }, (_, i) => i + start);
   }
 
-  static pick (obj, keys) {
+  static pick(obj, keys) {
     const newObj = {};
     for (let i = 0; i < keys.length; i++) {
       const key = keys[i];
@@ -28,7 +28,7 @@ export default class Utils {
     return newObj;
   }
 
-  static omit (obj, keys) {
+  static omit(obj, keys) {
     const newObj = Object.assign({}, obj);
     for (let i = 0; i < keys.length; i++) {
       const key = keys[i];
@@ -37,7 +37,7 @@ export default class Utils {
     return newObj;
   }
 
-  static setWasm (wasmGlobals, obj, keys) {
+  static setWasm(wasmGlobals, obj, keys) {
     for (let i = 0; i < keys.length; i++) {
       const key = keys[i];
       // eslint-disable-next-line no-param-reassign
@@ -45,7 +45,7 @@ export default class Utils {
     }
   }
 
-  static pickWasm (wasmGlobals, keys) {
+  static pickWasm(wasmGlobals, keys) {
     const newObj = {};
     for (let i = 0; i < keys.length; i++) {
       const key = keys[i];

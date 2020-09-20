@@ -1,7 +1,7 @@
-import FFT from './fft';
+import FFT from "./fft";
 
 export default class AudioProcessor {
-  constructor (context) {
+  constructor(context) {
     this.numSamps = 512;
     this.fftSize = this.numSamps * 2;
 
@@ -53,20 +53,20 @@ export default class AudioProcessor {
     this.timeArrayR = new Int8Array(this.numSamps);
   }
 
-  sampleAudio () {
+  sampleAudio() {
     this.analyser.getByteTimeDomainData(this.timeByteArray);
     this.analyserL.getByteTimeDomainData(this.timeByteArrayL);
     this.analyserR.getByteTimeDomainData(this.timeByteArrayR);
     this.processAudio();
   }
-  updateAudio (timeByteArray, timeByteArrayL, timeByteArrayR) {
+  updateAudio(timeByteArray, timeByteArrayL, timeByteArrayR) {
     this.timeByteArray.set(timeByteArray);
     this.timeByteArrayL.set(timeByteArrayL);
     this.timeByteArrayR.set(timeByteArrayR);
     this.processAudio();
   }
   /* eslint-disable no-bitwise */
-  processAudio () {
+  processAudio() {
     for (let i = 0, j = 0, lastIdx = 0; i < this.fftSize; i++) {
       // Shift Unsigned to Signed about 0
       this.timeArray[i] = this.timeByteArray[i] - 128;
@@ -96,12 +96,12 @@ export default class AudioProcessor {
     this.freqArrayR = this.fft.timeToFrequencyDomain(this.timeByteArraySignedR);
   }
 
-  connectAudio (audionode) {
+  connectAudio(audionode) {
     audionode.connect(this.audible);
   }
 
-  disconnectAudio (audionode) {
+  disconnectAudio(audionode) {
     audionode.disconnect(this.audible);
   }
-/* eslint-enable no-bitwise */
+  /* eslint-enable no-bitwise */
 }

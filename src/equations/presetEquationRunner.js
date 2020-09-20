@@ -1,7 +1,7 @@
-import Utils from '../utils';
+import Utils from "../utils";
 
 export default class PresetEquationRunner {
-  constructor (preset, globalVars, opts) {
+  constructor(preset, globalVars, opts) {
     this.preset = preset;
 
     this.texsizeX = opts.texsizeX;
@@ -25,8 +25,8 @@ export default class PresetEquationRunner {
     this.initializeEquations(globalVars);
   }
 
-  initializeEquations (globalVars) {
-    this.runVertEQs = (this.preset.pixel_eqs !== '');
+  initializeEquations(globalVars) {
+    this.runVertEQs = this.preset.pixel_eqs !== "";
 
     this.mdVSQInit = null;
     this.mdVSRegs = null;
@@ -69,10 +69,16 @@ export default class PresetEquationRunner {
 
     this.mdVS.megabuf = new Array(1048576).fill(0);
     this.mdVS.rand_start = new Float32Array([
-      Math.random(), Math.random(), Math.random(), Math.random()
+      Math.random(),
+      Math.random(),
+      Math.random(),
+      Math.random(),
     ]);
     this.mdVS.rand_preset = new Float32Array([
-      Math.random(), Math.random(), Math.random(), Math.random()
+      Math.random(),
+      Math.random(),
+      Math.random(),
+      Math.random(),
     ]);
 
     const nonUserKeys = this.qs.concat(this.regs, Object.keys(this.mdVS));
@@ -82,16 +88,16 @@ export default class PresetEquationRunner {
     // qs need to be initialized to there init values every frame
     this.mdVSQInit = Utils.pick(mdVSAfterInit, this.qs);
     this.mdVSRegs = Utils.pick(mdVSAfterInit, this.regs);
-    const initUserVars = Utils.pick(mdVSAfterInit,
-                                    Object.keys(Utils.omit(mdVSAfterInit, nonUserKeys)));
+    const initUserVars = Utils.pick(
+      mdVSAfterInit,
+      Object.keys(Utils.omit(mdVSAfterInit, nonUserKeys))
+    );
     initUserVars.megabuf = mdVSAfterInit.megabuf;
     initUserVars.gmegabuf = mdVSAfterInit.gmegabuf;
 
-    this.mdVSFrame = this.preset.frame_eqs(Object.assign({},
-                                                         this.mdVS,
-                                                         this.mdVSQInit,
-                                                         this.mdVSRegs,
-                                                         initUserVars));
+    this.mdVSFrame = this.preset.frame_eqs(
+      Object.assign({}, this.mdVS, this.mdVSQInit, this.mdVSRegs, initUserVars)
+    );
 
     // user vars need to be copied between frames
     this.mdVSUserKeys = Object.keys(Utils.omit(this.mdVSFrame, nonUserKeys));
@@ -114,7 +120,11 @@ export default class PresetEquationRunner {
         if (baseVals.enabled !== 0) {
           let mdVSWave = Object.assign({}, baseVals, mdVSBase);
 
-          const nonUserWaveKeys = this.qs.concat(this.ts, this.regs, Object.keys(mdVSWave));
+          const nonUserWaveKeys = this.qs.concat(
+            this.ts,
+            this.regs,
+            Object.keys(mdVSWave)
+          );
 
           Object.assign(mdVSWave, this.mdVSQAfterFrame, this.mdVSRegs);
           mdVSWave.megabuf = new Array(1048576).fill(0);
@@ -130,8 +140,12 @@ export default class PresetEquationRunner {
           this.mdVSWaves.push(mdVSWave);
           this.mdVSTWaveInits.push(Utils.pick(mdVSWave, this.ts));
 
-          this.mdVSUserKeysWaves.push(Object.keys(Utils.omit(mdVSWave, nonUserWaveKeys)));
-          this.mdVSFrameMapWaves.push(Utils.pick(mdVSWave, this.mdVSUserKeysWaves[i]));
+          this.mdVSUserKeysWaves.push(
+            Object.keys(Utils.omit(mdVSWave, nonUserWaveKeys))
+          );
+          this.mdVSFrameMapWaves.push(
+            Utils.pick(mdVSWave, this.mdVSUserKeysWaves[i])
+          );
         } else {
           this.mdVSWaves.push({});
           this.mdVSTWaveInits.push({});
@@ -153,7 +167,11 @@ export default class PresetEquationRunner {
         if (baseVals.enabled !== 0) {
           let mdVSShape = Object.assign({}, baseVals, mdVSBase);
 
-          const nonUserShapeKeys = this.qs.concat(this.ts, this.regs, Object.keys(mdVSShape));
+          const nonUserShapeKeys = this.qs.concat(
+            this.ts,
+            this.regs,
+            Object.keys(mdVSShape)
+          );
 
           Object.assign(mdVSShape, this.mdVSQAfterFrame, this.mdVSRegs);
           mdVSShape.megabuf = new Array(1048576).fill(0);
@@ -169,8 +187,12 @@ export default class PresetEquationRunner {
           this.mdVSShapes.push(mdVSShape);
           this.mdVSTShapeInits.push(Utils.pick(mdVSShape, this.ts));
 
-          this.mdVSUserKeysShapes.push(Object.keys(Utils.omit(mdVSShape, nonUserShapeKeys)));
-          this.mdVSFrameMapShapes.push(Utils.pick(mdVSShape, this.mdVSUserKeysShapes[i]));
+          this.mdVSUserKeysShapes.push(
+            Object.keys(Utils.omit(mdVSShape, nonUserShapeKeys))
+          );
+          this.mdVSFrameMapShapes.push(
+            Utils.pick(mdVSShape, this.mdVSUserKeysShapes[i])
+          );
         } else {
           this.mdVSShapes.push({});
           this.mdVSTShapeInits.push({});
@@ -182,12 +204,12 @@ export default class PresetEquationRunner {
     }
   }
 
-  updatePreset (preset, globalVars) {
+  updatePreset(preset, globalVars) {
     this.preset = preset;
     this.initializeEquations(globalVars);
   }
 
-  updateGlobals (opts) {
+  updateGlobals(opts) {
     this.texsizeX = opts.texsizeX;
     this.texsizeY = opts.texsizeY;
     this.mesh_width = opts.mesh_width;
@@ -198,8 +220,14 @@ export default class PresetEquationRunner {
     this.invAspecty = 1.0 / this.aspecty;
   }
 
-  runFrameEquations (globalVars) {
-    this.mdVSFrame = Object.assign({}, this.mdVS, this.mdVSQInit, this.mdVSFrameMap, globalVars);
+  runFrameEquations(globalVars) {
+    this.mdVSFrame = Object.assign(
+      {},
+      this.mdVS,
+      this.mdVSQInit,
+      this.mdVSFrameMap,
+      globalVars
+    );
 
     this.mdVSFrame = this.preset.frame_eqs(this.mdVSFrame);
 
@@ -209,19 +237,19 @@ export default class PresetEquationRunner {
     return this.mdVSFrame;
   }
 
-  runPixelEquations (mdVSVertex) {
+  runPixelEquations(mdVSVertex) {
     return this.preset.pixel_eqs(mdVSVertex);
   }
 
-  runShapeFrameEquations (shapeIdx, mdVSShape) {
+  runShapeFrameEquations(shapeIdx, mdVSShape) {
     return this.preset.shapes[shapeIdx].frame_eqs(mdVSShape);
   }
 
-  runWaveFrameEquations (waveIdx, mdVSWave) {
+  runWaveFrameEquations(waveIdx, mdVSWave) {
     return this.preset.waves[waveIdx].frame_eqs(mdVSWave);
   }
 
-  runWavePointEquations (waveIdx, mdVSWaveFrame) {
+  runWavePointEquations(waveIdx, mdVSWaveFrame) {
     return this.preset.waves[waveIdx].point_eqs(mdVSWaveFrame);
   }
 }

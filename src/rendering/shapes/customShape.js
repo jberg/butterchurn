@@ -1,8 +1,8 @@
-import Utils from '../../utils';
-import ShaderUtils from '../shaders/shaderUtils';
+import Utils from "../../utils";
+import ShaderUtils from "../shaders/shaderUtils";
 
 export default class CustomShape {
-  constructor (index, gl, opts) {
+  constructor(index, gl, opts) {
     this.index = index;
     this.gl = gl;
 
@@ -32,13 +32,17 @@ export default class CustomShape {
 
     this.mainSampler = this.gl.createSampler();
 
-    gl.samplerParameteri(this.mainSampler, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+    gl.samplerParameteri(
+      this.mainSampler,
+      gl.TEXTURE_MIN_FILTER,
+      gl.LINEAR_MIPMAP_LINEAR
+    );
     gl.samplerParameteri(this.mainSampler, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     gl.samplerParameteri(this.mainSampler, gl.TEXTURE_WRAP_S, gl.REPEAT);
     gl.samplerParameteri(this.mainSampler, gl.TEXTURE_WRAP_T, gl.REPEAT);
   }
 
-  updateGlobals (opts) {
+  updateGlobals(opts) {
     this.texsizeX = opts.texsizeX;
     this.texsizeY = opts.texsizeY;
     this.mesh_width = opts.mesh_width;
@@ -49,107 +53,158 @@ export default class CustomShape {
     this.invAspecty = 1.0 / this.aspecty;
   }
 
-  createShader () {
+  createShader() {
     this.shaderProgram = this.gl.createProgram();
 
     const vertShader = this.gl.createShader(this.gl.VERTEX_SHADER);
-    this.gl.shaderSource(vertShader, `#version 300 es
-                                      in vec3 aPos;
-                                      in vec4 aColor;
-                                      in vec2 aUv;
-                                      out vec4 vColor;
-                                      out vec2 vUv;
-                                      void main(void) {
-                                        vColor = aColor;
-                                        vUv = aUv;
-                                        gl_Position = vec4(aPos, 1.0);
-                                      }`);
+    this.gl.shaderSource(
+      vertShader,
+      `
+      #version 300 es
+      in vec3 aPos;
+      in vec4 aColor;
+      in vec2 aUv;
+      out vec4 vColor;
+      out vec2 vUv;
+      void main(void) {
+        vColor = aColor;
+        vUv = aUv;
+        gl_Position = vec4(aPos, 1.0);
+      }
+      `.trim()
+    );
     this.gl.compileShader(vertShader);
 
     const fragShader = this.gl.createShader(this.gl.FRAGMENT_SHADER);
-    this.gl.shaderSource(fragShader, `#version 300 es
-                                      precision ${this.floatPrecision} float;
-                                      precision highp int;
-                                      precision mediump sampler2D;
-                                      uniform sampler2D uTexture;
-                                      uniform float uTextured;
-                                      in vec4 vColor;
-                                      in vec2 vUv;
-                                      out vec4 fragColor;
-                                      void main(void) {
-                                        if (uTextured != 0.0) {
-                                          fragColor = texture(uTexture, vUv) * vColor;
-                                        } else {
-                                          fragColor = vColor;
-                                        }
-                                      }`);
+    this.gl.shaderSource(
+      fragShader,
+      `
+      #version 300 es
+      precision ${this.floatPrecision} float;
+      precision highp int;
+      precision mediump sampler2D;
+      uniform sampler2D uTexture;
+      uniform float uTextured;
+      in vec4 vColor;
+      in vec2 vUv;
+      out vec4 fragColor;
+      void main(void) {
+        if (uTextured != 0.0) {
+          fragColor = texture(uTexture, vUv) * vColor;
+        } else {
+          fragColor = vColor;
+        }
+      }
+      `.trim()
+    );
     this.gl.compileShader(fragShader);
 
     this.gl.attachShader(this.shaderProgram, vertShader);
     this.gl.attachShader(this.shaderProgram, fragShader);
     this.gl.linkProgram(this.shaderProgram);
 
-    this.aPosLocation = this.gl.getAttribLocation(this.shaderProgram, 'aPos');
-    this.aColorLocation = this.gl.getAttribLocation(this.shaderProgram, 'aColor');
-    this.aUvLocation = this.gl.getAttribLocation(this.shaderProgram, 'aUv');
+    this.aPosLocation = this.gl.getAttribLocation(this.shaderProgram, "aPos");
+    this.aColorLocation = this.gl.getAttribLocation(
+      this.shaderProgram,
+      "aColor"
+    );
+    this.aUvLocation = this.gl.getAttribLocation(this.shaderProgram, "aUv");
 
-    this.texturedLoc = this.gl.getUniformLocation(this.shaderProgram, 'uTextured');
-    this.textureLoc = this.gl.getUniformLocation(this.shaderProgram, 'uTexture');
+    this.texturedLoc = this.gl.getUniformLocation(
+      this.shaderProgram,
+      "uTextured"
+    );
+    this.textureLoc = this.gl.getUniformLocation(
+      this.shaderProgram,
+      "uTexture"
+    );
   }
 
-  createBorderShader () {
+  createBorderShader() {
     this.borderShaderProgram = this.gl.createProgram();
 
     const vertShader = this.gl.createShader(this.gl.VERTEX_SHADER);
-    this.gl.shaderSource(vertShader, `#version 300 es
-                                      in vec3 aBorderPos;
-                                      uniform vec2 thickOffset;
-                                      void main(void) {
-                                        gl_Position = vec4(aBorderPos +
-                                                           vec3(thickOffset, 0.0), 1.0);
-                                      }`);
+    this.gl.shaderSource(
+      vertShader,
+      `
+      #version 300 es
+      in vec3 aBorderPos;
+      uniform vec2 thickOffset;
+      void main(void) {
+        gl_Position = vec4(aBorderPos +
+                            vec3(thickOffset, 0.0), 1.0);
+      }
+      `.trim()
+    );
     this.gl.compileShader(vertShader);
 
     const fragShader = this.gl.createShader(this.gl.FRAGMENT_SHADER);
-    this.gl.shaderSource(fragShader, `#version 300 es
-                                      precision ${this.floatPrecision} float;
-                                      precision highp int;
-                                      precision mediump sampler2D;
-                                      out vec4 fragColor;
-                                      uniform vec4 uBorderColor;
-                                      void main(void) {
-                                        fragColor = uBorderColor;
-                                      }`);
+    this.gl.shaderSource(
+      fragShader,
+      `
+      #version 300 es
+      precision ${this.floatPrecision} float;
+      precision highp int;
+      precision mediump sampler2D;
+      out vec4 fragColor;
+      uniform vec4 uBorderColor;
+      void main(void) {
+        fragColor = uBorderColor;
+      }
+      `.trim()
+    );
     this.gl.compileShader(fragShader);
 
     this.gl.attachShader(this.borderShaderProgram, vertShader);
     this.gl.attachShader(this.borderShaderProgram, fragShader);
     this.gl.linkProgram(this.borderShaderProgram);
 
-    this.aBorderPosLoc = this.gl.getAttribLocation(this.borderShaderProgram, 'aBorderPos');
+    this.aBorderPosLoc = this.gl.getAttribLocation(
+      this.borderShaderProgram,
+      "aBorderPos"
+    );
 
-    this.uBorderColorLoc = this.gl.getUniformLocation(this.borderShaderProgram, 'uBorderColor');
-    this.thickOffsetLoc = this.gl.getUniformLocation(this.shaderProgram, 'thickOffset');
+    this.uBorderColorLoc = this.gl.getUniformLocation(
+      this.borderShaderProgram,
+      "uBorderColor"
+    );
+    this.thickOffsetLoc = this.gl.getUniformLocation(
+      this.shaderProgram,
+      "thickOffset"
+    );
   }
 
-  drawCustomShape (blendProgress, globalVars, presetEquationRunner, shapeEqs, prevTexture) {
+  drawCustomShape(
+    blendProgress,
+    globalVars,
+    presetEquationRunner,
+    shapeEqs,
+    prevTexture
+  ) {
     if (shapeEqs.baseVals.enabled !== 0) {
       if (!presetEquationRunner.preset.useWASM) {
         this.setupShapeBuffers(presetEquationRunner.mdVSFrame.wrap);
 
-        let mdVSShape = Object.assign({},
-                                      presetEquationRunner.mdVSShapes[this.index],
-                                      presetEquationRunner.mdVSFrameMapShapes[this.index],
-                                      globalVars);
+        let mdVSShape = Object.assign(
+          {},
+          presetEquationRunner.mdVSShapes[this.index],
+          presetEquationRunner.mdVSFrameMapShapes[this.index],
+          globalVars
+        );
 
         // If we aren't setting these every instance, set them initially
-        if (presetEquationRunner.preset.shapes[this.index].frame_eqs_str === '') {
-          mdVSShape = Object.assign(mdVSShape,
-                                    presetEquationRunner.mdVSQAfterFrame,
-                                    presetEquationRunner.mdVSTShapeInits[this.index]);
+        if (
+          presetEquationRunner.preset.shapes[this.index].frame_eqs_str === ""
+        ) {
+          mdVSShape = Object.assign(
+            mdVSShape,
+            presetEquationRunner.mdVSQAfterFrame,
+            presetEquationRunner.mdVSTShapeInits[this.index]
+          );
         }
 
-        const baseVals = presetEquationRunner.preset.shapes[this.index].baseVals;
+        const baseVals =
+          presetEquationRunner.preset.shapes[this.index].baseVals;
 
         const numInst = Math.clamp(baseVals.num_inst, 1, 1024);
         for (let j = 0; j < numInst; j++) {
@@ -176,14 +231,20 @@ export default class CustomShape {
           mdVSShape.tex_ang = baseVals.tex_ang;
           mdVSShape.additive = baseVals.additive;
 
-
           let mdVSShapeFrame;
-          if (presetEquationRunner.preset.shapes[this.index].frame_eqs_str !== '') {
-            mdVSShape = Object.assign(mdVSShape,
-                                      presetEquationRunner.mdVSQAfterFrame,
-                                      presetEquationRunner.mdVSTShapeInits[this.index]);
+          if (
+            presetEquationRunner.preset.shapes[this.index].frame_eqs_str !== ""
+          ) {
+            mdVSShape = Object.assign(
+              mdVSShape,
+              presetEquationRunner.mdVSQAfterFrame,
+              presetEquationRunner.mdVSTShapeInits[this.index]
+            );
 
-            mdVSShapeFrame = presetEquationRunner.runShapeFrameEquations(this.index, mdVSShape);
+            mdVSShapeFrame = presetEquationRunner.runShapeFrameEquations(
+              this.index,
+              mdVSShape
+            );
           } else {
             mdVSShapeFrame = mdVSShape;
           }
@@ -195,8 +256,8 @@ export default class CustomShape {
           const rad = mdVSShapeFrame.rad;
           const ang = mdVSShapeFrame.ang;
 
-          const x = (mdVSShapeFrame.x * 2) - 1;
-          const y = (mdVSShapeFrame.y * -2) + 1;
+          const x = mdVSShapeFrame.x * 2 - 1;
+          const y = mdVSShapeFrame.y * -2 + 1;
 
           const r = mdVSShapeFrame.r;
           const g = mdVSShapeFrame.g;
@@ -211,7 +272,12 @@ export default class CustomShape {
           const borderG = mdVSShapeFrame.border_g;
           const borderB = mdVSShapeFrame.border_b;
           const borderA = mdVSShapeFrame.border_a;
-          this.borderColor = [borderR, borderG, borderB, borderA * blendProgress];
+          this.borderColor = [
+            borderR,
+            borderG,
+            borderB,
+            borderA * blendProgress,
+          ];
 
           const thickoutline = mdVSShapeFrame.thickoutline;
 
@@ -241,62 +307,84 @@ export default class CustomShape {
           }
 
           const quarterPi = Math.PI * 0.25;
-          for (let k = 1; k <= (sides + 1); k++) {
-            const p = ((k - 1) / sides);
+          for (let k = 1; k <= sides + 1; k++) {
+            const p = (k - 1) / sides;
             const pTwoPi = p * 2 * Math.PI;
 
             const angSum = pTwoPi + ang + quarterPi;
-            this.positions[(k * 3) + 0] = x + (rad * Math.cos(angSum) * this.aspecty);
-            this.positions[(k * 3) + 1] = y + (rad * Math.sin(angSum));
-            this.positions[(k * 3) + 2] = 0;
+            this.positions[k * 3 + 0] =
+              x + rad * Math.cos(angSum) * this.aspecty;
+            this.positions[k * 3 + 1] = y + rad * Math.sin(angSum);
+            this.positions[k * 3 + 2] = 0;
 
-            this.colors[(k * 4) + 0] = r2;
-            this.colors[(k * 4) + 1] = g2;
-            this.colors[(k * 4) + 2] = b2;
-            this.colors[(k * 4) + 3] = a2 * blendProgress;
+            this.colors[k * 4 + 0] = r2;
+            this.colors[k * 4 + 1] = g2;
+            this.colors[k * 4 + 2] = b2;
+            this.colors[k * 4 + 3] = a2 * blendProgress;
 
             if (isTextured) {
               const texAngSum = pTwoPi + texAng + quarterPi;
-              this.uvs[(k * 2) + 0] = 0.5 + (((0.5 * Math.cos(texAngSum)) / texZoom) *
-                                            this.aspecty);
-              this.uvs[(k * 2) + 1] = 0.5 + ((0.5 * Math.sin(texAngSum)) / texZoom);
+              this.uvs[k * 2 + 0] =
+                0.5 + ((0.5 * Math.cos(texAngSum)) / texZoom) * this.aspecty;
+              this.uvs[k * 2 + 1] = 0.5 + (0.5 * Math.sin(texAngSum)) / texZoom;
             }
 
             if (hasBorder) {
-              this.borderPositions[((k - 1) * 3) + 0] = this.positions[(k * 3) + 0];
-              this.borderPositions[((k - 1) * 3) + 1] = this.positions[(k * 3) + 1];
-              this.borderPositions[((k - 1) * 3) + 2] = this.positions[(k * 3) + 2];
+              this.borderPositions[(k - 1) * 3 + 0] = this.positions[k * 3 + 0];
+              this.borderPositions[(k - 1) * 3 + 1] = this.positions[k * 3 + 1];
+              this.borderPositions[(k - 1) * 3 + 2] = this.positions[k * 3 + 2];
             }
           }
 
           this.mdVSShapeFrame = mdVSShapeFrame;
 
-          this.drawCustomShapeInstance(prevTexture, sides, isTextured, hasBorder, isBorderThick,
-                                       isAdditive);
+          this.drawCustomShapeInstance(
+            prevTexture,
+            sides,
+            isTextured,
+            hasBorder,
+            isBorderThick,
+            isAdditive
+          );
         }
 
-        const mdVSUserKeysShape = presetEquationRunner.mdVSUserKeysShapes[this.index];
-        const mdVSNewFrameMapShape = Utils.pick(this.mdVSShapeFrame, mdVSUserKeysShape);
+        const mdVSUserKeysShape =
+          presetEquationRunner.mdVSUserKeysShapes[this.index];
+        const mdVSNewFrameMapShape = Utils.pick(
+          this.mdVSShapeFrame,
+          mdVSUserKeysShape
+        );
 
         // eslint-disable-next-line no-param-reassign
-        presetEquationRunner.mdVSFrameMapShapes[this.index] = mdVSNewFrameMapShape;
+        presetEquationRunner.mdVSFrameMapShapes[
+          this.index
+        ] = mdVSNewFrameMapShape;
       } else {
         // eslint-disable-next-line max-len
-        this.setupShapeBuffers(presetEquationRunner.preset.globalPools.perFrame.wrap.value);
+        this.setupShapeBuffers(
+          presetEquationRunner.preset.globalPools.perFrame.wrap.value
+        );
 
-
-        const baseVals = presetEquationRunner.preset.shapes[this.index].baseVals;
-        const varPool = presetEquationRunner.preset.globalPools[`shapePerFrame${this.index}`];
+        const baseVals =
+          presetEquationRunner.preset.shapes[this.index].baseVals;
+        const varPool =
+          presetEquationRunner.preset.globalPools[`shapePerFrame${this.index}`];
         Utils.setWasm(varPool, globalVars, presetEquationRunner.globalKeys);
 
         // If we aren't setting these every instance, set them initially
-        if (presetEquationRunner.preset.shapes[this.index].frame_eqs_eel === '') {
-          Utils.setWasm(varPool,
-                        presetEquationRunner.mdVSQAfterFrame,
-                        presetEquationRunner.qs);
-          Utils.setWasm(varPool,
-                        presetEquationRunner.mdVSTShapeInits[this.index],
-                        presetEquationRunner.ts);
+        if (
+          presetEquationRunner.preset.shapes[this.index].frame_eqs_eel === ""
+        ) {
+          Utils.setWasm(
+            varPool,
+            presetEquationRunner.mdVSQAfterFrame,
+            presetEquationRunner.qs
+          );
+          Utils.setWasm(
+            varPool,
+            presetEquationRunner.mdVSTShapeInits[this.index],
+            presetEquationRunner.ts
+          );
         }
 
         const numInst = Math.clamp(baseVals.num_inst, 1, 1024);
@@ -324,13 +412,19 @@ export default class CustomShape {
           varPool.tex_ang.value = baseVals.tex_ang;
           varPool.additive.value = baseVals.additive;
 
-          if (presetEquationRunner.preset.shapes[this.index].frame_eqs_eel !== '') {
-            Utils.setWasm(varPool,
-                          presetEquationRunner.mdVSQAfterFrame,
-                          presetEquationRunner.qs);
-            Utils.setWasm(varPool,
-                          presetEquationRunner.mdVSTShapeInits[this.index],
-                          presetEquationRunner.ts);
+          if (
+            presetEquationRunner.preset.shapes[this.index].frame_eqs_eel !== ""
+          ) {
+            Utils.setWasm(
+              varPool,
+              presetEquationRunner.mdVSQAfterFrame,
+              presetEquationRunner.qs
+            );
+            Utils.setWasm(
+              varPool,
+              presetEquationRunner.mdVSTShapeInits[this.index],
+              presetEquationRunner.ts
+            );
 
             presetEquationRunner.preset.shapes[this.index].frame_eqs();
           }
@@ -342,8 +436,8 @@ export default class CustomShape {
           const rad = varPool.rad.value;
           const ang = varPool.ang.value;
 
-          const x = (varPool.x.value * 2) - 1;
-          const y = (varPool.y.value * -2) + 1;
+          const x = varPool.x.value * 2 - 1;
+          const y = varPool.y.value * -2 + 1;
 
           const r = varPool.r.value;
           const g = varPool.g.value;
@@ -358,7 +452,12 @@ export default class CustomShape {
           const borderG = varPool.border_g.value;
           const borderB = varPool.border_b.value;
           const borderA = varPool.border_a.value;
-          this.borderColor = [borderR, borderG, borderB, borderA * blendProgress];
+          this.borderColor = [
+            borderR,
+            borderG,
+            borderB,
+            borderA * blendProgress,
+          ];
 
           const thickoutline = varPool.thickoutline.value;
 
@@ -388,86 +487,166 @@ export default class CustomShape {
           }
 
           const quarterPi = Math.PI * 0.25;
-          for (let k = 1; k <= (sides + 1); k++) {
-            const p = ((k - 1) / sides);
+          for (let k = 1; k <= sides + 1; k++) {
+            const p = (k - 1) / sides;
             const pTwoPi = p * 2 * Math.PI;
 
             const angSum = pTwoPi + ang + quarterPi;
-            this.positions[(k * 3) + 0] = x + (rad * Math.cos(angSum) * this.aspecty);
-            this.positions[(k * 3) + 1] = y + (rad * Math.sin(angSum));
-            this.positions[(k * 3) + 2] = 0;
+            this.positions[k * 3 + 0] =
+              x + rad * Math.cos(angSum) * this.aspecty;
+            this.positions[k * 3 + 1] = y + rad * Math.sin(angSum);
+            this.positions[k * 3 + 2] = 0;
 
-            this.colors[(k * 4) + 0] = r2;
-            this.colors[(k * 4) + 1] = g2;
-            this.colors[(k * 4) + 2] = b2;
-            this.colors[(k * 4) + 3] = a2 * blendProgress;
+            this.colors[k * 4 + 0] = r2;
+            this.colors[k * 4 + 1] = g2;
+            this.colors[k * 4 + 2] = b2;
+            this.colors[k * 4 + 3] = a2 * blendProgress;
 
             if (isTextured) {
               const texAngSum = pTwoPi + texAng + quarterPi;
-              this.uvs[(k * 2) + 0] = 0.5 + (((0.5 * Math.cos(texAngSum)) / texZoom) *
-                                            this.aspecty);
-              this.uvs[(k * 2) + 1] = 0.5 + ((0.5 * Math.sin(texAngSum)) / texZoom);
+              this.uvs[k * 2 + 0] =
+                0.5 + ((0.5 * Math.cos(texAngSum)) / texZoom) * this.aspecty;
+              this.uvs[k * 2 + 1] = 0.5 + (0.5 * Math.sin(texAngSum)) / texZoom;
             }
 
             if (hasBorder) {
-              this.borderPositions[((k - 1) * 3) + 0] = this.positions[(k * 3) + 0];
-              this.borderPositions[((k - 1) * 3) + 1] = this.positions[(k * 3) + 1];
-              this.borderPositions[((k - 1) * 3) + 2] = this.positions[(k * 3) + 2];
+              this.borderPositions[(k - 1) * 3 + 0] = this.positions[k * 3 + 0];
+              this.borderPositions[(k - 1) * 3 + 1] = this.positions[k * 3 + 1];
+              this.borderPositions[(k - 1) * 3 + 2] = this.positions[k * 3 + 2];
             }
           }
 
-          this.drawCustomShapeInstance(prevTexture, sides, isTextured, hasBorder, isBorderThick,
-                                       isAdditive);
+          this.drawCustomShapeInstance(
+            prevTexture,
+            sides,
+            isTextured,
+            hasBorder,
+            isBorderThick,
+            isAdditive
+          );
         }
       }
     }
   }
 
-  setupShapeBuffers (wrap) {
+  setupShapeBuffers(wrap) {
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.positionVertexBuf);
-    this.gl.bufferData(this.gl.ARRAY_BUFFER, this.positions, this.gl.DYNAMIC_DRAW);
+    this.gl.bufferData(
+      this.gl.ARRAY_BUFFER,
+      this.positions,
+      this.gl.DYNAMIC_DRAW
+    );
 
-    this.gl.vertexAttribPointer(this.aPosLocation, 3, this.gl.FLOAT, false, 0, 0);
+    this.gl.vertexAttribPointer(
+      this.aPosLocation,
+      3,
+      this.gl.FLOAT,
+      false,
+      0,
+      0
+    );
     this.gl.enableVertexAttribArray(this.aPosLocation);
 
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.colorVertexBuf);
     this.gl.bufferData(this.gl.ARRAY_BUFFER, this.colors, this.gl.DYNAMIC_DRAW);
 
-    this.gl.vertexAttribPointer(this.aColorLocation, 4, this.gl.FLOAT, false, 0, 0);
+    this.gl.vertexAttribPointer(
+      this.aColorLocation,
+      4,
+      this.gl.FLOAT,
+      false,
+      0,
+      0
+    );
     this.gl.enableVertexAttribArray(this.aColorLocation);
 
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.uvVertexBuf);
     this.gl.bufferData(this.gl.ARRAY_BUFFER, this.uvs, this.gl.DYNAMIC_DRAW);
 
-    this.gl.vertexAttribPointer(this.aUvLocation, 2, this.gl.FLOAT, false, 0, 0);
+    this.gl.vertexAttribPointer(
+      this.aUvLocation,
+      2,
+      this.gl.FLOAT,
+      false,
+      0,
+      0
+    );
     this.gl.enableVertexAttribArray(this.aUvLocation);
 
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.borderPositionVertexBuf);
-    this.gl.bufferData(this.gl.ARRAY_BUFFER, this.borderPositions, this.gl.DYNAMIC_DRAW);
+    this.gl.bufferData(
+      this.gl.ARRAY_BUFFER,
+      this.borderPositions,
+      this.gl.DYNAMIC_DRAW
+    );
 
-    this.gl.vertexAttribPointer(this.aBorderPosLoc, 3, this.gl.FLOAT, false, 0, 0);
+    this.gl.vertexAttribPointer(
+      this.aBorderPosLoc,
+      3,
+      this.gl.FLOAT,
+      false,
+      0,
+      0
+    );
     this.gl.enableVertexAttribArray(this.aBorderPosLoc);
 
-    const wrapping = (wrap !== 0) ? this.gl.REPEAT : this.gl.CLAMP_TO_EDGE;
-    this.gl.samplerParameteri(this.mainSampler, this.gl.TEXTURE_WRAP_S, wrapping);
-    this.gl.samplerParameteri(this.mainSampler, this.gl.TEXTURE_WRAP_T, wrapping);
+    const wrapping = wrap !== 0 ? this.gl.REPEAT : this.gl.CLAMP_TO_EDGE;
+    this.gl.samplerParameteri(
+      this.mainSampler,
+      this.gl.TEXTURE_WRAP_S,
+      wrapping
+    );
+    this.gl.samplerParameteri(
+      this.mainSampler,
+      this.gl.TEXTURE_WRAP_T,
+      wrapping
+    );
   }
 
-  drawCustomShapeInstance (prevTexture, sides, isTextured, hasBorder, isBorderThick, isAdditive) {
+  drawCustomShapeInstance(
+    prevTexture,
+    sides,
+    isTextured,
+    hasBorder,
+    isBorderThick,
+    isAdditive
+  ) {
     this.gl.useProgram(this.shaderProgram);
 
-    const updatedPositions = new Float32Array(this.positions.buffer, 0, (sides + 2) * 3);
+    const updatedPositions = new Float32Array(
+      this.positions.buffer,
+      0,
+      (sides + 2) * 3
+    );
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.positionVertexBuf);
     this.gl.bufferSubData(this.gl.ARRAY_BUFFER, 0, updatedPositions);
 
-    this.gl.vertexAttribPointer(this.aPosLocation, 3, this.gl.FLOAT, false, 0, 0);
+    this.gl.vertexAttribPointer(
+      this.aPosLocation,
+      3,
+      this.gl.FLOAT,
+      false,
+      0,
+      0
+    );
     this.gl.enableVertexAttribArray(this.aPosLocation);
 
-    const updatedColors = new Float32Array(this.colors.buffer, 0, (sides + 2) * 4);
+    const updatedColors = new Float32Array(
+      this.colors.buffer,
+      0,
+      (sides + 2) * 4
+    );
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.colorVertexBuf);
     this.gl.bufferSubData(this.gl.ARRAY_BUFFER, 0, updatedColors);
 
-    this.gl.vertexAttribPointer(this.aColorLocation, 4, this.gl.FLOAT, false, 0, 0);
+    this.gl.vertexAttribPointer(
+      this.aColorLocation,
+      4,
+      this.gl.FLOAT,
+      false,
+      0,
+      0
+    );
     this.gl.enableVertexAttribArray(this.aColorLocation);
 
     if (isTextured) {
@@ -475,7 +654,14 @@ export default class CustomShape {
       this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.uvVertexBuf);
       this.gl.bufferSubData(this.gl.ARRAY_BUFFER, 0, updatedUvs);
 
-      this.gl.vertexAttribPointer(this.aUvLocation, 2, this.gl.FLOAT, false, 0, 0);
+      this.gl.vertexAttribPointer(
+        this.aUvLocation,
+        2,
+        this.gl.FLOAT,
+        false,
+        0,
+        0
+      );
       this.gl.enableVertexAttribArray(this.aUvLocation);
     }
 
@@ -497,11 +683,22 @@ export default class CustomShape {
     if (hasBorder) {
       this.gl.useProgram(this.borderShaderProgram);
 
-      const updatedBorderPos = new Float32Array(this.borderPositions.buffer, 0, (sides + 1) * 3);
+      const updatedBorderPos = new Float32Array(
+        this.borderPositions.buffer,
+        0,
+        (sides + 1) * 3
+      );
       this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.borderPositionVertexBuf);
       this.gl.bufferSubData(this.gl.ARRAY_BUFFER, 0, updatedBorderPos);
 
-      this.gl.vertexAttribPointer(this.aBorderPosLoc, 3, this.gl.FLOAT, false, 0, 0);
+      this.gl.vertexAttribPointer(
+        this.aBorderPosLoc,
+        3,
+        this.gl.FLOAT,
+        false,
+        0,
+        0
+      );
       this.gl.enableVertexAttribArray(this.aBorderPosLoc);
 
       this.gl.uniform4fv(this.uBorderColorLoc, this.borderColor);
@@ -517,9 +714,11 @@ export default class CustomShape {
         } else if (i === 2) {
           this.gl.uniform2fv(this.thickOffsetLoc, [0, offset / this.texsizeY]);
         } else if (i === 3) {
-          this.gl.uniform2fv(this.thickOffsetLoc, [offset / this.texsizeX, offset / this.texsizeY]);
+          this.gl.uniform2fv(this.thickOffsetLoc, [
+            offset / this.texsizeX,
+            offset / this.texsizeY,
+          ]);
         }
-
 
         this.gl.drawArrays(this.gl.LINE_STRIP, 0, sides + 1);
       }
