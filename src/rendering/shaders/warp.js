@@ -187,7 +187,7 @@ export default class WarpShader {
         uv = aWarpUv;
         vColor = aWarpColor;
       }
-      `
+      `.trim()
     );
     this.gl.compileShader(vertShader);
 
@@ -321,7 +321,7 @@ export default class WarpShader {
 
         fragColor = vec4(ret, 1.0) * vColor;
       }
-      `
+      `.trim()
     );
     this.gl.compileShader(fragShader);
 

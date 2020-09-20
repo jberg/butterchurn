@@ -208,7 +208,7 @@ export default class CompShader {
         vUv = aPos * halfmad + halfmad;
         vColor = aCompColor;
       }
-      `
+      `.trim()
     );
     this.gl.compileShader(vertShader);
 
@@ -360,7 +360,7 @@ export default class CompShader {
 
         fragColor = vec4(ret, vColor.a);
       }
-      `
+      `.trim()
     );
     this.gl.compileShader(fragShader);
 

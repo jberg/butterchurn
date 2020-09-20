@@ -71,7 +71,7 @@ export default class CustomShape {
         vUv = aUv;
         gl_Position = vec4(aPos, 1.0);
       }
-      `
+      `.trim()
     );
     this.gl.compileShader(vertShader);
 
@@ -95,7 +95,7 @@ export default class CustomShape {
           fragColor = vColor;
         }
       }
-      `
+      `.trim()
     );
     this.gl.compileShader(fragShader);
 
@@ -134,7 +134,7 @@ export default class CustomShape {
         gl_Position = vec4(aBorderPos +
                             vec3(thickOffset, 0.0), 1.0);
       }
-      `
+      `.trim()
     );
     this.gl.compileShader(vertShader);
 
@@ -151,7 +151,7 @@ export default class CustomShape {
       void main(void) {
         fragColor = uBorderColor;
       }
-      `
+      `.trim()
     );
     this.gl.compileShader(fragShader);
 

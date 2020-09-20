@@ -62,7 +62,7 @@ export default class CustomWaveform {
         gl_PointSize = uSize;
         gl_Position = vec4(aPos + vec3(thickOffset, 0.0), 1.0);
       }
-      `
+      `.trim()
     );
     this.gl.compileShader(vertShader);
 
@@ -79,7 +79,7 @@ export default class CustomWaveform {
       void main(void) {
         fragColor = vColor;
       }
-      `
+      `.trim()
     );
     this.gl.compileShader(fragShader);
 

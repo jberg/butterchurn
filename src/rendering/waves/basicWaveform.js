@@ -49,7 +49,7 @@ export default class BasicWaveform {
       void main(void) {
         gl_Position = vec4(aPos + vec3(thickOffset, 0.0), 1.0);
       }
-      `
+      `.trim()
     );
     this.gl.compileShader(vertShader);
 
@@ -66,7 +66,7 @@ export default class BasicWaveform {
       void main(void) {
         fragColor = u_color;
       }
-      `
+      `.trim()
     );
     this.gl.compileShader(fragShader);
 
