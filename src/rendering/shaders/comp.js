@@ -1,7 +1,7 @@
-import ShaderUtils from './shaderUtils';
+import ShaderUtils from "./shaderUtils";
 
 export default class CompShader {
-  constructor (gl, noise, image, opts = {}) {
+  constructor(gl, noise, image, opts = {}) {
     this.gl = gl;
     this.noise = noise;
     this.image = image;
@@ -33,34 +33,70 @@ export default class CompShader {
     this.mainSamplerPW = this.gl.createSampler();
     this.mainSamplerPC = this.gl.createSampler();
 
-    gl.samplerParameteri(this.mainSampler, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+    gl.samplerParameteri(
+      this.mainSampler,
+      gl.TEXTURE_MIN_FILTER,
+      gl.LINEAR_MIPMAP_LINEAR
+    );
     gl.samplerParameteri(this.mainSampler, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     gl.samplerParameteri(this.mainSampler, gl.TEXTURE_WRAP_S, gl.REPEAT);
     gl.samplerParameteri(this.mainSampler, gl.TEXTURE_WRAP_T, gl.REPEAT);
 
-    gl.samplerParameteri(this.mainSamplerFW, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+    gl.samplerParameteri(
+      this.mainSamplerFW,
+      gl.TEXTURE_MIN_FILTER,
+      gl.LINEAR_MIPMAP_LINEAR
+    );
     gl.samplerParameteri(this.mainSamplerFW, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     gl.samplerParameteri(this.mainSamplerFW, gl.TEXTURE_WRAP_S, gl.REPEAT);
     gl.samplerParameteri(this.mainSamplerFW, gl.TEXTURE_WRAP_T, gl.REPEAT);
 
-    gl.samplerParameteri(this.mainSamplerFC, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+    gl.samplerParameteri(
+      this.mainSamplerFC,
+      gl.TEXTURE_MIN_FILTER,
+      gl.LINEAR_MIPMAP_LINEAR
+    );
     gl.samplerParameteri(this.mainSamplerFC, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    gl.samplerParameteri(this.mainSamplerFC, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.samplerParameteri(this.mainSamplerFC, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.samplerParameteri(
+      this.mainSamplerFC,
+      gl.TEXTURE_WRAP_S,
+      gl.CLAMP_TO_EDGE
+    );
+    gl.samplerParameteri(
+      this.mainSamplerFC,
+      gl.TEXTURE_WRAP_T,
+      gl.CLAMP_TO_EDGE
+    );
 
-    gl.samplerParameteri(this.mainSamplerPW, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_NEAREST);
+    gl.samplerParameteri(
+      this.mainSamplerPW,
+      gl.TEXTURE_MIN_FILTER,
+      gl.NEAREST_MIPMAP_NEAREST
+    );
     gl.samplerParameteri(this.mainSamplerPW, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
     gl.samplerParameteri(this.mainSamplerPW, gl.TEXTURE_WRAP_S, gl.REPEAT);
     gl.samplerParameteri(this.mainSamplerPW, gl.TEXTURE_WRAP_T, gl.REPEAT);
 
-    gl.samplerParameteri(this.mainSamplerPC, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_NEAREST);
+    gl.samplerParameteri(
+      this.mainSamplerPC,
+      gl.TEXTURE_MIN_FILTER,
+      gl.NEAREST_MIPMAP_NEAREST
+    );
     gl.samplerParameteri(this.mainSamplerPC, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-    gl.samplerParameteri(this.mainSamplerPC, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.samplerParameteri(this.mainSamplerPC, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.samplerParameteri(
+      this.mainSamplerPC,
+      gl.TEXTURE_WRAP_S,
+      gl.CLAMP_TO_EDGE
+    );
+    gl.samplerParameteri(
+      this.mainSamplerPC,
+      gl.TEXTURE_WRAP_T,
+      gl.CLAMP_TO_EDGE
+    );
   }
 
   // based on https://github.com/mrdoob/three.js/blob/master/src/geometries/PlaneGeometry.js
-  buildPositions () {
+  buildPositions() {
     const width = 2;
     const height = 2;
 
@@ -78,9 +114,9 @@ export default class CompShader {
 
     const vertices = [];
     for (let iy = 0; iy < gridY1; iy++) {
-      const y = (iy * segmentHeight) - heightHalf;
+      const y = iy * segmentHeight - heightHalf;
       for (let ix = 0; ix < gridX1; ix++) {
-        const x = (ix * segmentWidth) - widthHalf;
+        const x = ix * segmentWidth - widthHalf;
 
         vertices.push(x, -y, 0);
       }
@@ -89,10 +125,10 @@ export default class CompShader {
     const indices = [];
     for (let iy = 0; iy < gridY; iy++) {
       for (let ix = 0; ix < gridX; ix++) {
-        const a = ix + (gridX1 * iy);
-        const b = ix + (gridX1 * (iy + 1));
-        const c = (ix + 1) + (gridX1 * (iy + 1));
-        const d = (ix + 1) + (gridX1 * iy);
+        const a = ix + gridX1 * iy;
+        const b = ix + gridX1 * (iy + 1);
+        const c = ix + 1 + gridX1 * (iy + 1);
+        const d = ix + 1 + gridX1 * iy;
 
         indices.push(a, b, d);
         indices.push(b, c, d);
@@ -103,7 +139,7 @@ export default class CompShader {
     this.indices = new Uint16Array(indices);
   }
 
-  updateGlobals (opts) {
+  updateGlobals(opts) {
     this.mesh_width = opts.mesh_width;
     this.mesh_height = opts.mesh_height;
     this.texsizeX = opts.texsizeX;
@@ -116,7 +152,7 @@ export default class CompShader {
     this.buildPositions();
   }
 
-  createShader (shaderText = '') {
+  createShader(shaderText = "") {
     let fragShaderText;
     let fragShaderHeaderText;
     if (shaderText.length === 0) {
@@ -143,22 +179,24 @@ export default class CompShader {
                         if(darken != 0) ret = ret*ret;
                         if(solarize != 0) ret = ret * (1.0 - ret) * 4.0;
                         if(invert != 0) ret = 1.0 - ret;`;
-      fragShaderHeaderText = '';
+      fragShaderHeaderText = "";
     } else {
       const shaderParts = ShaderUtils.getShaderParts(shaderText);
       fragShaderHeaderText = shaderParts[0];
       fragShaderText = shaderParts[1];
     }
 
-    fragShaderText = fragShaderText.replace(/texture2D/g, 'texture');
-    fragShaderText = fragShaderText.replace(/texture3D/g, 'texture');
+    fragShaderText = fragShaderText.replace(/texture2D/g, "texture");
+    fragShaderText = fragShaderText.replace(/texture3D/g, "texture");
 
     this.userTextures = ShaderUtils.getUserSamplers(fragShaderHeaderText);
 
     this.shaderProgram = this.gl.createProgram();
 
     const vertShader = this.gl.createShader(this.gl.VERTEX_SHADER);
-    this.gl.shaderSource(vertShader, `#version 300 es
+    this.gl.shaderSource(
+      vertShader,
+      `#version 300 es
                                       const vec2 halfmad = vec2(0.5);
                                       in vec2 aPos;
                                       in vec4 aCompColor;
@@ -168,11 +206,14 @@ export default class CompShader {
                                         gl_Position = vec4(aPos, 0.0, 1.0);
                                         vUv = aPos * halfmad + halfmad;
                                         vColor = aCompColor;
-                                      }`);
+                                      }`
+    );
     this.gl.compileShader(vertShader);
 
     const fragShader = this.gl.createShader(this.gl.FRAGMENT_SHADER);
-    this.gl.shaderSource(fragShader, `#version 300 es
+    this.gl.shaderSource(
+      fragShader,
+      `#version 300 es
                                       precision ${this.floatPrecision} float;
                                       precision highp int;
                                       precision mediump sampler2D;
@@ -315,103 +356,235 @@ export default class CompShader {
                                         ${fragShaderText}
 
                                         fragColor = vec4(ret, vColor.a);
-                                      }`);
+                                      }`
+    );
     this.gl.compileShader(fragShader);
 
     this.gl.attachShader(this.shaderProgram, vertShader);
     this.gl.attachShader(this.shaderProgram, fragShader);
     this.gl.linkProgram(this.shaderProgram);
 
-    this.positionLocation = this.gl.getAttribLocation(this.shaderProgram, 'aPos');
-    this.compColorLocation = this.gl.getAttribLocation(this.shaderProgram, 'aCompColor');
-    this.textureLoc = this.gl.getUniformLocation(this.shaderProgram, 'sampler_main');
-    this.textureFWLoc = this.gl.getUniformLocation(this.shaderProgram, 'sampler_fw_main');
-    this.textureFCLoc = this.gl.getUniformLocation(this.shaderProgram, 'sampler_fc_main');
-    this.texturePWLoc = this.gl.getUniformLocation(this.shaderProgram, 'sampler_pw_main');
-    this.texturePCLoc = this.gl.getUniformLocation(this.shaderProgram, 'sampler_pc_main');
-    this.blurTexture1Loc = this.gl.getUniformLocation(this.shaderProgram, 'sampler_blur1');
-    this.blurTexture2Loc = this.gl.getUniformLocation(this.shaderProgram, 'sampler_blur2');
-    this.blurTexture3Loc = this.gl.getUniformLocation(this.shaderProgram, 'sampler_blur3');
-    this.noiseLQLoc = this.gl.getUniformLocation(this.shaderProgram, 'sampler_noise_lq');
-    this.noiseMQLoc = this.gl.getUniformLocation(this.shaderProgram, 'sampler_noise_mq');
-    this.noiseHQLoc = this.gl.getUniformLocation(this.shaderProgram, 'sampler_noise_hq');
-    this.noiseLQLiteLoc = this.gl.getUniformLocation(this.shaderProgram, 'sampler_noise_lq_lite');
-    this.noisePointLQLoc = this.gl.getUniformLocation(this.shaderProgram, 'sampler_pw_noise_lq');
-    this.noiseVolLQLoc = this.gl.getUniformLocation(this.shaderProgram, 'sampler_noisevol_lq');
-    this.noiseVolHQLoc = this.gl.getUniformLocation(this.shaderProgram, 'sampler_noisevol_hq');
-    this.timeLoc = this.gl.getUniformLocation(this.shaderProgram, 'time');
-    this.gammaAdjLoc = this.gl.getUniformLocation(this.shaderProgram, 'gammaAdj');
-    this.echoZoomLoc = this.gl.getUniformLocation(this.shaderProgram, 'echo_zoom');
-    this.echoAlphaLoc = this.gl.getUniformLocation(this.shaderProgram, 'echo_alpha');
-    this.echoOrientationLoc = this.gl.getUniformLocation(this.shaderProgram, 'echo_orientation');
-    this.invertLoc = this.gl.getUniformLocation(this.shaderProgram, 'invert');
-    this.brightenLoc = this.gl.getUniformLocation(this.shaderProgram, 'brighten');
-    this.darkenLoc = this.gl.getUniformLocation(this.shaderProgram, 'darken');
-    this.solarizeLoc = this.gl.getUniformLocation(this.shaderProgram, 'solarize');
-    this.texsizeLoc = this.gl.getUniformLocation(this.shaderProgram, 'texsize');
-    this.texsizeNoiseLQLoc = this.gl.getUniformLocation(this.shaderProgram, 'texsize_noise_lq');
-    this.texsizeNoiseMQLoc = this.gl.getUniformLocation(this.shaderProgram, 'texsize_noise_mq');
-    this.texsizeNoiseHQLoc = this.gl.getUniformLocation(this.shaderProgram, 'texsize_noise_hq');
-    this.texsizeNoiseLQLiteLoc = this.gl.getUniformLocation(this.shaderProgram,
-                                                            'texsize_noise_lq_lite');
-    this.texsizeNoiseVolLQLoc = this.gl.getUniformLocation(this.shaderProgram,
-                                                           'texsize_noisevol_lq');
-    this.texsizeNoiseVolHQLoc = this.gl.getUniformLocation(this.shaderProgram,
-                                                           'texsize_noisevol_hq');
-    this.resolutionLoc = this.gl.getUniformLocation(this.shaderProgram, 'resolution');
-    this.aspectLoc = this.gl.getUniformLocation(this.shaderProgram, 'aspect');
-    this.bassLoc = this.gl.getUniformLocation(this.shaderProgram, 'bass');
-    this.midLoc = this.gl.getUniformLocation(this.shaderProgram, 'mid');
-    this.trebLoc = this.gl.getUniformLocation(this.shaderProgram, 'treb');
-    this.volLoc = this.gl.getUniformLocation(this.shaderProgram, 'vol');
-    this.bassAttLoc = this.gl.getUniformLocation(this.shaderProgram, 'bass_att');
-    this.midAttLoc = this.gl.getUniformLocation(this.shaderProgram, 'mid_att');
-    this.trebAttLoc = this.gl.getUniformLocation(this.shaderProgram, 'treb_att');
-    this.volAttLoc = this.gl.getUniformLocation(this.shaderProgram, 'vol_att');
-    this.frameLoc = this.gl.getUniformLocation(this.shaderProgram, 'frame');
-    this.fpsLoc = this.gl.getUniformLocation(this.shaderProgram, 'fps');
-    this.blur1MinLoc = this.gl.getUniformLocation(this.shaderProgram, 'blur1_min');
-    this.blur1MaxLoc = this.gl.getUniformLocation(this.shaderProgram, 'blur1_max');
-    this.blur2MinLoc = this.gl.getUniformLocation(this.shaderProgram, 'blur2_min');
-    this.blur2MaxLoc = this.gl.getUniformLocation(this.shaderProgram, 'blur2_max');
-    this.blur3MinLoc = this.gl.getUniformLocation(this.shaderProgram, 'blur3_min');
-    this.blur3MaxLoc = this.gl.getUniformLocation(this.shaderProgram, 'blur3_max');
-    this.scale1Loc = this.gl.getUniformLocation(this.shaderProgram, 'scale1');
-    this.scale2Loc = this.gl.getUniformLocation(this.shaderProgram, 'scale2');
-    this.scale3Loc = this.gl.getUniformLocation(this.shaderProgram, 'scale3');
-    this.bias1Loc = this.gl.getUniformLocation(this.shaderProgram, 'bias1');
-    this.bias2Loc = this.gl.getUniformLocation(this.shaderProgram, 'bias2');
-    this.bias3Loc = this.gl.getUniformLocation(this.shaderProgram, 'bias3');
-    this.randPresetLoc = this.gl.getUniformLocation(this.shaderProgram, 'rand_preset');
-    this.randFrameLoc = this.gl.getUniformLocation(this.shaderProgram, 'rand_frame');
-    this.fShaderLoc = this.gl.getUniformLocation(this.shaderProgram, 'fShader');
+    this.positionLocation = this.gl.getAttribLocation(
+      this.shaderProgram,
+      "aPos"
+    );
+    this.compColorLocation = this.gl.getAttribLocation(
+      this.shaderProgram,
+      "aCompColor"
+    );
+    this.textureLoc = this.gl.getUniformLocation(
+      this.shaderProgram,
+      "sampler_main"
+    );
+    this.textureFWLoc = this.gl.getUniformLocation(
+      this.shaderProgram,
+      "sampler_fw_main"
+    );
+    this.textureFCLoc = this.gl.getUniformLocation(
+      this.shaderProgram,
+      "sampler_fc_main"
+    );
+    this.texturePWLoc = this.gl.getUniformLocation(
+      this.shaderProgram,
+      "sampler_pw_main"
+    );
+    this.texturePCLoc = this.gl.getUniformLocation(
+      this.shaderProgram,
+      "sampler_pc_main"
+    );
+    this.blurTexture1Loc = this.gl.getUniformLocation(
+      this.shaderProgram,
+      "sampler_blur1"
+    );
+    this.blurTexture2Loc = this.gl.getUniformLocation(
+      this.shaderProgram,
+      "sampler_blur2"
+    );
+    this.blurTexture3Loc = this.gl.getUniformLocation(
+      this.shaderProgram,
+      "sampler_blur3"
+    );
+    this.noiseLQLoc = this.gl.getUniformLocation(
+      this.shaderProgram,
+      "sampler_noise_lq"
+    );
+    this.noiseMQLoc = this.gl.getUniformLocation(
+      this.shaderProgram,
+      "sampler_noise_mq"
+    );
+    this.noiseHQLoc = this.gl.getUniformLocation(
+      this.shaderProgram,
+      "sampler_noise_hq"
+    );
+    this.noiseLQLiteLoc = this.gl.getUniformLocation(
+      this.shaderProgram,
+      "sampler_noise_lq_lite"
+    );
+    this.noisePointLQLoc = this.gl.getUniformLocation(
+      this.shaderProgram,
+      "sampler_pw_noise_lq"
+    );
+    this.noiseVolLQLoc = this.gl.getUniformLocation(
+      this.shaderProgram,
+      "sampler_noisevol_lq"
+    );
+    this.noiseVolHQLoc = this.gl.getUniformLocation(
+      this.shaderProgram,
+      "sampler_noisevol_hq"
+    );
+    this.timeLoc = this.gl.getUniformLocation(this.shaderProgram, "time");
+    this.gammaAdjLoc = this.gl.getUniformLocation(
+      this.shaderProgram,
+      "gammaAdj"
+    );
+    this.echoZoomLoc = this.gl.getUniformLocation(
+      this.shaderProgram,
+      "echo_zoom"
+    );
+    this.echoAlphaLoc = this.gl.getUniformLocation(
+      this.shaderProgram,
+      "echo_alpha"
+    );
+    this.echoOrientationLoc = this.gl.getUniformLocation(
+      this.shaderProgram,
+      "echo_orientation"
+    );
+    this.invertLoc = this.gl.getUniformLocation(this.shaderProgram, "invert");
+    this.brightenLoc = this.gl.getUniformLocation(
+      this.shaderProgram,
+      "brighten"
+    );
+    this.darkenLoc = this.gl.getUniformLocation(this.shaderProgram, "darken");
+    this.solarizeLoc = this.gl.getUniformLocation(
+      this.shaderProgram,
+      "solarize"
+    );
+    this.texsizeLoc = this.gl.getUniformLocation(this.shaderProgram, "texsize");
+    this.texsizeNoiseLQLoc = this.gl.getUniformLocation(
+      this.shaderProgram,
+      "texsize_noise_lq"
+    );
+    this.texsizeNoiseMQLoc = this.gl.getUniformLocation(
+      this.shaderProgram,
+      "texsize_noise_mq"
+    );
+    this.texsizeNoiseHQLoc = this.gl.getUniformLocation(
+      this.shaderProgram,
+      "texsize_noise_hq"
+    );
+    this.texsizeNoiseLQLiteLoc = this.gl.getUniformLocation(
+      this.shaderProgram,
+      "texsize_noise_lq_lite"
+    );
+    this.texsizeNoiseVolLQLoc = this.gl.getUniformLocation(
+      this.shaderProgram,
+      "texsize_noisevol_lq"
+    );
+    this.texsizeNoiseVolHQLoc = this.gl.getUniformLocation(
+      this.shaderProgram,
+      "texsize_noisevol_hq"
+    );
+    this.resolutionLoc = this.gl.getUniformLocation(
+      this.shaderProgram,
+      "resolution"
+    );
+    this.aspectLoc = this.gl.getUniformLocation(this.shaderProgram, "aspect");
+    this.bassLoc = this.gl.getUniformLocation(this.shaderProgram, "bass");
+    this.midLoc = this.gl.getUniformLocation(this.shaderProgram, "mid");
+    this.trebLoc = this.gl.getUniformLocation(this.shaderProgram, "treb");
+    this.volLoc = this.gl.getUniformLocation(this.shaderProgram, "vol");
+    this.bassAttLoc = this.gl.getUniformLocation(
+      this.shaderProgram,
+      "bass_att"
+    );
+    this.midAttLoc = this.gl.getUniformLocation(this.shaderProgram, "mid_att");
+    this.trebAttLoc = this.gl.getUniformLocation(
+      this.shaderProgram,
+      "treb_att"
+    );
+    this.volAttLoc = this.gl.getUniformLocation(this.shaderProgram, "vol_att");
+    this.frameLoc = this.gl.getUniformLocation(this.shaderProgram, "frame");
+    this.fpsLoc = this.gl.getUniformLocation(this.shaderProgram, "fps");
+    this.blur1MinLoc = this.gl.getUniformLocation(
+      this.shaderProgram,
+      "blur1_min"
+    );
+    this.blur1MaxLoc = this.gl.getUniformLocation(
+      this.shaderProgram,
+      "blur1_max"
+    );
+    this.blur2MinLoc = this.gl.getUniformLocation(
+      this.shaderProgram,
+      "blur2_min"
+    );
+    this.blur2MaxLoc = this.gl.getUniformLocation(
+      this.shaderProgram,
+      "blur2_max"
+    );
+    this.blur3MinLoc = this.gl.getUniformLocation(
+      this.shaderProgram,
+      "blur3_min"
+    );
+    this.blur3MaxLoc = this.gl.getUniformLocation(
+      this.shaderProgram,
+      "blur3_max"
+    );
+    this.scale1Loc = this.gl.getUniformLocation(this.shaderProgram, "scale1");
+    this.scale2Loc = this.gl.getUniformLocation(this.shaderProgram, "scale2");
+    this.scale3Loc = this.gl.getUniformLocation(this.shaderProgram, "scale3");
+    this.bias1Loc = this.gl.getUniformLocation(this.shaderProgram, "bias1");
+    this.bias2Loc = this.gl.getUniformLocation(this.shaderProgram, "bias2");
+    this.bias3Loc = this.gl.getUniformLocation(this.shaderProgram, "bias3");
+    this.randPresetLoc = this.gl.getUniformLocation(
+      this.shaderProgram,
+      "rand_preset"
+    );
+    this.randFrameLoc = this.gl.getUniformLocation(
+      this.shaderProgram,
+      "rand_frame"
+    );
+    this.fShaderLoc = this.gl.getUniformLocation(this.shaderProgram, "fShader");
 
-    this.qaLoc = this.gl.getUniformLocation(this.shaderProgram, '_qa');
-    this.qbLoc = this.gl.getUniformLocation(this.shaderProgram, '_qb');
-    this.qcLoc = this.gl.getUniformLocation(this.shaderProgram, '_qc');
-    this.qdLoc = this.gl.getUniformLocation(this.shaderProgram, '_qd');
-    this.qeLoc = this.gl.getUniformLocation(this.shaderProgram, '_qe');
-    this.qfLoc = this.gl.getUniformLocation(this.shaderProgram, '_qf');
-    this.qgLoc = this.gl.getUniformLocation(this.shaderProgram, '_qg');
-    this.qhLoc = this.gl.getUniformLocation(this.shaderProgram, '_qh');
+    this.qaLoc = this.gl.getUniformLocation(this.shaderProgram, "_qa");
+    this.qbLoc = this.gl.getUniformLocation(this.shaderProgram, "_qb");
+    this.qcLoc = this.gl.getUniformLocation(this.shaderProgram, "_qc");
+    this.qdLoc = this.gl.getUniformLocation(this.shaderProgram, "_qd");
+    this.qeLoc = this.gl.getUniformLocation(this.shaderProgram, "_qe");
+    this.qfLoc = this.gl.getUniformLocation(this.shaderProgram, "_qf");
+    this.qgLoc = this.gl.getUniformLocation(this.shaderProgram, "_qg");
+    this.qhLoc = this.gl.getUniformLocation(this.shaderProgram, "_qh");
 
-    this.slowRoamCosLoc = this.gl.getUniformLocation(this.shaderProgram, 'slow_roam_cos');
-    this.roamCosLoc = this.gl.getUniformLocation(this.shaderProgram, 'roam_cos');
-    this.slowRoamSinLoc = this.gl.getUniformLocation(this.shaderProgram, 'slow_roam_sin');
-    this.roamSinLoc = this.gl.getUniformLocation(this.shaderProgram, 'roam_sin');
+    this.slowRoamCosLoc = this.gl.getUniformLocation(
+      this.shaderProgram,
+      "slow_roam_cos"
+    );
+    this.roamCosLoc = this.gl.getUniformLocation(
+      this.shaderProgram,
+      "roam_cos"
+    );
+    this.slowRoamSinLoc = this.gl.getUniformLocation(
+      this.shaderProgram,
+      "slow_roam_sin"
+    );
+    this.roamSinLoc = this.gl.getUniformLocation(
+      this.shaderProgram,
+      "roam_sin"
+    );
 
     for (let i = 0; i < this.userTextures.length; i++) {
       const userTexture = this.userTextures[i];
-      userTexture.textureLoc =
-        this.gl.getUniformLocation(this.shaderProgram, `sampler_${userTexture.sampler}`);
+      userTexture.textureLoc = this.gl.getUniformLocation(
+        this.shaderProgram,
+        `sampler_${userTexture.sampler}`
+      );
     }
   }
 
-  updateShader (shaderText) {
+  updateShader(shaderText) {
     this.createShader(shaderText);
   }
 
-  bindBlurVals (blurMins, blurMaxs) {
+  bindBlurVals(blurMins, blurMaxs) {
     const blurMin1 = blurMins[0];
     const blurMin2 = blurMins[1];
     const blurMin3 = blurMins[2];
@@ -442,23 +615,43 @@ export default class CompShader {
     this.gl.uniform1f(this.bias3Loc, bias3);
   }
 
-  static generateHueBase (mdVSFrame) {
-    const hueBase = new Float32Array([
-      1, 1, 1,
-      1, 1, 1,
-      1, 1, 1,
-      1, 1, 1
-    ]);
+  static generateHueBase(mdVSFrame) {
+    const hueBase = new Float32Array([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]);
 
     /* eslint-disable max-len */
     for (let i = 0; i < 4; i++) {
-      hueBase[(i * 3) + 0] = 0.6 + (0.3 * Math.sin((mdVSFrame.time * 30.0 * 0.0143) + 3 + (i * 21) + mdVSFrame.rand_start[3]));
-      hueBase[(i * 3) + 1] = 0.6 + (0.3 * Math.sin((mdVSFrame.time * 30.0 * 0.0107) + 1 + (i * 13) + mdVSFrame.rand_start[1]));
-      hueBase[(i * 3) + 2] = 0.6 + (0.3 * Math.sin((mdVSFrame.time * 30.0 * 0.0129) + 6 + (i * 9) + mdVSFrame.rand_start[2]));
-      const maxshade = Math.max(hueBase[(i * 3)], hueBase[(i * 3) + 1], hueBase[(i * 3) + 2]);
+      hueBase[i * 3 + 0] =
+        0.6 +
+        0.3 *
+          Math.sin(
+            mdVSFrame.time * 30.0 * 0.0143 +
+              3 +
+              i * 21 +
+              mdVSFrame.rand_start[3]
+          );
+      hueBase[i * 3 + 1] =
+        0.6 +
+        0.3 *
+          Math.sin(
+            mdVSFrame.time * 30.0 * 0.0107 +
+              1 +
+              i * 13 +
+              mdVSFrame.rand_start[1]
+          );
+      hueBase[i * 3 + 2] =
+        0.6 +
+        0.3 *
+          Math.sin(
+            mdVSFrame.time * 30.0 * 0.0129 + 6 + i * 9 + mdVSFrame.rand_start[2]
+          );
+      const maxshade = Math.max(
+        hueBase[i * 3],
+        hueBase[i * 3 + 1],
+        hueBase[i * 3 + 2]
+      );
       for (let k = 0; k < 3; k++) {
-        hueBase[(i * 3) + k] = hueBase[(i * 3) + k] / maxshade;
-        hueBase[(i * 3) + k] = 0.5 + (0.5 * hueBase[(i * 3) + k]);
+        hueBase[i * 3 + k] = hueBase[i * 3 + k] / maxshade;
+        hueBase[i * 3 + k] = 0.5 + 0.5 * hueBase[i * 3 + k];
       }
     }
     /* eslint-enable max-len */
@@ -466,7 +659,7 @@ export default class CompShader {
     return hueBase;
   }
 
-  generateCompColors (blending, mdVSFrame, warpColor) {
+  generateCompColors(blending, mdVSFrame, warpColor) {
     const hueBase = CompShader.generateHueBase(mdVSFrame);
     const gridX1 = this.compWidth + 1;
     const gridY1 = this.compHeight + 1;
@@ -480,30 +673,35 @@ export default class CompShader {
 
         const col = [1, 1, 1];
         for (let c = 0; c < 3; c++) {
-          col[c] = (hueBase[0 + c] * x * y) +
-                   (hueBase[3 + c] * (1 - x) * y) +
-                   (hueBase[6 + c] * x * (1 - y)) +
-                   (hueBase[9 + c] * (1 - x) * (1 - y));
+          col[c] =
+            hueBase[0 + c] * x * y +
+            hueBase[3 + c] * (1 - x) * y +
+            hueBase[6 + c] * x * (1 - y) +
+            hueBase[9 + c] * (1 - x) * (1 - y);
         }
 
         let alpha = 1;
         if (blending) {
-          x *= (this.mesh_width + 1);
-          y *= (this.mesh_height + 1);
+          x *= this.mesh_width + 1;
+          y *= this.mesh_height + 1;
           x = Math.clamp(x, 0, this.mesh_width - 1);
           y = Math.clamp(y, 0, this.mesh_height - 1);
           const nx = Math.floor(x);
           const ny = Math.floor(y);
           const dx = x - nx;
           const dy = y - ny;
-          const alpha00 = warpColor[(((ny * (this.mesh_width + 1)) + nx) * 4) + 3];
-          const alpha01 = warpColor[(((ny * (this.mesh_width + 1)) + (nx + 1)) * 4) + 3];
-          const alpha10 = warpColor[((((ny + 1) * (this.mesh_width + 1)) + nx) * 4) + 3];
-          const alpha11 = warpColor[((((ny + 1) * (this.mesh_width + 1)) + (nx + 1)) * 4) + 3];
-          alpha = (alpha00 * (1 - dx) * (1 - dy)) +
-                  (alpha01 * dx * (1 - dy)) +
-                  (alpha10 * (1 - dx) * dy) +
-                  (alpha11 * dx * (dy));
+          const alpha00 = warpColor[(ny * (this.mesh_width + 1) + nx) * 4 + 3];
+          const alpha01 =
+            warpColor[(ny * (this.mesh_width + 1) + (nx + 1)) * 4 + 3];
+          const alpha10 =
+            warpColor[((ny + 1) * (this.mesh_width + 1) + nx) * 4 + 3];
+          const alpha11 =
+            warpColor[((ny + 1) * (this.mesh_width + 1) + (nx + 1)) * 4 + 3];
+          alpha =
+            alpha00 * (1 - dx) * (1 - dy) +
+            alpha01 * dx * (1 - dy) +
+            alpha10 * (1 - dx) * dy +
+            alpha11 * dx * dy;
         }
 
         compColor[offsetColor + 0] = col[0];
@@ -518,30 +716,71 @@ export default class CompShader {
     return compColor;
   }
 
-  renderQuadTexture (blending, texture, blurTexture1, blurTexture2, blurTexture3,
-                     blurMins, blurMaxs, mdVSFrame, mdVSQs, warpColor) {
+  renderQuadTexture(
+    blending,
+    texture,
+    blurTexture1,
+    blurTexture2,
+    blurTexture3,
+    blurMins,
+    blurMaxs,
+    mdVSFrame,
+    mdVSQs,
+    warpColor
+  ) {
     const compColors = this.generateCompColors(blending, mdVSFrame, warpColor);
 
     this.gl.useProgram(this.shaderProgram);
 
     this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.indexBuf);
-    this.gl.bufferData(this.gl.ELEMENT_ARRAY_BUFFER, this.indices, this.gl.STATIC_DRAW);
+    this.gl.bufferData(
+      this.gl.ELEMENT_ARRAY_BUFFER,
+      this.indices,
+      this.gl.STATIC_DRAW
+    );
 
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.positionVertexBuf);
-    this.gl.bufferData(this.gl.ARRAY_BUFFER, this.vertices, this.gl.STATIC_DRAW);
+    this.gl.bufferData(
+      this.gl.ARRAY_BUFFER,
+      this.vertices,
+      this.gl.STATIC_DRAW
+    );
 
-    this.gl.vertexAttribPointer(this.positionLocation, 3, this.gl.FLOAT, false, 0, 0);
+    this.gl.vertexAttribPointer(
+      this.positionLocation,
+      3,
+      this.gl.FLOAT,
+      false,
+      0,
+      0
+    );
     this.gl.enableVertexAttribArray(this.positionLocation);
 
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.compColorVertexBuf);
     this.gl.bufferData(this.gl.ARRAY_BUFFER, compColors, this.gl.STATIC_DRAW);
 
-    this.gl.vertexAttribPointer(this.compColorLocation, 4, this.gl.FLOAT, false, 0, 0);
+    this.gl.vertexAttribPointer(
+      this.compColorLocation,
+      4,
+      this.gl.FLOAT,
+      false,
+      0,
+      0
+    );
     this.gl.enableVertexAttribArray(this.compColorLocation);
 
-    const wrapping = (mdVSFrame.wrap !== 0) ? this.gl.REPEAT : this.gl.CLAMP_TO_EDGE;
-    this.gl.samplerParameteri(this.mainSampler, this.gl.TEXTURE_WRAP_S, wrapping);
-    this.gl.samplerParameteri(this.mainSampler, this.gl.TEXTURE_WRAP_T, wrapping);
+    const wrapping =
+      mdVSFrame.wrap !== 0 ? this.gl.REPEAT : this.gl.CLAMP_TO_EDGE;
+    this.gl.samplerParameteri(
+      this.mainSampler,
+      this.gl.TEXTURE_WRAP_S,
+      wrapping
+    );
+    this.gl.samplerParameteri(
+      this.mainSampler,
+      this.gl.TEXTURE_WRAP_T,
+      wrapping
+    );
 
     this.gl.activeTexture(this.gl.TEXTURE0);
     this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
@@ -612,7 +851,10 @@ export default class CompShader {
     for (let i = 0; i < this.userTextures.length; i++) {
       const userTexture = this.userTextures[i];
       this.gl.activeTexture(this.gl.TEXTURE15 + i);
-      this.gl.bindTexture(this.gl.TEXTURE_2D, this.image.getTexture(userTexture.sampler));
+      this.gl.bindTexture(
+        this.gl.TEXTURE_2D,
+        this.image.getTexture(userTexture.sampler)
+      );
       this.gl.uniform1i(userTexture.textureLoc, 15 + i);
     }
 
@@ -626,11 +868,21 @@ export default class CompShader {
     this.gl.uniform1i(this.darkenLoc, mdVSFrame.darken);
     this.gl.uniform1i(this.solarizeLoc, mdVSFrame.solarize);
     this.gl.uniform2fv(this.resolutionLoc, [this.texsizeX, this.texsizeY]);
-    this.gl.uniform4fv(this.aspectLoc,
-                       [this.aspectx, this.aspecty, this.invAspectx, this.invAspecty]);
-    this.gl.uniform4fv(this.texsizeLoc, new Float32Array([
-      this.texsizeX, this.texsizeY, 1.0 / this.texsizeX, 1.0 / this.texsizeY
-    ]));
+    this.gl.uniform4fv(this.aspectLoc, [
+      this.aspectx,
+      this.aspecty,
+      this.invAspectx,
+      this.invAspecty,
+    ]);
+    this.gl.uniform4fv(
+      this.texsizeLoc,
+      new Float32Array([
+        this.texsizeX,
+        this.texsizeY,
+        1.0 / this.texsizeX,
+        1.0 / this.texsizeY,
+      ])
+    );
     this.gl.uniform4fv(this.texsizeNoiseLQLoc, [256, 256, 1 / 256, 1 / 256]);
     this.gl.uniform4fv(this.texsizeNoiseMQLoc, [256, 256, 1 / 256, 1 / 256]);
     this.gl.uniform4fv(this.texsizeNoiseHQLoc, [256, 256, 1 / 256, 1 / 256]);
@@ -640,67 +892,126 @@ export default class CompShader {
     this.gl.uniform1f(this.bassLoc, mdVSFrame.bass);
     this.gl.uniform1f(this.midLoc, mdVSFrame.mid);
     this.gl.uniform1f(this.trebLoc, mdVSFrame.treb);
-    this.gl.uniform1f(this.volLoc, (mdVSFrame.bass + mdVSFrame.mid + mdVSFrame.treb) / 3);
+    this.gl.uniform1f(
+      this.volLoc,
+      (mdVSFrame.bass + mdVSFrame.mid + mdVSFrame.treb) / 3
+    );
     this.gl.uniform1f(this.bassAttLoc, mdVSFrame.bass_att);
     this.gl.uniform1f(this.midAttLoc, mdVSFrame.mid_att);
     this.gl.uniform1f(this.trebAttLoc, mdVSFrame.treb_att);
-    this.gl.uniform1f(this.volAttLoc, (mdVSFrame.bass_att + mdVSFrame.mid_att +
-                                       mdVSFrame.treb_att) / 3);
+    this.gl.uniform1f(
+      this.volAttLoc,
+      (mdVSFrame.bass_att + mdVSFrame.mid_att + mdVSFrame.treb_att) / 3
+    );
     this.gl.uniform1f(this.frameLoc, mdVSFrame.frame);
     this.gl.uniform1f(this.fpsLoc, mdVSFrame.fps);
     this.gl.uniform4fv(this.randPresetLoc, mdVSFrame.rand_preset);
-    this.gl.uniform4fv(this.randFrameLoc, new Float32Array([
-      Math.random(), Math.random(), Math.random(), Math.random()
-    ]));
+    this.gl.uniform4fv(
+      this.randFrameLoc,
+      new Float32Array([
+        Math.random(),
+        Math.random(),
+        Math.random(),
+        Math.random(),
+      ])
+    );
     this.gl.uniform1f(this.fShaderLoc, mdVSFrame.fshader);
 
-    this.gl.uniform4fv(this.qaLoc, new Float32Array([
-      mdVSQs.q1 || 0, mdVSQs.q2 || 0, mdVSQs.q3 || 0, mdVSQs.q4 || 0
-    ]));
-    this.gl.uniform4fv(this.qbLoc, new Float32Array([
-      mdVSQs.q5 || 0, mdVSQs.q6 || 0, mdVSQs.q7 || 0, mdVSQs.q8 || 0
-    ]));
-    this.gl.uniform4fv(this.qcLoc, new Float32Array([
-      mdVSQs.q9 || 0, mdVSQs.q10 || 0, mdVSQs.q11 || 0, mdVSQs.q12 || 0
-    ]));
-    this.gl.uniform4fv(this.qdLoc, new Float32Array([
-      mdVSQs.q13 || 0, mdVSQs.q14 || 0, mdVSQs.q15 || 0, mdVSQs.q16 || 0
-    ]));
-    this.gl.uniform4fv(this.qeLoc, new Float32Array([
-      mdVSQs.q17 || 0, mdVSQs.q18 || 0, mdVSQs.q19 || 0, mdVSQs.q20 || 0
-    ]));
-    this.gl.uniform4fv(this.qfLoc, new Float32Array([
-      mdVSQs.q21 || 0, mdVSQs.q22 || 0, mdVSQs.q23 || 0, mdVSQs.q24 || 0
-    ]));
-    this.gl.uniform4fv(this.qgLoc, new Float32Array([
-      mdVSQs.q25 || 0, mdVSQs.q26 || 0, mdVSQs.q27 || 0, mdVSQs.q28 || 0
-    ]));
-    this.gl.uniform4fv(this.qhLoc, new Float32Array([
-      mdVSQs.q29 || 0, mdVSQs.q30 || 0, mdVSQs.q31 || 0, mdVSQs.q32 || 0
-    ]));
+    this.gl.uniform4fv(
+      this.qaLoc,
+      new Float32Array([
+        mdVSQs.q1 || 0,
+        mdVSQs.q2 || 0,
+        mdVSQs.q3 || 0,
+        mdVSQs.q4 || 0,
+      ])
+    );
+    this.gl.uniform4fv(
+      this.qbLoc,
+      new Float32Array([
+        mdVSQs.q5 || 0,
+        mdVSQs.q6 || 0,
+        mdVSQs.q7 || 0,
+        mdVSQs.q8 || 0,
+      ])
+    );
+    this.gl.uniform4fv(
+      this.qcLoc,
+      new Float32Array([
+        mdVSQs.q9 || 0,
+        mdVSQs.q10 || 0,
+        mdVSQs.q11 || 0,
+        mdVSQs.q12 || 0,
+      ])
+    );
+    this.gl.uniform4fv(
+      this.qdLoc,
+      new Float32Array([
+        mdVSQs.q13 || 0,
+        mdVSQs.q14 || 0,
+        mdVSQs.q15 || 0,
+        mdVSQs.q16 || 0,
+      ])
+    );
+    this.gl.uniform4fv(
+      this.qeLoc,
+      new Float32Array([
+        mdVSQs.q17 || 0,
+        mdVSQs.q18 || 0,
+        mdVSQs.q19 || 0,
+        mdVSQs.q20 || 0,
+      ])
+    );
+    this.gl.uniform4fv(
+      this.qfLoc,
+      new Float32Array([
+        mdVSQs.q21 || 0,
+        mdVSQs.q22 || 0,
+        mdVSQs.q23 || 0,
+        mdVSQs.q24 || 0,
+      ])
+    );
+    this.gl.uniform4fv(
+      this.qgLoc,
+      new Float32Array([
+        mdVSQs.q25 || 0,
+        mdVSQs.q26 || 0,
+        mdVSQs.q27 || 0,
+        mdVSQs.q28 || 0,
+      ])
+    );
+    this.gl.uniform4fv(
+      this.qhLoc,
+      new Float32Array([
+        mdVSQs.q29 || 0,
+        mdVSQs.q30 || 0,
+        mdVSQs.q31 || 0,
+        mdVSQs.q32 || 0,
+      ])
+    );
     this.gl.uniform4fv(this.slowRoamCosLoc, [
-      0.5 + (0.5 * Math.cos(mdVSFrame.time * 0.005)),
-      0.5 + (0.5 * Math.cos(mdVSFrame.time * 0.008)),
-      0.5 + (0.5 * Math.cos(mdVSFrame.time * 0.013)),
-      0.5 + (0.5 * Math.cos(mdVSFrame.time * 0.022))
+      0.5 + 0.5 * Math.cos(mdVSFrame.time * 0.005),
+      0.5 + 0.5 * Math.cos(mdVSFrame.time * 0.008),
+      0.5 + 0.5 * Math.cos(mdVSFrame.time * 0.013),
+      0.5 + 0.5 * Math.cos(mdVSFrame.time * 0.022),
     ]);
     this.gl.uniform4fv(this.roamCosLoc, [
-      0.5 + (0.5 * Math.cos(mdVSFrame.time * 0.3)),
-      0.5 + (0.5 * Math.cos(mdVSFrame.time * 1.3)),
-      0.5 + (0.5 * Math.cos(mdVSFrame.time * 5.0)),
-      0.5 + (0.5 * Math.cos(mdVSFrame.time * 20.0))
+      0.5 + 0.5 * Math.cos(mdVSFrame.time * 0.3),
+      0.5 + 0.5 * Math.cos(mdVSFrame.time * 1.3),
+      0.5 + 0.5 * Math.cos(mdVSFrame.time * 5.0),
+      0.5 + 0.5 * Math.cos(mdVSFrame.time * 20.0),
     ]);
     this.gl.uniform4fv(this.slowRoamSinLoc, [
-      0.5 + (0.5 * Math.sin(mdVSFrame.time * 0.005)),
-      0.5 + (0.5 * Math.sin(mdVSFrame.time * 0.008)),
-      0.5 + (0.5 * Math.sin(mdVSFrame.time * 0.013)),
-      0.5 + (0.5 * Math.sin(mdVSFrame.time * 0.022))
+      0.5 + 0.5 * Math.sin(mdVSFrame.time * 0.005),
+      0.5 + 0.5 * Math.sin(mdVSFrame.time * 0.008),
+      0.5 + 0.5 * Math.sin(mdVSFrame.time * 0.013),
+      0.5 + 0.5 * Math.sin(mdVSFrame.time * 0.022),
     ]);
     this.gl.uniform4fv(this.roamSinLoc, [
-      0.5 + (0.5 * Math.sin(mdVSFrame.time * 0.3)),
-      0.5 + (0.5 * Math.sin(mdVSFrame.time * 1.3)),
-      0.5 + (0.5 * Math.sin(mdVSFrame.time * 5.0)),
-      0.5 + (0.5 * Math.sin(mdVSFrame.time * 20.0))
+      0.5 + 0.5 * Math.sin(mdVSFrame.time * 0.3),
+      0.5 + 0.5 * Math.sin(mdVSFrame.time * 1.3),
+      0.5 + 0.5 * Math.sin(mdVSFrame.time * 5.0),
+      0.5 + 0.5 * Math.sin(mdVSFrame.time * 20.0),
     ]);
 
     this.bindBlurVals(blurMins, blurMaxs);
@@ -711,7 +1022,12 @@ export default class CompShader {
       this.gl.disable(this.gl.BLEND);
     }
 
-    this.gl.drawElements(this.gl.TRIANGLES, this.indices.length, this.gl.UNSIGNED_SHORT, 0);
+    this.gl.drawElements(
+      this.gl.TRIANGLES,
+      this.indices.length,
+      this.gl.UNSIGNED_SHORT,
+      0
+    );
 
     if (!blending) {
       this.gl.enable(this.gl.BLEND);

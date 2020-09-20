@@ -1,7 +1,7 @@
-import ShaderUtils from '../shaderUtils';
+import ShaderUtils from "../shaderUtils";
 
 export default class BlurHorizontal {
-  constructor (gl, blurLevel) {
+  constructor(gl, blurLevel) {
     this.gl = gl;
     this.blurLevel = blurLevel;
 
@@ -10,21 +10,16 @@ export default class BlurHorizontal {
     const w2H = w[2] + w[3];
     const w3H = w[4] + w[5];
     const w4H = w[6] + w[7];
-    const d1H = 0 + ((2 * w[1]) / w1H);
-    const d2H = 2 + ((2 * w[3]) / w2H);
-    const d3H = 4 + ((2 * w[5]) / w3H);
-    const d4H = 6 + ((2 * w[7]) / w4H);
+    const d1H = 0 + (2 * w[1]) / w1H;
+    const d2H = 2 + (2 * w[3]) / w2H;
+    const d3H = 4 + (2 * w[5]) / w3H;
+    const d4H = 6 + (2 * w[7]) / w4H;
 
     this.ws = new Float32Array([w1H, w2H, w3H, w4H]);
     this.ds = new Float32Array([d1H, d2H, d3H, d4H]);
     this.wDiv = 0.5 / (w1H + w2H + w3H + w4H);
 
-    this.positions = new Float32Array([
-      -1, -1,
-      1, -1,
-      -1, 1,
-      1, 1,
-    ]);
+    this.positions = new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]);
 
     this.vertexBuf = this.gl.createBuffer();
 
@@ -32,22 +27,26 @@ export default class BlurHorizontal {
     this.createShader();
   }
 
-  createShader () {
+  createShader() {
     this.shaderProgram = this.gl.createProgram();
 
     const vertShader = this.gl.createShader(this.gl.VERTEX_SHADER);
-    this.gl.shaderSource(vertShader, `#version 300 es
+    this.gl.shaderSource(
+      vertShader,
+      `#version 300 es
                                       const vec2 halfmad = vec2(0.5);
                                       in vec2 aPos;
                                       out vec2 uv;
                                       void main(void) {
                                         gl_Position = vec4(aPos, 0.0, 1.0);
                                         uv = aPos * halfmad + halfmad;
-                                      }`);
+                                      }`
+    );
     this.gl.compileShader(vertShader);
 
     const fragShader = this.gl.createShader(this.gl.FRAGMENT_SHADER);
-    this.gl.shaderSource(fragShader,
+    this.gl.shaderSource(
+      fragShader,
       `#version 300 es
        precision ${this.floatPrecision} float;
        precision highp int;
@@ -89,24 +88,34 @@ export default class BlurHorizontal {
          blur.xyz = blur.xyz * scale + bias;
 
          fragColor = vec4(blur, 1.0);
-       }`);
+       }`
+    );
     this.gl.compileShader(fragShader);
 
     this.gl.attachShader(this.shaderProgram, vertShader);
     this.gl.attachShader(this.shaderProgram, fragShader);
     this.gl.linkProgram(this.shaderProgram);
 
-    this.positionLocation = this.gl.getAttribLocation(this.shaderProgram, 'aPos');
-    this.textureLoc = this.gl.getUniformLocation(this.shaderProgram, 'uTexture');
-    this.texsizeLocation = this.gl.getUniformLocation(this.shaderProgram, 'texsize');
-    this.scaleLoc = this.gl.getUniformLocation(this.shaderProgram, 'scale');
-    this.biasLoc = this.gl.getUniformLocation(this.shaderProgram, 'bias');
-    this.wsLoc = this.gl.getUniformLocation(this.shaderProgram, 'ws');
-    this.dsLocation = this.gl.getUniformLocation(this.shaderProgram, 'ds');
-    this.wdivLoc = this.gl.getUniformLocation(this.shaderProgram, 'wdiv');
+    this.positionLocation = this.gl.getAttribLocation(
+      this.shaderProgram,
+      "aPos"
+    );
+    this.textureLoc = this.gl.getUniformLocation(
+      this.shaderProgram,
+      "uTexture"
+    );
+    this.texsizeLocation = this.gl.getUniformLocation(
+      this.shaderProgram,
+      "texsize"
+    );
+    this.scaleLoc = this.gl.getUniformLocation(this.shaderProgram, "scale");
+    this.biasLoc = this.gl.getUniformLocation(this.shaderProgram, "bias");
+    this.wsLoc = this.gl.getUniformLocation(this.shaderProgram, "ws");
+    this.dsLocation = this.gl.getUniformLocation(this.shaderProgram, "ds");
+    this.wdivLoc = this.gl.getUniformLocation(this.shaderProgram, "wdiv");
   }
 
-  getScaleAndBias (blurMins, blurMaxs) {
+  getScaleAndBias(blurMins, blurMaxs) {
     const scale = [1, 1, 1];
     const bias = [0, 0, 0];
 
@@ -129,13 +138,24 @@ export default class BlurHorizontal {
     };
   }
 
-  renderQuadTexture (texture, mdVSFrame, blurMins, blurMaxs, srcTexsize) {
+  renderQuadTexture(texture, mdVSFrame, blurMins, blurMaxs, srcTexsize) {
     this.gl.useProgram(this.shaderProgram);
 
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.vertexBuf);
-    this.gl.bufferData(this.gl.ARRAY_BUFFER, this.positions, this.gl.STATIC_DRAW);
+    this.gl.bufferData(
+      this.gl.ARRAY_BUFFER,
+      this.positions,
+      this.gl.STATIC_DRAW
+    );
 
-    this.gl.vertexAttribPointer(this.positionLocation, 2, this.gl.FLOAT, false, 0, 0);
+    this.gl.vertexAttribPointer(
+      this.positionLocation,
+      2,
+      this.gl.FLOAT,
+      false,
+      0,
+      0
+    );
     this.gl.enableVertexAttribArray(this.positionLocation);
 
     this.gl.activeTexture(this.gl.TEXTURE0);
@@ -146,7 +166,10 @@ export default class BlurHorizontal {
     const { scale, bias } = this.getScaleAndBias(blurMins, blurMaxs);
 
     this.gl.uniform4fv(this.texsizeLocation, [
-      srcTexsize[0], srcTexsize[1], 1.0 / srcTexsize[0], 1.0 / srcTexsize[1]
+      srcTexsize[0],
+      srcTexsize[1],
+      1.0 / srcTexsize[0],
+      1.0 / srcTexsize[1],
     ]);
     this.gl.uniform1f(this.scaleLoc, scale);
     this.gl.uniform1f(this.biasLoc, bias);

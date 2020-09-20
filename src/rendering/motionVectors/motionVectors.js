@@ -1,7 +1,7 @@
-import ShaderUtils from '../shaders/shaderUtils';
+import ShaderUtils from "../shaders/shaderUtils";
 
 export default class MotionVectors {
-  constructor (gl, opts) {
+  constructor(gl, opts) {
     this.gl = gl;
 
     this.maxX = 64;
@@ -19,26 +19,31 @@ export default class MotionVectors {
     this.createShader();
   }
 
-  updateGlobals (opts) {
+  updateGlobals(opts) {
     this.texsizeX = opts.texsizeX;
     this.texsizeY = opts.texsizeY;
     this.mesh_width = opts.mesh_width;
     this.mesh_height = opts.mesh_height;
   }
 
-  createShader () {
+  createShader() {
     this.shaderProgram = this.gl.createProgram();
 
     const vertShader = this.gl.createShader(this.gl.VERTEX_SHADER);
-    this.gl.shaderSource(vertShader, `#version 300 es
+    this.gl.shaderSource(
+      vertShader,
+      `#version 300 es
                                       in vec3 aPos;
                                       void main(void) {
                                         gl_Position = vec4(aPos, 1.0);
-                                      }`);
+                                      }`
+    );
     this.gl.compileShader(vertShader);
 
     const fragShader = this.gl.createShader(this.gl.FRAGMENT_SHADER);
-    this.gl.shaderSource(fragShader, `#version 300 es
+    this.gl.shaderSource(
+      fragShader,
+      `#version 300 es
                                       precision ${this.floatPrecision} float;
                                       precision highp int;
                                       precision mediump sampler2D;
@@ -46,24 +51,25 @@ export default class MotionVectors {
                                       uniform vec4 u_color;
                                       void main(void) {
                                         fragColor = u_color;
-                                      }`);
+                                      }`
+    );
     this.gl.compileShader(fragShader);
 
     this.gl.attachShader(this.shaderProgram, vertShader);
     this.gl.attachShader(this.shaderProgram, fragShader);
     this.gl.linkProgram(this.shaderProgram);
 
-    this.aPosLoc = this.gl.getAttribLocation(this.shaderProgram, 'aPos');
+    this.aPosLoc = this.gl.getAttribLocation(this.shaderProgram, "aPos");
 
-    this.colorLoc = this.gl.getUniformLocation(this.shaderProgram, 'u_color');
+    this.colorLoc = this.gl.getUniformLocation(this.shaderProgram, "u_color");
   }
 
-  getMotionDir (warpUVs, fx, fy) {
+  getMotionDir(warpUVs, fx, fy) {
     const y0 = Math.floor(fy * this.mesh_height);
-    const dy = (fy * this.mesh_height) - y0;
+    const dy = fy * this.mesh_height - y0;
 
     const x0 = Math.floor(fx * this.mesh_width);
-    const dx = (fx * this.mesh_width) - x0;
+    const dx = fx * this.mesh_width - x0;
 
     const x1 = x0 + 1;
     const y1 = y0 + 1;
@@ -72,19 +78,19 @@ export default class MotionVectors {
 
     let fx2;
     let fy2;
-    fx2 = warpUVs[(((y0 * gridX1) + x0) * 2) + 0] * (1 - dx) * (1 - dy);
-    fy2 = warpUVs[(((y0 * gridX1) + x0) * 2) + 1] * (1 - dx) * (1 - dy);
-    fx2 += warpUVs[(((y0 * gridX1) + x1) * 2) + 0] * dx * (1 - dy);
-    fy2 += warpUVs[(((y0 * gridX1) + x1) * 2) + 1] * dx * (1 - dy);
-    fx2 += warpUVs[(((y1 * gridX1) + x0) * 2) + 0] * (1 - dx) * dy;
-    fy2 += warpUVs[(((y1 * gridX1) + x0) * 2) + 1] * (1 - dx) * dy;
-    fx2 += warpUVs[(((y1 * gridX1) + x1) * 2) + 0] * dx * dy;
-    fy2 += warpUVs[(((y1 * gridX1) + x1) * 2) + 1] * dx * dy;
+    fx2 = warpUVs[(y0 * gridX1 + x0) * 2 + 0] * (1 - dx) * (1 - dy);
+    fy2 = warpUVs[(y0 * gridX1 + x0) * 2 + 1] * (1 - dx) * (1 - dy);
+    fx2 += warpUVs[(y0 * gridX1 + x1) * 2 + 0] * dx * (1 - dy);
+    fy2 += warpUVs[(y0 * gridX1 + x1) * 2 + 1] * dx * (1 - dy);
+    fx2 += warpUVs[(y1 * gridX1 + x0) * 2 + 0] * (1 - dx) * dy;
+    fy2 += warpUVs[(y1 * gridX1 + x0) * 2 + 1] * (1 - dx) * dy;
+    fx2 += warpUVs[(y1 * gridX1 + x1) * 2 + 0] * dx * dy;
+    fy2 += warpUVs[(y1 * gridX1 + x1) * 2 + 1] * dx * dy;
 
     return [fx2, 1.0 - fy2];
   }
 
-  generateMotionVectors (mdVSFrame, warpUVs) {
+  generateMotionVectors(mdVSFrame, warpUVs) {
     const mvOn = mdVSFrame.bmotionvectorson;
     const mvA = mvOn === 0 ? 0 : mdVSFrame.mv_a;
     let nX = Math.floor(mdVSFrame.mv_x);
@@ -112,12 +118,12 @@ export default class MotionVectors {
 
       this.numVecVerts = 0;
       for (let j = 0; j < nY; j++) {
-        let fy = (j + 0.25) / ((nY + dy + 0.25) - 1.0);
+        let fy = (j + 0.25) / (nY + dy + 0.25 - 1.0);
         fy -= dy2;
 
         if (fy > 0.0001 && fy < 0.9999) {
           for (let i = 0; i < nX; i++) {
-            let fx = (i + 0.25) / ((nX + dx + 0.25) - 1.0);
+            let fx = (i + 0.25) / (nX + dx + 0.25 - 1.0);
             fx += dx2;
 
             if (fx > 0.0001 && fx < 0.9999) {
@@ -125,12 +131,12 @@ export default class MotionVectors {
               let fx2 = fx2arr[0];
               let fy2 = fx2arr[1];
 
-              let dxi = (fx2 - fx);
-              let dyi = (fy2 - fy);
+              let dxi = fx2 - fx;
+              let dyi = fy2 - fy;
               dxi *= lenMult;
               dyi *= lenMult;
 
-              let fdist = Math.sqrt((dxi * dxi) + (dyi * dyi));
+              let fdist = Math.sqrt(dxi * dxi + dyi * dyi);
 
               if (fdist < minLen && fdist > 0.00000001) {
                 fdist = minLen / fdist;
@@ -144,18 +150,18 @@ export default class MotionVectors {
               fx2 = fx + dxi;
               fy2 = fy + dyi;
 
-              const vx1 = ((2.0 * fx) - 1.0);
-              const vy1 = ((2.0 * fy) - 1.0);
-              const vx2 = ((2.0 * fx2) - 1.0);
-              const vy2 = ((2.0 * fy2) - 1.0);
+              const vx1 = 2.0 * fx - 1.0;
+              const vy1 = 2.0 * fy - 1.0;
+              const vx2 = 2.0 * fx2 - 1.0;
+              const vy2 = 2.0 * fy2 - 1.0;
 
-              this.positions[(this.numVecVerts * 3) + 0] = vx1;
-              this.positions[(this.numVecVerts * 3) + 1] = vy1;
-              this.positions[(this.numVecVerts * 3) + 2] = 0;
+              this.positions[this.numVecVerts * 3 + 0] = vx1;
+              this.positions[this.numVecVerts * 3 + 1] = vy1;
+              this.positions[this.numVecVerts * 3 + 2] = 0;
 
-              this.positions[((this.numVecVerts + 1) * 3) + 0] = vx2;
-              this.positions[((this.numVecVerts + 1) * 3) + 1] = vy2;
-              this.positions[((this.numVecVerts + 1) * 3) + 2] = 0;
+              this.positions[(this.numVecVerts + 1) * 3 + 0] = vx2;
+              this.positions[(this.numVecVerts + 1) * 3 + 1] = vy2;
+              this.positions[(this.numVecVerts + 1) * 3 + 2] = 0;
 
               this.numVecVerts += 2;
             }
@@ -173,12 +179,16 @@ export default class MotionVectors {
     return false;
   }
 
-  drawMotionVectors (mdVSFrame, warpUVs) {
+  drawMotionVectors(mdVSFrame, warpUVs) {
     if (this.generateMotionVectors(mdVSFrame, warpUVs)) {
       this.gl.useProgram(this.shaderProgram);
 
       this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.positionVertexBuf);
-      this.gl.bufferData(this.gl.ARRAY_BUFFER, this.positions, this.gl.STATIC_DRAW);
+      this.gl.bufferData(
+        this.gl.ARRAY_BUFFER,
+        this.positions,
+        this.gl.STATIC_DRAW
+      );
 
       this.gl.vertexAttribPointer(this.aPosLoc, 3, this.gl.FLOAT, false, 0, 0);
       this.gl.enableVertexAttribArray(this.aPosLoc);

@@ -1,13 +1,13 @@
-import { loadModule } from 'eel-wasm';
-import AudioProcessor from './audio/audioProcessor';
-import Renderer from './rendering/renderer';
-import Utils from './utils';
+import { loadModule } from "eel-wasm";
+import AudioProcessor from "./audio/audioProcessor";
+import Renderer from "./rendering/renderer";
+import Utils from "./utils";
 
 export default class Visualizer {
-  constructor (audioContext, canvas, opts) {
+  constructor(audioContext, canvas, opts) {
     this.audio = new AudioProcessor(audioContext);
 
-    const gl = canvas.getContext('webgl2', {
+    const gl = canvas.getContext("webgl2", {
       alpha: false,
       antialias: false,
       depth: false,
@@ -135,123 +135,122 @@ export default class Visualizer {
 
     this.globalPerFrameVars = [
       ...qs,
-      'old_wave_mode',
+      "old_wave_mode",
       // globals
-      'frame',
-      'time',
-      'fps',
-      'bass',
-      'bass_att',
-      'mid',
-      'mid_att',
-      'treb',
-      'treb_att',
-      'meshx',
-      'meshy',
-      'aspectx',
-      'aspecty',
-      'pixelsx',
-      'pixelsy',
-      'rand_start',
-      'rand_preset',
+      "frame",
+      "time",
+      "fps",
+      "bass",
+      "bass_att",
+      "mid",
+      "mid_att",
+      "treb",
+      "treb_att",
+      "meshx",
+      "meshy",
+      "aspectx",
+      "aspecty",
+      "pixelsx",
+      "pixelsy",
+      "rand_start",
+      "rand_preset",
     ];
 
     this.globalPerPixelVars = [
       ...qs,
       // globals
-      'frame',
-      'time',
-      'fps',
-      'bass',
-      'bass_att',
-      'mid',
-      'mid_att',
-      'treb',
-      'treb_att',
-      'meshx',
-      'meshy',
-      'aspectx',
-      'aspecty',
-      'pixelsx',
-      'pixelsy',
-      'rand_start',
-      'rand_preset',
+      "frame",
+      "time",
+      "fps",
+      "bass",
+      "bass_att",
+      "mid",
+      "mid_att",
+      "treb",
+      "treb_att",
+      "meshx",
+      "meshy",
+      "aspectx",
+      "aspecty",
+      "pixelsx",
+      "pixelsy",
+      "rand_start",
+      "rand_preset",
       // for pixel eqs
-      'x',
-      'y',
-      'rad',
-      'ang'
+      "x",
+      "y",
+      "rad",
+      "ang",
     ];
-
 
     this.globalShapeVars = [
       ...qs,
       ...ts,
       // globals
-      'frame',
-      'time',
-      'fps',
-      'bass',
-      'bass_att',
-      'mid',
-      'mid_att',
-      'treb',
-      'treb_att',
-      'meshx',
-      'meshy',
-      'aspectx',
-      'aspecty',
-      'pixelsx',
-      'pixelsy',
-      'rand_start',
-      'rand_preset',
+      "frame",
+      "time",
+      "fps",
+      "bass",
+      "bass_att",
+      "mid",
+      "mid_att",
+      "treb",
+      "treb_att",
+      "meshx",
+      "meshy",
+      "aspectx",
+      "aspecty",
+      "pixelsx",
+      "pixelsy",
+      "rand_start",
+      "rand_preset",
       // for shape eqs
-      'instance',
+      "instance",
     ];
 
     this.globalWaveVars = [
       ...qs,
       ...ts,
       // globals
-      'frame',
-      'time',
-      'fps',
-      'bass',
-      'bass_att',
-      'mid',
-      'mid_att',
-      'treb',
-      'treb_att',
-      'meshx',
-      'meshy',
-      'aspectx',
-      'aspecty',
-      'pixelsx',
-      'pixelsy',
-      'rand_start',
-      'rand_preset',
+      "frame",
+      "time",
+      "fps",
+      "bass",
+      "bass_att",
+      "mid",
+      "mid_att",
+      "treb",
+      "treb_att",
+      "meshx",
+      "meshy",
+      "aspectx",
+      "aspecty",
+      "pixelsx",
+      "pixelsy",
+      "rand_start",
+      "rand_preset",
       // for wave eqs
-      'x',
-      'y',
-      'sample',
-      'value1',
-      'value2',
+      "x",
+      "y",
+      "sample",
+      "value1",
+      "value2",
     ];
 
     this.renderer = new Renderer(gl, this.audio, opts);
   }
 
-  connectAudio (audioNode) {
+  connectAudio(audioNode) {
     this.audioNode = audioNode;
     this.audio.connectAudio(audioNode);
   }
 
-  disconnectAudio (audioNode) {
+  disconnectAudio(audioNode) {
     this.audio.disconnectAudio(audioNode);
   }
 
   // Override defaults, but only include variables in default map
-  static overrideDefaultVars (baseValsDefaults, baseVals) {
+  static overrideDefaultVars(baseValsDefaults, baseVals) {
     const combinedVals = {};
 
     Object.keys(baseValsDefaults).forEach((key) => {
@@ -265,19 +264,19 @@ export default class Visualizer {
     return combinedVals;
   }
 
-  createPerFramePool (baseVals) {
+  createPerFramePool(baseVals) {
     const wasmVars = {};
 
     Object.keys(this.baseValsDefaults).forEach((key) => {
       wasmVars[key] = new WebAssembly.Global(
-        { value: 'f64', mutable: true },
+        { value: "f64", mutable: true },
         baseVals[key]
       );
     });
 
     this.globalPerFrameVars.forEach((key) => {
       wasmVars[key] = new WebAssembly.Global(
-        { value: 'f64', mutable: true },
+        { value: "f64", mutable: true },
         0
       );
     });
@@ -285,19 +284,19 @@ export default class Visualizer {
     return wasmVars;
   }
 
-  createPerPixelPool (baseVals) {
+  createPerPixelPool(baseVals) {
     const wasmVars = {};
 
     Object.keys(this.baseValsDefaults).forEach((key) => {
       wasmVars[key] = new WebAssembly.Global(
-        { value: 'f64', mutable: true },
+        { value: "f64", mutable: true },
         baseVals[key]
       );
     });
 
     this.globalPerPixelVars.forEach((key) => {
       wasmVars[key] = new WebAssembly.Global(
-        { value: 'f64', mutable: true },
+        { value: "f64", mutable: true },
         0
       );
     });
@@ -305,19 +304,19 @@ export default class Visualizer {
     return wasmVars;
   }
 
-  createCustomShapePerFramePool (baseVals) {
+  createCustomShapePerFramePool(baseVals) {
     const wasmVars = {};
 
     Object.keys(this.shapeBaseValsDefaults).forEach((key) => {
       wasmVars[key] = new WebAssembly.Global(
-        { value: 'f64', mutable: true },
+        { value: "f64", mutable: true },
         baseVals[key]
       );
     });
 
     this.globalShapeVars.forEach((key) => {
       wasmVars[key] = new WebAssembly.Global(
-        { value: 'f64', mutable: true },
+        { value: "f64", mutable: true },
         0
       );
     });
@@ -325,19 +324,19 @@ export default class Visualizer {
     return wasmVars;
   }
 
-  createCustomWavePerFramePool (baseVals) {
+  createCustomWavePerFramePool(baseVals) {
     const wasmVars = {};
 
     Object.keys(this.waveBaseValsDefaults).forEach((key) => {
       wasmVars[key] = new WebAssembly.Global(
-        { value: 'f64', mutable: true },
+        { value: "f64", mutable: true },
         baseVals[key]
       );
     });
 
     this.globalWaveVars.forEach((key) => {
       wasmVars[key] = new WebAssembly.Global(
-        { value: 'f64', mutable: true },
+        { value: "f64", mutable: true },
         0
       );
     });
@@ -345,17 +344,24 @@ export default class Visualizer {
     return wasmVars;
   }
 
-  async loadPreset (presetMap, blendTime = 0) {
+  async loadPreset(presetMap, blendTime = 0) {
     const preset = Object.assign({}, presetMap);
-    preset.baseVals = Visualizer.overrideDefaultVars(this.baseValsDefaults, preset.baseVals);
+    preset.baseVals = Visualizer.overrideDefaultVars(
+      this.baseValsDefaults,
+      preset.baseVals
+    );
     for (let i = 0; i < preset.shapes.length; i++) {
-      preset.shapes[i].baseVals = Visualizer.overrideDefaultVars(this.shapeBaseValsDefaults,
-                                                                 preset.shapes[i].baseVals);
+      preset.shapes[i].baseVals = Visualizer.overrideDefaultVars(
+        this.shapeBaseValsDefaults,
+        preset.shapes[i].baseVals
+      );
     }
 
     for (let i = 0; i < preset.waves.length; i++) {
-      preset.waves[i].baseVals = Visualizer.overrideDefaultVars(this.waveBaseValsDefaults,
-                                                                preset.waves[i].baseVals);
+      preset.waves[i].baseVals = Visualizer.overrideDefaultVars(
+        this.waveBaseValsDefaults,
+        preset.waves[i].baseVals
+      );
     }
 
     if (preset.useWASM) {
@@ -365,32 +371,56 @@ export default class Visualizer {
       };
 
       const wasmFunctions = {
-        presetInit: { pool: 'perFrame', code: preset.init_eqs_eel },
-        perFrame: { pool: 'perFrame', code: preset.frame_eqs_eel },
+        presetInit: { pool: "perFrame", code: preset.init_eqs_eel },
+        perFrame: { pool: "perFrame", code: preset.frame_eqs_eel },
       };
 
-      if (preset.pixel_eqs_eel !== '') {
-        wasmFunctions.perPixel = { pool: 'perVertex', code: preset.pixel_eqs_eel };
+      if (preset.pixel_eqs_eel !== "") {
+        wasmFunctions.perPixel = {
+          pool: "perVertex",
+          code: preset.pixel_eqs_eel,
+        };
       }
-
 
       /* eslint-disable max-len */
       for (let i = 0; i < preset.shapes.length; i++) {
         if (preset.shapes[i].baseVals.enabled !== 0) {
-          wasmVarPools[`shapePerFrame${i}`] = this.createCustomShapePerFramePool(preset.shapes[i].baseVals);
-          wasmFunctions[`shapes_${i}_init_eqs`] = { pool: `shapePerFrame${i}`, code: preset.shapes[i].init_eqs_eel };
-          wasmFunctions[`shapes_${i}_frame_eqs`] = { pool: `shapePerFrame${i}`, code: preset.shapes[i].frame_eqs_eel };
+          wasmVarPools[
+            `shapePerFrame${i}`
+          ] = this.createCustomShapePerFramePool(preset.shapes[i].baseVals);
+          wasmFunctions[`shapes_${i}_init_eqs`] = {
+            pool: `shapePerFrame${i}`,
+            code: preset.shapes[i].init_eqs_eel,
+          };
+          wasmFunctions[`shapes_${i}_frame_eqs`] = {
+            pool: `shapePerFrame${i}`,
+            code: preset.shapes[i].frame_eqs_eel,
+          };
         }
       }
 
       for (let i = 0; i < preset.waves.length; i++) {
         if (preset.waves[i].baseVals.enabled !== 0) {
-          wasmVarPools[`wavePerFrame${i}`] = this.createCustomWavePerFramePool(preset.waves[i].baseVals);
-          wasmFunctions[`waves_${i}_init_eqs`] = { pool: `wavePerFrame${i}`, code: preset.waves[i].init_eqs_eel };
-          wasmFunctions[`waves_${i}_frame_eqs`] = { pool: `wavePerFrame${i}`, code: preset.waves[i].frame_eqs_eel };
+          wasmVarPools[`wavePerFrame${i}`] = this.createCustomWavePerFramePool(
+            preset.waves[i].baseVals
+          );
+          wasmFunctions[`waves_${i}_init_eqs`] = {
+            pool: `wavePerFrame${i}`,
+            code: preset.waves[i].init_eqs_eel,
+          };
+          wasmFunctions[`waves_${i}_frame_eqs`] = {
+            pool: `wavePerFrame${i}`,
+            code: preset.waves[i].frame_eqs_eel,
+          };
 
-          if (preset.waves[i].point_eqs_eel && preset.waves[i].point_eqs_eel !== '') {
-            wasmFunctions[`waves_${i}_point_eqs`] = { pool: `wavePerFrame${i}`, code: preset.waves[i].point_eqs_eel };
+          if (
+            preset.waves[i].point_eqs_eel &&
+            preset.waves[i].point_eqs_eel !== ""
+          ) {
+            wasmFunctions[`waves_${i}_point_eqs`] = {
+              pool: `wavePerFrame${i}`,
+              code: preset.waves[i].point_eqs_eel,
+            };
           }
         }
       }
@@ -404,10 +434,10 @@ export default class Visualizer {
       preset.globalPools = wasmVarPools;
       preset.init_eqs = () => mod.exports.presetInit();
       preset.frame_eqs = () => mod.exports.perFrame();
-      if (preset.pixel_eqs_eel !== '') {
+      if (preset.pixel_eqs_eel !== "") {
         preset.pixel_eqs = () => mod.exports.perPixel();
       } else {
-        preset.pixel_eqs = '';
+        preset.pixel_eqs = "";
       }
 
       for (let i = 0; i < preset.shapes.length; i++) {
@@ -424,30 +454,42 @@ export default class Visualizer {
             frame_eqs: mod.exports[`waves_${i}_frame_eqs`],
           };
 
-          if (preset.waves[i].point_eqs_eel && preset.waves[i].point_eqs_eel !== '') {
+          if (
+            preset.waves[i].point_eqs_eel &&
+            preset.waves[i].point_eqs_eel !== ""
+          ) {
             wave.point_eqs = mod.exports[`waves_${i}_point_eqs`];
           } else {
-            wave.point_eqs = '';
+            wave.point_eqs = "";
           }
 
           preset.waves[i] = Object.assign({}, preset.waves[i], wave);
         }
       }
-    } else if (typeof preset.init_eqs !== 'function') {
+    } else if (typeof preset.init_eqs !== "function") {
       /* eslint-disable no-param-reassign, no-new-func */
-      preset.init_eqs = new Function('a', `${preset.init_eqs_str} return a;`);
-      preset.frame_eqs = new Function('a', `${preset.frame_eqs_str} return a;`);
-      if (preset.pixel_eqs_str && preset.pixel_eqs_str !== '') {
-        preset.pixel_eqs = new Function('a', `${preset.pixel_eqs_str} return a;`);
+      preset.init_eqs = new Function("a", `${preset.init_eqs_str} return a;`);
+      preset.frame_eqs = new Function("a", `${preset.frame_eqs_str} return a;`);
+      if (preset.pixel_eqs_str && preset.pixel_eqs_str !== "") {
+        preset.pixel_eqs = new Function(
+          "a",
+          `${preset.pixel_eqs_str} return a;`
+        );
       } else {
-        preset.pixel_eqs = '';
+        preset.pixel_eqs = "";
       }
 
       for (let i = 0; i < preset.shapes.length; i++) {
         if (preset.shapes[i].baseVals.enabled !== 0) {
           preset.shapes[i] = Object.assign({}, preset.shapes[i], {
-            init_eqs: new Function('a', `${preset.shapes[i].init_eqs_str} return a;`),
-            frame_eqs: new Function('a', `${preset.shapes[i].frame_eqs_str} return a;`),
+            init_eqs: new Function(
+              "a",
+              `${preset.shapes[i].init_eqs_str} return a;`
+            ),
+            frame_eqs: new Function(
+              "a",
+              `${preset.shapes[i].frame_eqs_str} return a;`
+            ),
           });
         }
       }
@@ -455,14 +497,26 @@ export default class Visualizer {
       for (let i = 0; i < preset.waves.length; i++) {
         if (preset.waves[i].baseVals.enabled !== 0) {
           const wave = {
-            init_eqs: new Function('a', `${preset.waves[i].init_eqs_str} return a;`),
-            frame_eqs: new Function('a', `${preset.waves[i].frame_eqs_str} return a;`),
+            init_eqs: new Function(
+              "a",
+              `${preset.waves[i].init_eqs_str} return a;`
+            ),
+            frame_eqs: new Function(
+              "a",
+              `${preset.waves[i].frame_eqs_str} return a;`
+            ),
           };
 
-          if (preset.waves[i].point_eqs_str && preset.waves[i].point_eqs_str !== '') {
-            wave.point_eqs = new Function('a', `${preset.waves[i].point_eqs_str} return a;`);
+          if (
+            preset.waves[i].point_eqs_str &&
+            preset.waves[i].point_eqs_str !== ""
+          ) {
+            wave.point_eqs = new Function(
+              "a",
+              `${preset.waves[i].point_eqs_str} return a;`
+            );
           } else {
-            wave.point_eqs = '';
+            wave.point_eqs = "";
           }
 
           preset.waves[i] = Object.assign({}, preset.waves[i], wave);
@@ -473,35 +527,35 @@ export default class Visualizer {
     this.renderer.loadPreset(preset, blendTime);
   }
 
-  loadExtraImages (imageData) {
+  loadExtraImages(imageData) {
     this.renderer.loadExtraImages(imageData);
   }
 
-  setRendererSize (width, height, opts = {}) {
+  setRendererSize(width, height, opts = {}) {
     this.renderer.setRendererSize(width, height, opts);
   }
 
-  setInternalMeshSize (width, height) {
+  setInternalMeshSize(width, height) {
     this.renderer.setInternalMeshSize(width, height);
   }
 
-  setOutputAA (useAA) {
+  setOutputAA(useAA) {
     this.renderer.setOutputAA(useAA);
   }
 
-  render (opts) {
+  render(opts) {
     this.renderer.render(opts);
   }
 
-  launchSongTitleAnim (text) {
+  launchSongTitleAnim(text) {
     this.renderer.launchSongTitleAnim(text);
   }
 
-  toDataURL () {
+  toDataURL() {
     return this.renderer.toDataURL();
   }
 
-  warpBufferToDataURL () {
+  warpBufferToDataURL() {
     return this.renderer.warpBufferToDataURL();
   }
 }
