@@ -375,7 +375,8 @@ export default class Visualizer {
         perFrame: { pool: "perFrame", code: preset.frame_eqs_eel },
       };
 
-      if (preset.pixel_eqs_eel !== "") {
+      // Use pixel_eqs_str since that strips out comments and some presets have whole commented sections
+      if (preset.pixel_eqs_str !== "") {
         wasmFunctions.perPixel = {
           pool: "perVertex",
           code: preset.pixel_eqs_eel,
@@ -434,7 +435,7 @@ export default class Visualizer {
       preset.globalPools = wasmVarPools;
       preset.init_eqs = () => mod.exports.presetInit();
       preset.frame_eqs = () => mod.exports.perFrame();
-      if (preset.pixel_eqs_eel !== "") {
+      if (preset.pixel_eqs_str !== "") {
         preset.pixel_eqs = () => mod.exports.perPixel();
       } else {
         preset.pixel_eqs = "";
