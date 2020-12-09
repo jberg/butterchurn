@@ -594,6 +594,21 @@ export default class Renderer {
       let dy = mdVSFrame.dy;
       let rot = mdVSFrame.rot;
 
+      if (presetEquationRunner.runVertEQs) {
+        varPool.zoom.value = mdVSFrame.zoom;
+        varPool.zoomexp.value = mdVSFrame.zoomexp;
+        varPool.rot.value = mdVSFrame.rot;
+        varPool.warp.value = mdVSFrame.warp;
+        varPool.cx.value = mdVSFrame.cx;
+        varPool.cy.value = mdVSFrame.cy;
+        varPool.dx.value = mdVSFrame.dx;
+        varPool.dy.value = mdVSFrame.dy;
+        varPool.sx.value = mdVSFrame.sx;
+        varPool.sy.value = mdVSFrame.sy;
+
+        presetEquationRunner.preset.pixel_eqs_init();
+      }
+
       for (let iz = 0; iz < gridZ1; iz++) {
         for (let ix = 0; ix < gridX1; ix++) {
           const x = (ix / gridX) * 2.0 - 1.0;
@@ -614,17 +629,6 @@ export default class Renderer {
             varPool.y.value = y * -0.5 * aspecty + 0.5;
             varPool.rad.value = rad;
             varPool.ang.value = ang;
-
-            varPool.zoom.value = mdVSFrame.zoom;
-            varPool.zoomexp.value = mdVSFrame.zoomexp;
-            varPool.rot.value = mdVSFrame.rot;
-            varPool.warp.value = mdVSFrame.warp;
-            varPool.cx.value = mdVSFrame.cx;
-            varPool.cy.value = mdVSFrame.cy;
-            varPool.dx.value = mdVSFrame.dx;
-            varPool.dy.value = mdVSFrame.dy;
-            varPool.sx.value = mdVSFrame.sx;
-            varPool.sy.value = mdVSFrame.sy;
 
             presetEquationRunner.preset.pixel_eqs();
 

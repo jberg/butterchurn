@@ -3,6 +3,8 @@ import AudioProcessor from "./audio/audioProcessor";
 import Renderer from "./rendering/renderer";
 import Utils from "./utils";
 
+const pixelSentinel = "abc123";
+
 export default class Visualizer {
   constructor(audioContext, canvas, opts) {
     this.audio = new AudioProcessor(audioContext);
@@ -181,6 +183,17 @@ export default class Visualizer {
       "y",
       "rad",
       "ang",
+      // internal variables
+      `warp_${pixelSentinel}`,
+      `zoom_${pixelSentinel}`,
+      `zoomExp_${pixelSentinel}`,
+      `cx_${pixelSentinel}`,
+      `cy_${pixelSentinel}`,
+      `sx_${pixelSentinel}`,
+      `sy_${pixelSentinel}`,
+      `dx_${pixelSentinel}`,
+      `dy_${pixelSentinel}`,
+      `rot_${pixelSentinel}`,
     ];
 
     this.globalShapeVars = [
@@ -377,9 +390,37 @@ export default class Visualizer {
 
       // Use pixel_eqs_str since that strips out comments and some presets have whole commented sections
       if (preset.pixel_eqs_str !== "") {
+        wasmFunctions.perPixelInit = {
+          pool: "perVertex",
+          code: `
+            warp_${pixelSentinel} = warp;
+            zoom_${pixelSentinel} = zoom;
+            zoomExp_${pixelSentinel} = zoomExp;
+            cx_${pixelSentinel} = cx;
+            cy_${pixelSentinel} = cy;
+            sx_${pixelSentinel} = sx;
+            sy_${pixelSentinel} = sy;
+            dx_${pixelSentinel} = dx;
+            dy_${pixelSentinel} = dy;
+            rot_${pixelSentinel} = rot;
+          `,
+        };
+
         wasmFunctions.perPixel = {
           pool: "perVertex",
-          code: preset.pixel_eqs_eel,
+          code: `
+          warp = warp_${pixelSentinel};
+          zoom = zoom_${pixelSentinel};
+          zoomExp = zoomExp_${pixelSentinel};
+          cx = cx_${pixelSentinel};
+          cy = cy_${pixelSentinel};
+          sx = sx_${pixelSentinel};
+          sy = sy_${pixelSentinel};
+          dx = dx_${pixelSentinel};
+          dy = dy_${pixelSentinel};
+          rot = rot_${pixelSentinel};
+          ${preset.pixel_eqs_eel}
+          `,
         };
       }
 
@@ -436,6 +477,7 @@ export default class Visualizer {
       preset.init_eqs = () => mod.exports.presetInit();
       preset.frame_eqs = () => mod.exports.perFrame();
       if (preset.pixel_eqs_str !== "") {
+        preset.pixel_eqs_init = () => mod.exports.perPixelInit();
         preset.pixel_eqs = () => mod.exports.perPixel();
       } else {
         preset.pixel_eqs = "";
