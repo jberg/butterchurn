@@ -573,7 +573,7 @@ export default class Renderer {
       }
 
       this.mdVSVertex = mdVSVertex;
-    } else {
+    } else if (presetEquationRunner.preset.useMoreWASM) {
       const varPool = presetEquationRunner.preset.globalPools.perVertex;
 
       Utils.setWasm(varPool, globalVars, presetEquationRunner.globalKeys);
@@ -629,6 +629,154 @@ export default class Renderer {
             varPool.y.value = y * -0.5 * aspecty + 0.5;
             varPool.rad.value = rad;
             varPool.ang.value = ang;
+
+            presetEquationRunner.preset.pixel_eqs_with_var_sets();
+
+            warp = varPool.warp.value;
+            zoom = varPool.zoom.value;
+            zoomExp = varPool.zoomexp.value;
+            cx = varPool.cx.value;
+            cy = varPool.cy.value;
+            sx = varPool.sx.value;
+            sy = varPool.sy.value;
+            dx = varPool.dx.value;
+            dy = varPool.dy.value;
+            rot = varPool.rot.value;
+          }
+
+          const zoom2V = zoom ** (zoomExp ** (rad * 2.0 - 1.0));
+          const zoom2Inv = 1.0 / zoom2V;
+
+          let u = x * 0.5 * aspectx * zoom2Inv + 0.5;
+          let v = -y * 0.5 * aspecty * zoom2Inv + 0.5;
+
+          u = (u - cx) / sx + cx;
+          v = (v - cy) / sy + cy;
+
+          if (warp !== 0) {
+            u +=
+              warp *
+              0.0035 *
+              Math.sin(
+                warpTimeV * 0.333 + warpScaleInv * (x * warpf0 - y * warpf3)
+              );
+            v +=
+              warp *
+              0.0035 *
+              Math.cos(
+                warpTimeV * 0.375 - warpScaleInv * (x * warpf2 + y * warpf1)
+              );
+            u +=
+              warp *
+              0.0035 *
+              Math.cos(
+                warpTimeV * 0.753 - warpScaleInv * (x * warpf1 - y * warpf2)
+              );
+            v +=
+              warp *
+              0.0035 *
+              Math.sin(
+                warpTimeV * 0.825 + warpScaleInv * (x * warpf0 + y * warpf3)
+              );
+          }
+
+          const u2 = u - cx;
+          const v2 = v - cy;
+
+          const cosRot = Math.cos(rot);
+          const sinRot = Math.sin(rot);
+          u = u2 * cosRot - v2 * sinRot + cx;
+          v = u2 * sinRot + v2 * cosRot + cy;
+
+          u -= dx;
+          v -= dy;
+
+          u = (u - 0.5) / aspectx + 0.5;
+          v = (v - 0.5) / aspecty + 0.5;
+
+          u += texelOffsetX;
+          v += texelOffsetY;
+
+          if (!blending) {
+            this.warpUVs[offset] = u;
+            this.warpUVs[offset + 1] = v;
+
+            this.warpColor[offsetColor + 0] = 1;
+            this.warpColor[offsetColor + 1] = 1;
+            this.warpColor[offsetColor + 2] = 1;
+            this.warpColor[offsetColor + 3] = 1;
+          } else {
+            let mix2 =
+              this.blendPattern.vertInfoA[offset / 2] * this.blendProgress +
+              this.blendPattern.vertInfoC[offset / 2];
+            mix2 = Math.clamp(mix2, 0, 1);
+
+            this.warpUVs[offset] = this.warpUVs[offset] * mix2 + u * (1 - mix2);
+            this.warpUVs[offset + 1] =
+              this.warpUVs[offset + 1] * mix2 + v * (1 - mix2);
+
+            this.warpColor[offsetColor + 0] = 1;
+            this.warpColor[offsetColor + 1] = 1;
+            this.warpColor[offsetColor + 2] = 1;
+            this.warpColor[offsetColor + 3] = mix2;
+          }
+
+          offset += 2;
+          offsetColor += 4;
+        }
+      }
+    } else if (presetEquationRunner.preset.useWASM) {
+      const varPool = presetEquationRunner.preset.globalPools.perVertex;
+
+      Utils.setWasm(varPool, globalVars, presetEquationRunner.globalKeys);
+      Utils.setWasm(
+        varPool,
+        presetEquationRunner.mdVSQAfterFrame,
+        presetEquationRunner.qs
+      );
+
+      let warp = mdVSFrame.warp;
+      let zoom = mdVSFrame.zoom;
+      let zoomExp = mdVSFrame.zoomexp;
+      let cx = mdVSFrame.cx;
+      let cy = mdVSFrame.cy;
+      let sx = mdVSFrame.sx;
+      let sy = mdVSFrame.sy;
+      let dx = mdVSFrame.dx;
+      let dy = mdVSFrame.dy;
+      let rot = mdVSFrame.rot;
+
+      for (let iz = 0; iz < gridZ1; iz++) {
+        for (let ix = 0; ix < gridX1; ix++) {
+          const x = (ix / gridX) * 2.0 - 1.0;
+          const y = (iz / gridZ) * 2.0 - 1.0;
+          const rad = Math.sqrt(
+            x * x * aspectx * aspectx + y * y * aspecty * aspecty
+          );
+
+          if (presetEquationRunner.runVertEQs) {
+            let ang;
+            if (iz === gridZ / 2 && ix === gridX / 2) {
+              ang = 0;
+            } else {
+              ang = Utils.atan2(y * aspecty, x * aspectx);
+            }
+
+            varPool.x.value = x * 0.5 * aspectx + 0.5;
+            varPool.y.value = y * -0.5 * aspecty + 0.5;
+            varPool.rad.value = rad;
+            varPool.ang.value = ang;
+
+            varPool.zoom.value = mdVSFrame.zoom;
+            varPool.zoomexp.value = mdVSFrame.zoomexp;
+            varPool.rot.value = mdVSFrame.rot;
+            varPool.warp.value = mdVSFrame.warp;
+            varPool.cx.value = mdVSFrame.cx;
+            varPool.cy.value = mdVSFrame.cy;
+            varPool.dx.value = mdVSFrame.dx;
+            varPool.dy.value = mdVSFrame.dy;
+            varPool.sx.value = mdVSFrame.sx;
+            varPool.sy.value = mdVSFrame.sy;
 
             presetEquationRunner.preset.pixel_eqs();
 

@@ -406,7 +406,7 @@ export default class Visualizer {
           `,
         };
 
-        wasmFunctions.perPixel = {
+        wasmFunctions.perPixelWithVarSets = {
           pool: "perVertex",
           code: `
           warp = warp_${pixelSentinel};
@@ -421,6 +421,11 @@ export default class Visualizer {
           rot = rot_${pixelSentinel};
           ${preset.pixel_eqs_eel}
           `,
+        };
+
+        wasmFunctions.perPixel = {
+          pool: "perVertex",
+          code: preset.pixel_eqs_eel,
         };
       }
 
@@ -478,6 +483,7 @@ export default class Visualizer {
       preset.frame_eqs = () => mod.exports.perFrame();
       if (preset.pixel_eqs_str !== "") {
         preset.pixel_eqs_init = () => mod.exports.perPixelInit();
+        preset.pixel_eqs_with_var_sets = () => mod.exports.perPixelWithVarSets();
         preset.pixel_eqs = () => mod.exports.perPixel();
       } else {
         preset.pixel_eqs = "";
