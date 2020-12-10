@@ -518,11 +518,18 @@
         }
         if (frameNum % timeHistMax === 0) {
           const fps = timeHist.length / (newHistTime - timeHist[0]);
-          const useWasm = $('#useWASM').is(':checked');
+          let equations;
+          if ($('#equationsMoreWASM').is(':checked')) {
+            equations = "moreWASM";
+          } else if ($('#equationsWASM').is(':checked')) {
+            equations = "WASM";
+          } else if ($('#equationsJS').is(':checked')) {
+            equations = "JS";
+          }
           const presetName = presetNames[currPresetIdx];
           console.log(
             'FPS:', fps,
-            ', WASM:' , useWasm,
+            ', EQs:' , equations,
             ', name:', presetName);
         }
       }
@@ -628,7 +635,15 @@
         });
       });
 
-      $('#useWASM').change(() => {
+      $('#equationsMoreWASM').change(() => {
+        startPreset(currPresetIdx);
+      });
+
+      $('#equationsWASM').change(() => {
+        startPreset(currPresetIdx);
+      });
+
+      $('#equationsJS').change(() => {
         startPreset(currPresetIdx);
       });
 
@@ -647,7 +662,13 @@
             newPresetVal = currPresetIdx - 1;
           }
         } else if (e.which === 87) {
-          $('#useWASM').click();
+          if ($('#equationsMoreWASM').is(':checked')) {
+            $('#equationsWASM').click();
+          } else if ($('#equationsWASM').is(':checked')) {
+            $('#equationsJS').click();
+          } else if ($('#equationsJS').is(':checked')) {
+            $('#equationsMoreWASM').click();
+          }
           newPresetVal = currPresetIdx;
         }
         if (newPresetVal != undefined) {
@@ -660,7 +681,8 @@
         loadPreset(presetIdx).then((preset) => {
           currPresetIdx = presetIdx;
           const clonedPreset = _.cloneDeep(preset);
-          clonedPreset.useWASM = $('#useWASM').is(':checked');
+          clonedPreset.useWASM = $('#equationsMoreWASM').is(':checked') || $('#equationsWASM').is(':checked');
+          clonedPreset.useMoreWASM = $('#equationsMoreWASM').is(':checked');
           // visualizer.loadPreset(preset, 3);
           visualizer.loadPreset(clonedPreset, 0);
 
@@ -724,7 +746,16 @@
     </div>
     <div id="presetControls">
       <div>Preset: <select id="presetSelect"></select></div>
-      <div>Use WASM: <input type="checkbox" id="useWASM" checked></input></div>
+      <div>
+        <input type="radio" id="equationsMoreWASM" name="equations" value="moreWASM" checked>
+        <label for="equationsMoreWASM">WASM with more WASM</label>
+
+        <input type="radio" id="equationsWASM" name="equations" value="WASM">
+        <label for="equationsWASM">WASM</label>
+
+        <input type="radio" id="equationsJS" name="equations" value="JS">
+        <label for="equationsJS">JS</label>
+      </div>
     </div>
     <canvas id='canvas' width='800' height='600'>
     </canvas>
