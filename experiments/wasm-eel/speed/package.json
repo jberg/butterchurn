@@ -1,0 +1,14 @@
+{
+  "name": "butterchurn-wasm-eel-speed-test",
+  "version": "0.0.1",
+  "description": "Tests speed difference between WASM and JS presets",
+  "scripts": {
+    "time-presets": "node src/timePresets.js"
+  },
+  "author": "Jordan Berg <jordannealberg@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "puppeteer": "^5.3.1"
+  },
+  "devDependencies": {}
+}
