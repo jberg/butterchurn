@@ -1049,8 +1049,12 @@ export default class Renderer {
   }
 
   render({ audioLevels, elapsedTime } = {}) {
+    let stats = { startTime: performance.now() };
+
     this.calcTimeAndFPS(elapsedTime);
     this.frameNum += 1;
+
+    stats.calcFPS = performance.now();
 
     if (audioLevels) {
       this.audio.updateAudio(
@@ -1062,6 +1066,8 @@ export default class Renderer {
       this.audio.sampleAudio();
     }
     this.audioLevels.updateAudioLevels(this.fps, this.frameNum);
+
+    stats.updateAudioLevels = performance.now();
 
     const globalVars = {
       frame: this.frameNum,
@@ -1092,6 +1098,9 @@ export default class Renderer {
     }
 
     const mdVSFrame = this.presetEquationRunner.runFrameEquations(globalVars);
+
+    stats.runFrameEquations = performance.now();
+
     this.runPixelEquations(
       this.presetEquationRunner,
       mdVSFrame,
@@ -1103,6 +1112,8 @@ export default class Renderer {
       Object.assign(this.regVars, Utils.pick(this.mdVSVertex, this.regs));
       Object.assign(globalVars, this.regVars);
     }
+
+    stats.runPixelEquations = performance.now();
 
     let mdVSFrameMixed;
     if (this.blending) {
@@ -1149,6 +1160,8 @@ export default class Renderer {
 
     const { blurMins, blurMaxs } = Renderer.getBlurValues(mdVSFrameMixed);
 
+    stats.getBlurValues = performance.now();
+
     if (!this.blending) {
       this.warpShader.renderQuadTexture(
         false,
@@ -1193,6 +1206,8 @@ export default class Renderer {
       );
     }
 
+    stats.warpShader = performance.now();
+
     if (this.numBlurPasses > 0) {
       this.blurShader1.renderBlurTexture(
         this.targetTexture,
@@ -1227,7 +1242,11 @@ export default class Renderer {
       );
     }
 
+    stats.renderBlurTexture = performance.now();
+
     this.motionVectors.drawMotionVectors(mdVSFrameMixed, this.warpUVs);
+
+    stats.drawMotionVectors = performance.now();
 
     if (this.preset.shapes && this.preset.shapes.length > 0) {
       this.customShapes.forEach((shape, i) => {
@@ -1240,6 +1259,8 @@ export default class Renderer {
         );
       });
     }
+
+    stats.drawCustomShape = performance.now();
 
     if (this.preset.waves && this.preset.waves.length > 0) {
       this.customWaveforms.forEach((waveform, i) => {
@@ -1255,6 +1276,8 @@ export default class Renderer {
         );
       });
     }
+
+    stats.drawCustomWaveform = performance.now();
 
     if (this.blending) {
       if (this.prevPreset.shapes && this.prevPreset.shapes.length > 0) {
@@ -1293,6 +1316,8 @@ export default class Renderer {
       mdVSFrameMixed
     );
 
+    stats.drawBasicWaveform = performance.now();
+
     this.darkenCenter.drawDarkenCenter(mdVSFrameMixed);
 
     const outerColor = [
@@ -1315,6 +1340,8 @@ export default class Renderer {
       mdVSFrameMixed.ob_size
     );
 
+    stats.drawBorderAndCenter = performance.now();
+
     if (this.supertext.startTime >= 0) {
       const progress =
         (this.time - this.supertext.startTime) / this.supertext.duration;
@@ -1329,6 +1356,10 @@ export default class Renderer {
     this.mdVSFrameMixed = mdVSFrameMixed;
 
     this.renderToScreen();
+
+    stats.renderToScreen = performance.now();
+
+    return stats;
   }
 
   renderToScreen() {
