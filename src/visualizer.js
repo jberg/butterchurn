@@ -3,8 +3,6 @@ import AudioProcessor from "./audio/audioProcessor";
 import Renderer from "./rendering/renderer";
 import Utils from "./utils";
 
-const pixelSentinel = "abc123";
-
 export default class Visualizer {
   constructor(audioContext, canvas, opts) {
     this.audio = new AudioProcessor(audioContext);
@@ -446,31 +444,31 @@ export default class Visualizer {
             save: {
               pool: "resetPool",
               code: `
-                warp_${pixelSentinel} = warp;
-                zoom_${pixelSentinel} = zoom;
-                zoomExp_${pixelSentinel} = zoomExp;
-                cx_${pixelSentinel} = cx;
-                cy_${pixelSentinel} = cy;
-                sx_${pixelSentinel} = sx;
-                sy_${pixelSentinel} = sy;
-                dx_${pixelSentinel} = dx;
-                dy_${pixelSentinel} = dy;
-                rot_${pixelSentinel} = rot;
+                warp_save = warp;
+                zoom_save = zoom;
+                zoomExp_save = zoomExp;
+                cx_save = cx;
+                cy_save = cy;
+                sx_save = sx;
+                sy_save = sy;
+                dx_save = dx;
+                dy_save = dy;
+                rot_save = rot;
               `,
             },
             restore: {
               pool: "resetPool",
               code: `
-                warp = warp_${pixelSentinel};
-                zoom = zoom_${pixelSentinel};
-                zoomExp = zoomExp_${pixelSentinel};
-                cx = cx_${pixelSentinel};
-                cy = cy_${pixelSentinel};
-                sx = sx_${pixelSentinel};
-                sy = sy_${pixelSentinel};
-                dx = dx_${pixelSentinel};
-                dy = dy_${pixelSentinel};
-                rot = rot_${pixelSentinel};
+                warp = warp_save;
+                zoom = zoom_save;
+                zoomExp = zoomExp_save;
+                cx = cx_save;
+                cy = cy_save;
+                sx = sx_save;
+                sy = sy_save;
+                dx = dx_save;
+                dy = dy_save;
+                rot = rot_save;
               `,
             },
           },
