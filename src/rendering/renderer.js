@@ -606,7 +606,7 @@ export default class Renderer {
         varPool.sx.value = mdVSFrame.sx;
         varPool.sy.value = mdVSFrame.sy;
 
-        presetEquationRunner.preset.pixel_eqs_init();
+        presetEquationRunner.preset.pixel_eqs_save();
       }
 
       for (let iz = 0; iz < gridZ1; iz++) {
@@ -630,7 +630,8 @@ export default class Renderer {
             varPool.rad.value = rad;
             varPool.ang.value = ang;
 
-            presetEquationRunner.preset.pixel_eqs_with_var_sets();
+            presetEquationRunner.preset.pixel_eqs_restore();
+            presetEquationRunner.preset.pixel_eqs();
 
             warp = varPool.warp.value;
             zoom = varPool.zoom.value;
