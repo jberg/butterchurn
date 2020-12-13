@@ -344,6 +344,30 @@ export default class Visualizer {
     return wasmVars;
   }
 
+  static async makeResetModule(pool, variables) {
+    const resetPool = variables.reduce((acc, variable) => {
+      return { ...acc, [variable]: pool[variable] };
+    }, {});
+
+    return loadModule({
+      pools: { resetPool },
+      functions: {
+        save: {
+          pool: "resetPool",
+          code: variables.reduce((acc, variable) => {
+            return `${acc}${variable}_save = ${variable};\n`;
+          }, ""),
+        },
+        restore: {
+          pool: "resetPool",
+          code: variables.reduce((acc, variable) => {
+            return `${acc}${variable} = ${variable}_save;\n`;
+          }, ""),
+        },
+      },
+    });
+  }
+
   async loadPreset(presetMap, blendTime = 0) {
     const preset = Object.assign({}, presetMap);
     preset.baseVals = Visualizer.overrideDefaultVars(
@@ -438,41 +462,10 @@ export default class Visualizer {
       if (preset.pixel_eqs_str !== "") {
         preset.pixel_eqs = () => mod.exports.perPixel();
 
-        const resetMod = await loadModule({
-          pools: { resetPool: wasmVarPools.perVertex },
-          functions: {
-            save: {
-              pool: "resetPool",
-              code: `
-                warp_save = warp;
-                zoom_save = zoom;
-                zoomExp_save = zoomExp;
-                cx_save = cx;
-                cy_save = cy;
-                sx_save = sx;
-                sy_save = sy;
-                dx_save = dx;
-                dy_save = dy;
-                rot_save = rot;
-              `,
-            },
-            restore: {
-              pool: "resetPool",
-              code: `
-                warp = warp_save;
-                zoom = zoom_save;
-                zoomExp = zoomExp_save;
-                cx = cx_save;
-                cy = cy_save;
-                sx = sx_save;
-                sy = sy_save;
-                dx = dx_save;
-                dy = dy_save;
-                rot = rot_save;
-              `,
-            },
-          },
-        });
+        const resetMod = await Visualizer.makeResetModule(
+          wasmVarPools.perVertex,
+          ["warp", "zoom", "zoomexp", "cx", "cy", "sx", "sy", "dx", "dy", "rot"]
+        );
 
         preset.pixel_eqs_save = () => resetMod.exports.save();
         preset.pixel_eqs_restore = () => resetMod.exports.restore();
@@ -484,6 +477,36 @@ export default class Visualizer {
         if (preset.shapes[i].baseVals.enabled !== 0) {
           preset.shapes[i].init_eqs = mod.exports[`shapes_${i}_init_eqs`];
           preset.shapes[i].frame_eqs = mod.exports[`shapes_${i}_frame_eqs`];
+
+          const resetMod = await Visualizer.makeResetModule(
+            wasmVarPools[`shapePerFrame${i}`],
+            [
+              "x",
+              "y",
+              "rad",
+              "ang",
+              "r",
+              "g",
+              "b",
+              "a",
+              "r2",
+              "g2",
+              "b2",
+              "a2",
+              "border_r",
+              "border_g",
+              "border_b",
+              "border_a",
+              "thickoutline",
+              "textured",
+              "tex_zoom",
+              "tex_ang",
+              "additive",
+            ]
+          );
+
+          preset.shapes[i].frame_eqs_save = () => resetMod.exports.save();
+          preset.shapes[i].frame_eqs_restore = () => resetMod.exports.restore();
         }
       }
 
