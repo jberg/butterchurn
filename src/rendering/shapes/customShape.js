@@ -613,13 +613,14 @@ export default class CustomShape {
   ) {
     this.gl.useProgram(this.shaderProgram);
 
-    const updatedPositions = new Float32Array(
-      this.positions.buffer,
+    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.positionVertexBuf);
+    this.gl.bufferSubData(
+      this.gl.ARRAY_BUFFER,
+      0,
+      this.positions,
       0,
       (sides + 2) * 3
     );
-    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.positionVertexBuf);
-    this.gl.bufferSubData(this.gl.ARRAY_BUFFER, 0, updatedPositions);
 
     this.gl.vertexAttribPointer(
       this.aPosLocation,
@@ -631,13 +632,14 @@ export default class CustomShape {
     );
     this.gl.enableVertexAttribArray(this.aPosLocation);
 
-    const updatedColors = new Float32Array(
-      this.colors.buffer,
+    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.colorVertexBuf);
+    this.gl.bufferSubData(
+      this.gl.ARRAY_BUFFER,
+      0,
+      this.colors,
       0,
       (sides + 2) * 4
     );
-    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.colorVertexBuf);
-    this.gl.bufferSubData(this.gl.ARRAY_BUFFER, 0, updatedColors);
 
     this.gl.vertexAttribPointer(
       this.aColorLocation,
@@ -650,9 +652,14 @@ export default class CustomShape {
     this.gl.enableVertexAttribArray(this.aColorLocation);
 
     if (isTextured) {
-      const updatedUvs = new Float32Array(this.uvs.buffer, 0, (sides + 2) * 2);
       this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.uvVertexBuf);
-      this.gl.bufferSubData(this.gl.ARRAY_BUFFER, 0, updatedUvs);
+      this.gl.bufferSubData(
+        this.gl.ARRAY_BUFFER,
+        0,
+        this.uvs,
+        0,
+        (sides + 2) * 2
+      );
 
       this.gl.vertexAttribPointer(
         this.aUvLocation,
@@ -683,13 +690,14 @@ export default class CustomShape {
     if (hasBorder) {
       this.gl.useProgram(this.borderShaderProgram);
 
-      const updatedBorderPos = new Float32Array(
-        this.borderPositions.buffer,
+      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.borderPositionVertexBuf);
+      this.gl.bufferSubData(
+        this.gl.ARRAY_BUFFER,
+        0,
+        this.borderPositions,
         0,
         (sides + 1) * 3
       );
-      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.borderPositionVertexBuf);
-      this.gl.bufferSubData(this.gl.ARRAY_BUFFER, 0, updatedBorderPos);
 
       this.gl.vertexAttribPointer(
         this.aBorderPosLoc,
