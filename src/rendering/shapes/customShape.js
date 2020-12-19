@@ -422,17 +422,7 @@ export default class CustomShape {
           if (
             presetEquationRunner.preset.shapes[this.index].frame_eqs_eel !== ""
           ) {
-            Utils.setWasm(
-              varPool,
-              presetEquationRunner.mdVSQAfterFrame,
-              presetEquationRunner.qs
-            );
-            Utils.setWasm(
-              varPool,
-              presetEquationRunner.mdVSTShapeInits[this.index],
-              presetEquationRunner.ts
-            );
-
+            presetEquationRunner.preset.shapes[this.index].qs_copy();
             presetEquationRunner.preset.shapes[this.index].frame_eqs();
           }
 

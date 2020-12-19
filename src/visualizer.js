@@ -130,11 +130,11 @@ export default class Visualizer {
       additive: 0,
     };
 
-    const qs = Utils.range(1, 33).map((x) => `q${x}`);
-    const ts = Utils.range(1, 9).map((x) => `t${x}`);
+    this.qs = Utils.range(1, 33).map((x) => `q${x}`);
+    this.ts = Utils.range(1, 9).map((x) => `t${x}`);
 
     this.globalPerFrameVars = [
-      ...qs,
+      ...this.qs,
       "old_wave_mode",
       // globals
       "frame",
@@ -157,7 +157,7 @@ export default class Visualizer {
     ];
 
     this.globalPerPixelVars = [
-      ...qs,
+      ...this.qs,
       // globals
       "frame",
       "time",
@@ -184,8 +184,8 @@ export default class Visualizer {
     ];
 
     this.globalShapeVars = [
-      ...qs,
-      ...ts,
+      ...this.qs,
+      ...this.ts,
       // globals
       "frame",
       "time",
@@ -209,8 +209,8 @@ export default class Visualizer {
     ];
 
     this.globalWaveVars = [
-      ...qs,
-      ...ts,
+      ...this.qs,
+      ...this.ts,
       // globals
       "frame",
       "time",
@@ -368,6 +368,28 @@ export default class Visualizer {
     });
   }
 
+  static async makeCopyModule(fromPool, toPool, variables) {
+    const copyPool = variables.reduce((acc, variable) => {
+      return {
+        ...acc,
+        [`${variable}_from`]: fromPool[variable],
+        [`${variable}_to`]: toPool[variable],
+      };
+    }, {});
+
+    return loadModule({
+      pools: { copyPool },
+      functions: {
+        copy: {
+          pool: "copyPool",
+          code: variables.reduce((acc, variable) => {
+            return `${acc}${variable}_to = ${variable}_from;\n`;
+          }, ""),
+        },
+      },
+    });
+  }
+
   async loadPreset(presetMap, blendTime = 0) {
     const preset = Object.assign({}, presetMap);
     preset.baseVals = Visualizer.overrideDefaultVars(
@@ -502,11 +524,21 @@ export default class Visualizer {
               "tex_zoom",
               "tex_ang",
               "additive",
+              ...this.ts,
             ]
           );
 
           preset.shapes[i].frame_eqs_save = () => resetMod.exports.save();
           preset.shapes[i].frame_eqs_restore = () => resetMod.exports.restore();
+
+          // save should copy from perFrame
+          const copyModQs = await Visualizer.makeCopyModule(
+            wasmVarPools["perFrame"],
+            wasmVarPools[`shapePerFrame${i}`],
+            this.qs
+          );
+
+          preset.shapes[i].qs_copy = () => copyModQs.exports.copy();
         }
       }
 
