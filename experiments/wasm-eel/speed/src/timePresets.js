@@ -10,7 +10,7 @@ if (args.length < 1) {
   process.exit(1);
 }
 
-const onlyPresetsWithPixelEqs = true;
+const onlyPresetsWithPixelEqs = false;
 const presetList = JSON.parse(fs.readFileSync("presetList.json").toString());
 
 const audioAnalysis = JSON.parse(fs.readFileSync(args[0]).toString());
@@ -103,6 +103,9 @@ function shuffleArray(array) {
 
               <script>
                 document.addEventListener("DOMContentLoaded", function(event) {
+                  let audioAnalysis = null;
+                  const frameCount = ${frameCount};
+                  const presetStats = []
                   const canvas = document.getElementById('canvas');
                   const visualizer = butterchurn.default.createVisualizer(null, canvas , {
                     width: ${width},
@@ -113,8 +116,52 @@ function shuffleArray(array) {
                     visualizer.loadPreset(preset, 0);
                   }
 
-                  window.render = (opts) => {
-                    return visualizer.render(opts);
+                  window.setAudioAnalysis = (analysis) => {
+                    audioAnalysis = analysis;
+                  }
+
+                  const render = () => {
+                    if (presetStats.length === frameCount) {
+                      return;
+                    }
+
+                    requestAnimationFrame(() => {
+                      render();
+                    });
+
+                    const i = presetStats.length;
+                    const audioData = audioAnalysis[i];
+
+                    let elapsedTime;
+                    if (i === 0) {
+                      elapsedTime = audioData.time;
+                    } else {
+                      elapsedTime = audioData.time - audioAnalysis[i - 1].time;
+                    }
+
+                    const renderOpts = {
+                      elapsedTime,
+                      audioLevels: {
+                        timeByteArray: audioData.timeByteArray,
+                        timeByteArrayL: audioData.timeByteArrayL,
+                        timeByteArrayR: audioData.timeByteArrayR,
+                      },
+                    };
+
+                    const frameStats = visualizer.render(renderOpts);
+                    presetStats.push(frameStats);
+                  }
+
+                  window.renderFrames = () => {
+                    return render();
+                  }
+
+                  window.getResults = () => {
+                    if (presetStats.length === frameCount) {
+                      return presetStats;
+                    }
+
+                    return false;
                   }
                 });
               </script>
@@ -135,34 +182,20 @@ function shuffleArray(array) {
         try {
           await page.goto(`data:text/html;charset=UTF-8,${html}`);
 
+          await page.evaluate(
+            (audioAnalysis) => window.setAudioAnalysis(audioAnalysis),
+            audioAnalysis
+          );
           await page.evaluate((preset) => window.loadPreset(preset), preset);
+          await page.evaluate(() => window.renderFrames());
 
-          const presetStats = [];
-          for (let i = 0; i < frameCount; i++) {
-            const audioData = audioAnalysis[i];
-
-            let elapsedTime;
-            if (i === 0) {
-              elapsedTime = audioData.time;
-            } else {
-              elapsedTime = audioData.time - audioAnalysis[i - 1].time;
+          const resultHandle = await page.waitForFunction(
+            () => window.getResults(),
+            {
+              polling: 2000,
             }
-
-            const renderOpts = {
-              elapsedTime,
-              audioLevels: {
-                timeByteArray: audioData.timeByteArray,
-                timeByteArrayL: audioData.timeByteArrayL,
-                timeByteArrayR: audioData.timeByteArrayR,
-              },
-            };
-
-            const stats = await page.evaluate((renderOpts) => {
-              return window.render(renderOpts);
-            }, renderOpts);
-
-            presetStats.push(stats);
-          }
+          );
+          const presetStats = await resultHandle.jsonValue();
 
           const totalStats = {
             calcFPS: 0,
