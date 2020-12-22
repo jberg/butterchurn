@@ -48,7 +48,13 @@ const config = {
         use: {
           loader: 'eslint-loader'
         },
-        enforce: 'pre'
+        enforce: "pre",
+      },
+      {
+        test: /\.ts?$/,
+        use: {
+          loader: path.resolve("loaders/assemblyscript.js"),
+        },
       },
     ]
   },
