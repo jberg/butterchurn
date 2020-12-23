@@ -2,6 +2,7 @@ import { loadModule } from "eel-wasm";
 import AudioProcessor from "./audio/audioProcessor";
 import Renderer from "./rendering/renderer";
 import Utils from "./utils";
+import loadResetMod from "./assemblyscript/Reset.ts";
 
 export default class Visualizer {
   constructor(audioContext, canvas, opts) {
@@ -484,10 +485,25 @@ export default class Visualizer {
       if (preset.pixel_eqs_str !== "") {
         preset.pixel_eqs = () => mod.exports.perPixel();
 
-        const resetMod = await Visualizer.makeResetModule(
-          wasmVarPools.perVertex,
-          ["warp", "zoom", "zoomexp", "cx", "cy", "sx", "sy", "dx", "dy", "rot"]
-        );
+        const resetMod = await loadResetMod({
+          resetPool: {
+            warp: wasmVarPools.perVertex.warp,
+            zoom: wasmVarPools.perVertex.zoom,
+            zoomexp: wasmVarPools.perVertex.zoomexp,
+            cx: wasmVarPools.perVertex.cx,
+            cy: wasmVarPools.perVertex.cy,
+            sx: wasmVarPools.perVertex.sx,
+            sy: wasmVarPools.perVertex.sy,
+            dx: wasmVarPools.perVertex.dx,
+            dy: wasmVarPools.perVertex.dy,
+            rot: wasmVarPools.perVertex.rot,
+          },
+          env: {
+            abort: () => {
+              // No idea why we need this.
+            },
+          },
+        });
 
         preset.pixel_eqs_save = () => resetMod.exports.save();
         preset.pixel_eqs_restore = () => resetMod.exports.restore();
