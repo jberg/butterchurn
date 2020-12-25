@@ -135,7 +135,6 @@ export default class Visualizer {
     this.ts = Utils.range(1, 9).map((x) => `t${x}`);
 
     this.globalPerFrameVars = [
-      ...this.qs,
       "old_wave_mode",
       // globals
       "frame",
@@ -158,7 +157,6 @@ export default class Visualizer {
     ];
 
     this.globalPerPixelVars = [
-      ...this.qs,
       // globals
       "frame",
       "time",
@@ -185,8 +183,6 @@ export default class Visualizer {
     ];
 
     this.globalShapeVars = [
-      ...this.qs,
-      ...this.ts,
       // globals
       "frame",
       "time",
@@ -210,8 +206,6 @@ export default class Visualizer {
     ];
 
     this.globalWaveVars = [
-      ...this.qs,
-      ...this.ts,
       // globals
       "frame",
       "time",
@@ -263,6 +257,32 @@ export default class Visualizer {
     });
 
     return combinedVals;
+  }
+
+  createQVars() {
+    const wasmVars = {};
+
+    this.qs.forEach((key) => {
+      wasmVars[key] = new WebAssembly.Global(
+        { value: "f64", mutable: true },
+        0
+      );
+    });
+
+    return wasmVars;
+  }
+
+  createTVars() {
+    const wasmVars = {};
+
+    this.ts.forEach((key) => {
+      wasmVars[key] = new WebAssembly.Global(
+        { value: "f64", mutable: true },
+        0
+      );
+    });
+
+    return wasmVars;
   }
 
   createPerFramePool(baseVals) {
@@ -412,9 +432,15 @@ export default class Visualizer {
     }
 
     if (preset.useWASM) {
+      const qWasmVars = this.createQVars();
+      const tWasmVars = this.createTVars();
+
       const wasmVarPools = {
-        perFrame: this.createPerFramePool(preset.baseVals),
-        perVertex: this.createPerPixelPool(preset.baseVals),
+        perFrame: { ...qWasmVars, ...this.createPerFramePool(preset.baseVals) },
+        perVertex: {
+          ...qWasmVars,
+          ...this.createPerPixelPool(preset.baseVals),
+        },
       };
 
       const wasmFunctions = {
@@ -433,9 +459,11 @@ export default class Visualizer {
       /* eslint-disable max-len */
       for (let i = 0; i < preset.shapes.length; i++) {
         if (preset.shapes[i].baseVals.enabled !== 0) {
-          wasmVarPools[
-            `shapePerFrame${i}`
-          ] = this.createCustomShapePerFramePool(preset.shapes[i].baseVals);
+          wasmVarPools[`shapePerFrame${i}`] = {
+            ...qWasmVars,
+            ...tWasmVars,
+            ...this.createCustomShapePerFramePool(preset.shapes[i].baseVals),
+          };
           wasmFunctions[`shapes_${i}_init_eqs`] = {
             pool: `shapePerFrame${i}`,
             code: preset.shapes[i].init_eqs_eel,
@@ -449,9 +477,11 @@ export default class Visualizer {
 
       for (let i = 0; i < preset.waves.length; i++) {
         if (preset.waves[i].baseVals.enabled !== 0) {
-          wasmVarPools[`wavePerFrame${i}`] = this.createCustomWavePerFramePool(
-            preset.waves[i].baseVals
-          );
+          wasmVarPools[`wavePerFrame${i}`] = {
+            ...qWasmVars,
+            ...tWasmVars,
+            ...this.createCustomWavePerFramePool(preset.waves[i].baseVals),
+          };
           wasmFunctions[`waves_${i}_init_eqs`] = {
             pool: `wavePerFrame${i}`,
             code: preset.waves[i].init_eqs_eel,
