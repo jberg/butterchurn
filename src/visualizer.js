@@ -205,6 +205,30 @@ export default class Visualizer {
       "instance",
     ];
 
+    this.shapeBaseVars = [
+      "x",
+      "y",
+      "rad",
+      "ang",
+      "r",
+      "g",
+      "b",
+      "a",
+      "r2",
+      "g2",
+      "b2",
+      "a2",
+      "border_r",
+      "border_g",
+      "border_b",
+      "border_a",
+      "thickoutline",
+      "textured",
+      "tex_zoom",
+      "tex_ang",
+      "additive",
+    ];
+
     this.globalWaveVars = [
       // globals
       "frame",
@@ -365,28 +389,10 @@ export default class Visualizer {
     return wasmVars;
   }
 
-  static async makeResetModule(pool, variables) {
-    const resetPool = variables.reduce((acc, variable) => {
-      return { ...acc, [variable]: pool[variable] };
+  static makeShapeResetPool(pool, variables, idx) {
+    return variables.reduce((acc, variable) => {
+      return { ...acc, [`${variable}_${idx}`]: pool[variable] };
     }, {});
-
-    return loadModule({
-      pools: { resetPool },
-      functions: {
-        save: {
-          pool: "resetPool",
-          code: variables.reduce((acc, variable) => {
-            return `${acc}${variable}_save = ${variable};\n`;
-          }, ""),
-        },
-        restore: {
-          pool: "resetPool",
-          code: variables.reduce((acc, variable) => {
-            return `${acc}${variable} = ${variable}_save;\n`;
-          }, ""),
-        },
-      },
-    });
   }
 
   async loadPreset(presetMap, blendTime = 0) {
@@ -435,12 +441,13 @@ export default class Visualizer {
       }
 
       for (let i = 0; i < preset.shapes.length; i++) {
+        wasmVarPools[`shapePerFrame${i}`] = {
+          ...qWasmVars,
+          ...tWasmVars,
+          ...this.createCustomShapePerFramePool(preset.shapes[i].baseVals),
+        };
+
         if (preset.shapes[i].baseVals.enabled !== 0) {
-          wasmVarPools[`shapePerFrame${i}`] = {
-            ...qWasmVars,
-            ...tWasmVars,
-            ...this.createCustomShapePerFramePool(preset.shapes[i].baseVals),
-          };
           wasmFunctions[`shapes_${i}_init_eqs`] = {
             pool: `shapePerFrame${i}`,
             code: preset.shapes[i].init_eqs_eel,
@@ -501,6 +508,27 @@ export default class Visualizer {
         },
         // For resetting qs to after frame values
         qVarPool: qWasmVars,
+        tVarPool: tWasmVars,
+        shapePool0: Visualizer.makeShapeResetPool(
+          wasmVarPools["shapePerFrame0"],
+          this.shapeBaseVars,
+          0
+        ),
+        shapePool1: Visualizer.makeShapeResetPool(
+          wasmVarPools["shapePerFrame1"],
+          this.shapeBaseVars,
+          1
+        ),
+        shapePool2: Visualizer.makeShapeResetPool(
+          wasmVarPools["shapePerFrame2"],
+          this.shapeBaseVars,
+          2
+        ),
+        shapePool3: Visualizer.makeShapeResetPool(
+          wasmVarPools["shapePerFrame3"],
+          this.shapeBaseVars,
+          3
+        ),
         env: {
           abort: () => {
             // No idea why we need this.
@@ -511,9 +539,8 @@ export default class Visualizer {
       preset.globalPools = wasmVarPools;
       preset.init_eqs = () => mod.exports.presetInit();
       preset.frame_eqs = () => mod.exports.perFrame();
-      preset.save_qs = () => presetFunctionsMod.exports.saveQsAfterFrame();
-      preset.restore_qs = () =>
-        presetFunctionsMod.exports.restoreQsToAfterFrame();
+      preset.save_qs = () => presetFunctionsMod.exports.saveQs();
+      preset.restore_qs = () => presetFunctionsMod.exports.restoreQs();
       if (preset.pixel_eqs_str !== "") {
         preset.pixel_eqs = () => mod.exports.perPixel();
         preset.pixel_eqs_save = () => presetFunctionsMod.exports.save();
@@ -527,36 +554,10 @@ export default class Visualizer {
           preset.shapes[i].init_eqs = mod.exports[`shapes_${i}_init_eqs`];
           preset.shapes[i].frame_eqs = mod.exports[`shapes_${i}_frame_eqs`];
 
-          const resetMod = await Visualizer.makeResetModule(
-            wasmVarPools[`shapePerFrame${i}`],
-            [
-              "x",
-              "y",
-              "rad",
-              "ang",
-              "r",
-              "g",
-              "b",
-              "a",
-              "r2",
-              "g2",
-              "b2",
-              "a2",
-              "border_r",
-              "border_g",
-              "border_b",
-              "border_a",
-              "thickoutline",
-              "textured",
-              "tex_zoom",
-              "tex_ang",
-              "additive",
-              ...this.ts,
-            ]
-          );
-
-          preset.shapes[i].frame_eqs_save = () => resetMod.exports.save();
-          preset.shapes[i].frame_eqs_restore = () => resetMod.exports.restore();
+          preset.shapes[i].frame_eqs_save = () =>
+            presetFunctionsMod.exports[`shape${i}_save`]();
+          preset.shapes[i].frame_eqs_restore = () =>
+            presetFunctionsMod.exports[`shape${i}_restore`]();
         }
       }
 
