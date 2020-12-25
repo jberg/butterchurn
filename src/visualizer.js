@@ -272,19 +272,6 @@ export default class Visualizer {
     return wasmVars;
   }
 
-  createQAfterFrameVars() {
-    const wasmVars = {};
-
-    this.qs.forEach((key) => {
-      wasmVars[`${key}_afterFrame`] = new WebAssembly.Global(
-        { value: "f64", mutable: true },
-        0
-      );
-    });
-
-    return wasmVars;
-  }
-
   createTVars() {
     const wasmVars = {};
 
@@ -424,7 +411,6 @@ export default class Visualizer {
 
     if (preset.useWASM) {
       const qWasmVars = this.createQVars();
-      const qWasmAfterFrameVars = this.createQAfterFrameVars();
       const tWasmVars = this.createTVars();
 
       const wasmVarPools = {
@@ -514,10 +500,7 @@ export default class Visualizer {
           rot: wasmVarPools.perVertex.rot,
         },
         // For resetting qs to after frame values
-        qVarPool: {
-          ...qWasmVars,
-          ...qWasmAfterFrameVars,
-        },
+        qVarPool: qWasmVars,
         env: {
           abort: () => {
             // No idea why we need this.
@@ -529,7 +512,8 @@ export default class Visualizer {
       preset.init_eqs = () => mod.exports.presetInit();
       preset.frame_eqs = () => mod.exports.perFrame();
       preset.save_qs = () => presetFunctionsMod.exports.saveQsAfterFrame();
-      preset.restore_qs = () => presetFunctionsMod.exports.setQsToAfterFrame();
+      preset.restore_qs = () =>
+        presetFunctionsMod.exports.restoreQsToAfterFrame();
       if (preset.pixel_eqs_str !== "") {
         preset.pixel_eqs = () => mod.exports.perPixel();
         preset.pixel_eqs_save = () => presetFunctionsMod.exports.save();

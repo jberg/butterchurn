@@ -125,137 +125,105 @@ declare let q31: f64;
 @external("qVarPool", "q32")
 declare let q32: f64;
 
-@external("qVarPool", "q1_afterFrame")
-declare let q1_afterFrame: f64;
-@external("qVarPool", "q2_afterFrame")
-declare let q2_afterFrame: f64;
-@external("qVarPool", "q3_afterFrame")
-declare let q3_afterFrame: f64;
-@external("qVarPool", "q4_afterFrame")
-declare let q4_afterFrame: f64;
-@external("qVarPool", "q5_afterFrame")
-declare let q5_afterFrame: f64;
-@external("qVarPool", "q6_afterFrame")
-declare let q6_afterFrame: f64;
-@external("qVarPool", "q7_afterFrame")
-declare let q7_afterFrame: f64;
-@external("qVarPool", "q8_afterFrame")
-declare let q8_afterFrame: f64;
-@external("qVarPool", "q9_afterFrame")
-declare let q9_afterFrame: f64;
-@external("qVarPool", "q10_afterFrame")
-declare let q10_afterFrame: f64;
-@external("qVarPool", "q11_afterFrame")
-declare let q11_afterFrame: f64;
-@external("qVarPool", "q12_afterFrame")
-declare let q12_afterFrame: f64;
-@external("qVarPool", "q13_afterFrame")
-declare let q13_afterFrame: f64;
-@external("qVarPool", "q14_afterFrame")
-declare let q14_afterFrame: f64;
-@external("qVarPool", "q15_afterFrame")
-declare let q15_afterFrame: f64;
-@external("qVarPool", "q16_afterFrame")
-declare let q16_afterFrame: f64;
-@external("qVarPool", "q17_afterFrame")
-declare let q17_afterFrame: f64;
-@external("qVarPool", "q18_afterFrame")
-declare let q18_afterFrame: f64;
-@external("qVarPool", "q19_afterFrame")
-declare let q19_afterFrame: f64;
-@external("qVarPool", "q20_afterFrame")
-declare let q20_afterFrame: f64;
-@external("qVarPool", "q21_afterFrame")
-declare let q21_afterFrame: f64;
-@external("qVarPool", "q22_afterFrame")
-declare let q22_afterFrame: f64;
-@external("qVarPool", "q23_afterFrame")
-declare let q23_afterFrame: f64;
-@external("qVarPool", "q24_afterFrame")
-declare let q24_afterFrame: f64;
-@external("qVarPool", "q25_afterFrame")
-declare let q25_afterFrame: f64;
-@external("qVarPool", "q26_afterFrame")
-declare let q26_afterFrame: f64;
-@external("qVarPool", "q27_afterFrame")
-declare let q27_afterFrame: f64;
-@external("qVarPool", "q28_afterFrame")
-declare let q28_afterFrame: f64;
-@external("qVarPool", "q29_afterFrame")
-declare let q29_afterFrame: f64;
-@external("qVarPool", "q30_afterFrame")
-declare let q30_afterFrame: f64;
-@external("qVarPool", "q31_afterFrame")
-declare let q31_afterFrame: f64;
-@external("qVarPool", "q32_afterFrame")
-declare let q32_afterFrame: f64;
+let q1_save: f64;
+let q2_save: f64;
+let q3_save: f64;
+let q4_save: f64;
+let q5_save: f64;
+let q6_save: f64;
+let q7_save: f64;
+let q8_save: f64;
+let q9_save: f64;
+let q10_save: f64;
+let q11_save: f64;
+let q12_save: f64;
+let q13_save: f64;
+let q14_save: f64;
+let q15_save: f64;
+let q16_save: f64;
+let q17_save: f64;
+let q18_save: f64;
+let q19_save: f64;
+let q20_save: f64;
+let q21_save: f64;
+let q22_save: f64;
+let q23_save: f64;
+let q24_save: f64;
+let q25_save: f64;
+let q26_save: f64;
+let q27_save: f64;
+let q28_save: f64;
+let q29_save: f64;
+let q30_save: f64;
+let q31_save: f64;
+let q32_save: f64;
 
 export function saveQsAfterFrame(): void {
-  q1_afterFrame = q1;
-  q2_afterFrame = q2;
-  q3_afterFrame = q3;
-  q4_afterFrame = q4;
-  q5_afterFrame = q5;
-  q6_afterFrame = q6;
-  q7_afterFrame = q7;
-  q8_afterFrame = q8;
-  q9_afterFrame = q9;
-  q10_afterFrame = q10;
-  q11_afterFrame = q11;
-  q12_afterFrame = q12;
-  q13_afterFrame = q13;
-  q14_afterFrame = q14;
-  q15_afterFrame = q15;
-  q16_afterFrame = q16;
-  q17_afterFrame = q17;
-  q18_afterFrame = q18;
-  q19_afterFrame = q19;
-  q20_afterFrame = q20;
-  q21_afterFrame = q21;
-  q22_afterFrame = q22;
-  q23_afterFrame = q23;
-  q24_afterFrame = q24;
-  q25_afterFrame = q25;
-  q26_afterFrame = q26;
-  q27_afterFrame = q27;
-  q28_afterFrame = q28;
-  q29_afterFrame = q29;
-  q30_afterFrame = q30;
-  q31_afterFrame = q31;
-  q32_afterFrame = q32;
+  q1_save = q1;
+  q2_save = q2;
+  q3_save = q3;
+  q4_save = q4;
+  q5_save = q5;
+  q6_save = q6;
+  q7_save = q7;
+  q8_save = q8;
+  q9_save = q9;
+  q10_save = q10;
+  q11_save = q11;
+  q12_save = q12;
+  q13_save = q13;
+  q14_save = q14;
+  q15_save = q15;
+  q16_save = q16;
+  q17_save = q17;
+  q18_save = q18;
+  q19_save = q19;
+  q20_save = q20;
+  q21_save = q21;
+  q22_save = q22;
+  q23_save = q23;
+  q24_save = q24;
+  q25_save = q25;
+  q26_save = q26;
+  q27_save = q27;
+  q28_save = q28;
+  q29_save = q29;
+  q30_save = q30;
+  q31_save = q31;
+  q32_save = q32;
 }
 
-export function setQsToAfterFrame(): void {
-  q1 = q1_afterFrame;
-  q2 = q2_afterFrame;
-  q3 = q3_afterFrame;
-  q4 = q4_afterFrame;
-  q5 = q5_afterFrame;
-  q6 = q6_afterFrame;
-  q7 = q7_afterFrame;
-  q8 = q8_afterFrame;
-  q9 = q9_afterFrame;
-  q10 = q10_afterFrame;
-  q11 = q11_afterFrame;
-  q12 = q12_afterFrame;
-  q13 = q13_afterFrame;
-  q14 = q14_afterFrame;
-  q15 = q15_afterFrame;
-  q16 = q16_afterFrame;
-  q17 = q17_afterFrame;
-  q18 = q18_afterFrame;
-  q19 = q19_afterFrame;
-  q20 = q20_afterFrame;
-  q21 = q21_afterFrame;
-  q22 = q22_afterFrame;
-  q23 = q23_afterFrame;
-  q24 = q24_afterFrame;
-  q25 = q25_afterFrame;
-  q26 = q26_afterFrame;
-  q27 = q27_afterFrame;
-  q28 = q28_afterFrame;
-  q29 = q29_afterFrame;
-  q30 = q30_afterFrame;
-  q31 = q31_afterFrame;
-  q32 = q32_afterFrame;
+export function restoreQsToAfterFrame(): void {
+  q1 = q1_save;
+  q2 = q2_save;
+  q3 = q3_save;
+  q4 = q4_save;
+  q5 = q5_save;
+  q6 = q6_save;
+  q7 = q7_save;
+  q8 = q8_save;
+  q9 = q9_save;
+  q10 = q10_save;
+  q11 = q11_save;
+  q12 = q12_save;
+  q13 = q13_save;
+  q14 = q14_save;
+  q15 = q15_save;
+  q16 = q16_save;
+  q17 = q17_save;
+  q18 = q18_save;
+  q19 = q19_save;
+  q20 = q20_save;
+  q21 = q21_save;
+  q22 = q22_save;
+  q23 = q23_save;
+  q24 = q24_save;
+  q25 = q25_save;
+  q26 = q26_save;
+  q27 = q27_save;
+  q28 = q28_save;
+  q29 = q29_save;
+  q30 = q30_save;
+  q31 = q31_save;
+  q32 = q32_save;
 }
