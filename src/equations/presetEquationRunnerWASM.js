@@ -279,6 +279,7 @@ export default class PresetEquationRunnerWASM {
     );
 
     this.preset.frame_eqs();
+    this.preset.save_qs();
 
     this.mdVSQAfterFrame = this.getQVars("perFrame");
 

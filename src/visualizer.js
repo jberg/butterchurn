@@ -2,7 +2,7 @@ import { loadModule } from "eel-wasm";
 import AudioProcessor from "./audio/audioProcessor";
 import Renderer from "./rendering/renderer";
 import Utils from "./utils";
-import presetFunctionsMod from "./assemblyscript/presetFunctions.ts";
+import loadPresetFunctionsMod from "./assemblyscript/presetFunctions.ts";
 
 export default class Visualizer {
   constructor(audioContext, canvas, opts) {
@@ -272,6 +272,19 @@ export default class Visualizer {
     return wasmVars;
   }
 
+  createQAfterFrameVars() {
+    const wasmVars = {};
+
+    this.qs.forEach((key) => {
+      wasmVars[`${key}_afterFrame`] = new WebAssembly.Global(
+        { value: "f64", mutable: true },
+        0
+      );
+    });
+
+    return wasmVars;
+  }
+
   createTVars() {
     const wasmVars = {};
 
@@ -389,28 +402,6 @@ export default class Visualizer {
     });
   }
 
-  static async makeCopyModule(fromPool, toPool, variables) {
-    const copyPool = variables.reduce((acc, variable) => {
-      return {
-        ...acc,
-        [`${variable}_from`]: fromPool[variable],
-        [`${variable}_to`]: toPool[variable],
-      };
-    }, {});
-
-    return loadModule({
-      pools: { copyPool },
-      functions: {
-        copy: {
-          pool: "copyPool",
-          code: variables.reduce((acc, variable) => {
-            return `${acc}${variable}_to = ${variable}_from;\n`;
-          }, ""),
-        },
-      },
-    });
-  }
-
   async loadPreset(presetMap, blendTime = 0) {
     const preset = Object.assign({}, presetMap);
     preset.baseVals = Visualizer.overrideDefaultVars(
@@ -433,6 +424,7 @@ export default class Visualizer {
 
     if (preset.useWASM) {
       const qWasmVars = this.createQVars();
+      const qWasmAfterFrameVars = this.createQAfterFrameVars();
       const tWasmVars = this.createTVars();
 
       const wasmVarPools = {
@@ -456,7 +448,6 @@ export default class Visualizer {
         };
       }
 
-      /* eslint-disable max-len */
       for (let i = 0; i < preset.shapes.length; i++) {
         if (preset.shapes[i].baseVals.enabled !== 0) {
           wasmVarPools[`shapePerFrame${i}`] = {
@@ -502,41 +493,45 @@ export default class Visualizer {
           }
         }
       }
-      /* eslint-enable max-len */
 
       const mod = await loadModule({
         pools: wasmVarPools,
         functions: wasmFunctions,
       });
 
+      const presetFunctionsMod = await loadPresetFunctionsMod({
+        varPool: {
+          // For resetting pixel eq vars
+          warp: wasmVarPools.perVertex.warp,
+          zoom: wasmVarPools.perVertex.zoom,
+          zoomexp: wasmVarPools.perVertex.zoomexp,
+          cx: wasmVarPools.perVertex.cx,
+          cy: wasmVarPools.perVertex.cy,
+          sx: wasmVarPools.perVertex.sx,
+          sy: wasmVarPools.perVertex.sy,
+          dx: wasmVarPools.perVertex.dx,
+          dy: wasmVarPools.perVertex.dy,
+          rot: wasmVarPools.perVertex.rot,
+          // For resetting qs to after frame values
+          ...qWasmVars,
+          ...qWasmAfterFrameVars,
+        },
+        env: {
+          abort: () => {
+            // No idea why we need this.
+          },
+        },
+      });
+
       preset.globalPools = wasmVarPools;
       preset.init_eqs = () => mod.exports.presetInit();
       preset.frame_eqs = () => mod.exports.perFrame();
+      preset.save_qs = () => presetFunctionsMod.exports.saveQsAfterFrame();
+      preset.restore_qs = () => presetFunctionsMod.exports.setQsToAfterFrame();
       if (preset.pixel_eqs_str !== "") {
         preset.pixel_eqs = () => mod.exports.perPixel();
-
-        const resetMod = await presetFunctionsMod({
-          resetPool: {
-            warp: wasmVarPools.perVertex.warp,
-            zoom: wasmVarPools.perVertex.zoom,
-            zoomexp: wasmVarPools.perVertex.zoomexp,
-            cx: wasmVarPools.perVertex.cx,
-            cy: wasmVarPools.perVertex.cy,
-            sx: wasmVarPools.perVertex.sx,
-            sy: wasmVarPools.perVertex.sy,
-            dx: wasmVarPools.perVertex.dx,
-            dy: wasmVarPools.perVertex.dy,
-            rot: wasmVarPools.perVertex.rot,
-          },
-          env: {
-            abort: () => {
-              // No idea why we need this.
-            },
-          },
-        });
-
-        preset.pixel_eqs_save = () => resetMod.exports.save();
-        preset.pixel_eqs_restore = () => resetMod.exports.restore();
+        preset.pixel_eqs_save = () => presetFunctionsMod.exports.save();
+        preset.pixel_eqs_restore = () => presetFunctionsMod.exports.restore();
       } else {
         preset.pixel_eqs = "";
       }
@@ -576,15 +571,6 @@ export default class Visualizer {
 
           preset.shapes[i].frame_eqs_save = () => resetMod.exports.save();
           preset.shapes[i].frame_eqs_restore = () => resetMod.exports.restore();
-
-          // save should copy from perFrame
-          const copyModQs = await Visualizer.makeCopyModule(
-            wasmVarPools["perFrame"],
-            wasmVarPools[`shapePerFrame${i}`],
-            this.qs
-          );
-
-          preset.shapes[i].qs_copy = () => copyModQs.exports.copy();
         }
       }
 
