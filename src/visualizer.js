@@ -500,8 +500,8 @@ export default class Visualizer {
       });
 
       const presetFunctionsMod = await loadPresetFunctionsMod({
-        varPool: {
-          // For resetting pixel eq vars
+        // For resetting pixel eq vars
+        pixelVarPool: {
           warp: wasmVarPools.perVertex.warp,
           zoom: wasmVarPools.perVertex.zoom,
           zoomexp: wasmVarPools.perVertex.zoomexp,
@@ -512,7 +512,9 @@ export default class Visualizer {
           dx: wasmVarPools.perVertex.dx,
           dy: wasmVarPools.perVertex.dy,
           rot: wasmVarPools.perVertex.rot,
-          // For resetting qs to after frame values
+        },
+        // For resetting qs to after frame values
+        qVarPool: {
           ...qWasmVars,
           ...qWasmAfterFrameVars,
         },

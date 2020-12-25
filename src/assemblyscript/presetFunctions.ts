@@ -1,24 +1,24 @@
 // Reset pixel eq vars
 
-@external("varPool", "warp")
+@external("pixelVarPool", "warp")
 declare let warp: f64;
-@external("varPool", "zoom")
+@external("pixelVarPool", "zoom")
 declare let zoom: f64;
-@external("varPool", "zoomexp")
+@external("pixelVarPool", "zoomexp")
 declare let zoomexp: f64;
-@external("varPool", "cx")
+@external("pixelVarPool", "cx")
 declare let cx: f64;
-@external("varPool", "cy")
+@external("pixelVarPool", "cy")
 declare let cy: f64;
-@external("varPool", "sx")
+@external("pixelVarPool", "sx")
 declare let sx: f64;
-@external("varPool", "cy")
+@external("pixelVarPool", "cy")
 declare let sy: f64;
-@external("varPool", "dx")
+@external("pixelVarPool", "dx")
 declare let dx: f64;
-@external("varPool", "dy")
+@external("pixelVarPool", "dy")
 declare let dy: f64;
-@external("varPool", "rot")
+@external("pixelVarPool", "rot")
 declare let rot: f64;
 
 let warp_save: f64;
@@ -60,134 +60,134 @@ export function restore(): void {
 
 // Copy qs to after frame values
 
-@external("varPool", "q1")
+@external("qVarPool", "q1")
 declare let q1: f64;
-@external("varPool", "q2")
+@external("qVarPool", "q2")
 declare let q2: f64;
-@external("varPool", "q3")
+@external("qVarPool", "q3")
 declare let q3: f64;
-@external("varPool", "q4")
+@external("qVarPool", "q4")
 declare let q4: f64;
-@external("varPool", "q5")
+@external("qVarPool", "q5")
 declare let q5: f64;
-@external("varPool", "q6")
+@external("qVarPool", "q6")
 declare let q6: f64;
-@external("varPool", "q7")
+@external("qVarPool", "q7")
 declare let q7: f64;
-@external("varPool", "q8")
+@external("qVarPool", "q8")
 declare let q8: f64;
-@external("varPool", "q9")
+@external("qVarPool", "q9")
 declare let q9: f64;
-@external("varPool", "q10")
+@external("qVarPool", "q10")
 declare let q10: f64;
-@external("varPool", "q11")
+@external("qVarPool", "q11")
 declare let q11: f64;
-@external("varPool", "q12")
+@external("qVarPool", "q12")
 declare let q12: f64;
-@external("varPool", "q13")
+@external("qVarPool", "q13")
 declare let q13: f64;
-@external("varPool", "q14")
+@external("qVarPool", "q14")
 declare let q14: f64;
-@external("varPool", "q15")
+@external("qVarPool", "q15")
 declare let q15: f64;
-@external("varPool", "q16")
+@external("qVarPool", "q16")
 declare let q16: f64;
-@external("varPool", "q17")
+@external("qVarPool", "q17")
 declare let q17: f64;
-@external("varPool", "q18")
+@external("qVarPool", "q18")
 declare let q18: f64;
-@external("varPool", "q19")
+@external("qVarPool", "q19")
 declare let q19: f64;
-@external("varPool", "q20")
+@external("qVarPool", "q20")
 declare let q20: f64;
-@external("varPool", "q21")
+@external("qVarPool", "q21")
 declare let q21: f64;
-@external("varPool", "q22")
+@external("qVarPool", "q22")
 declare let q22: f64;
-@external("varPool", "q23")
+@external("qVarPool", "q23")
 declare let q23: f64;
-@external("varPool", "q24")
+@external("qVarPool", "q24")
 declare let q24: f64;
-@external("varPool", "q25")
+@external("qVarPool", "q25")
 declare let q25: f64;
-@external("varPool", "q26")
+@external("qVarPool", "q26")
 declare let q26: f64;
-@external("varPool", "q27")
+@external("qVarPool", "q27")
 declare let q27: f64;
-@external("varPool", "q28")
+@external("qVarPool", "q28")
 declare let q28: f64;
-@external("varPool", "q29")
+@external("qVarPool", "q29")
 declare let q29: f64;
-@external("varPool", "q30")
+@external("qVarPool", "q30")
 declare let q30: f64;
-@external("varPool", "q31")
+@external("qVarPool", "q31")
 declare let q31: f64;
-@external("varPool", "q32")
+@external("qVarPool", "q32")
 declare let q32: f64;
 
-@external("varPool", "q1_afterFrame")
+@external("qVarPool", "q1_afterFrame")
 declare let q1_afterFrame: f64;
-@external("varPool", "q2_afterFrame")
+@external("qVarPool", "q2_afterFrame")
 declare let q2_afterFrame: f64;
-@external("varPool", "q3_afterFrame")
+@external("qVarPool", "q3_afterFrame")
 declare let q3_afterFrame: f64;
-@external("varPool", "q4_afterFrame")
+@external("qVarPool", "q4_afterFrame")
 declare let q4_afterFrame: f64;
-@external("varPool", "q5_afterFrame")
+@external("qVarPool", "q5_afterFrame")
 declare let q5_afterFrame: f64;
-@external("varPool", "q6_afterFrame")
+@external("qVarPool", "q6_afterFrame")
 declare let q6_afterFrame: f64;
-@external("varPool", "q7_afterFrame")
+@external("qVarPool", "q7_afterFrame")
 declare let q7_afterFrame: f64;
-@external("varPool", "q8_afterFrame")
+@external("qVarPool", "q8_afterFrame")
 declare let q8_afterFrame: f64;
-@external("varPool", "q9_afterFrame")
+@external("qVarPool", "q9_afterFrame")
 declare let q9_afterFrame: f64;
-@external("varPool", "q10_afterFrame")
+@external("qVarPool", "q10_afterFrame")
 declare let q10_afterFrame: f64;
-@external("varPool", "q11_afterFrame")
+@external("qVarPool", "q11_afterFrame")
 declare let q11_afterFrame: f64;
-@external("varPool", "q12_afterFrame")
+@external("qVarPool", "q12_afterFrame")
 declare let q12_afterFrame: f64;
-@external("varPool", "q13_afterFrame")
+@external("qVarPool", "q13_afterFrame")
 declare let q13_afterFrame: f64;
-@external("varPool", "q14_afterFrame")
+@external("qVarPool", "q14_afterFrame")
 declare let q14_afterFrame: f64;
-@external("varPool", "q15_afterFrame")
+@external("qVarPool", "q15_afterFrame")
 declare let q15_afterFrame: f64;
-@external("varPool", "q16_afterFrame")
+@external("qVarPool", "q16_afterFrame")
 declare let q16_afterFrame: f64;
-@external("varPool", "q17_afterFrame")
+@external("qVarPool", "q17_afterFrame")
 declare let q17_afterFrame: f64;
-@external("varPool", "q18_afterFrame")
+@external("qVarPool", "q18_afterFrame")
 declare let q18_afterFrame: f64;
-@external("varPool", "q19_afterFrame")
+@external("qVarPool", "q19_afterFrame")
 declare let q19_afterFrame: f64;
-@external("varPool", "q20_afterFrame")
+@external("qVarPool", "q20_afterFrame")
 declare let q20_afterFrame: f64;
-@external("varPool", "q21_afterFrame")
+@external("qVarPool", "q21_afterFrame")
 declare let q21_afterFrame: f64;
-@external("varPool", "q22_afterFrame")
+@external("qVarPool", "q22_afterFrame")
 declare let q22_afterFrame: f64;
-@external("varPool", "q23_afterFrame")
+@external("qVarPool", "q23_afterFrame")
 declare let q23_afterFrame: f64;
-@external("varPool", "q24_afterFrame")
+@external("qVarPool", "q24_afterFrame")
 declare let q24_afterFrame: f64;
-@external("varPool", "q25_afterFrame")
+@external("qVarPool", "q25_afterFrame")
 declare let q25_afterFrame: f64;
-@external("varPool", "q26_afterFrame")
+@external("qVarPool", "q26_afterFrame")
 declare let q26_afterFrame: f64;
-@external("varPool", "q27_afterFrame")
+@external("qVarPool", "q27_afterFrame")
 declare let q27_afterFrame: f64;
-@external("varPool", "q28_afterFrame")
+@external("qVarPool", "q28_afterFrame")
 declare let q28_afterFrame: f64;
-@external("varPool", "q29_afterFrame")
+@external("qVarPool", "q29_afterFrame")
 declare let q29_afterFrame: f64;
-@external("varPool", "q30_afterFrame")
+@external("qVarPool", "q30_afterFrame")
 declare let q30_afterFrame: f64;
-@external("varPool", "q31_afterFrame")
+@external("qVarPool", "q31_afterFrame")
 declare let q31_afterFrame: f64;
-@external("varPool", "q32_afterFrame")
+@external("qVarPool", "q32_afterFrame")
 declare let q32_afterFrame: f64;
 
 export function saveQsAfterFrame(): void {
