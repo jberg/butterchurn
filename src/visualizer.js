@@ -506,9 +506,10 @@ export default class Visualizer {
           dy: wasmVarPools.perVertex.dy,
           rot: wasmVarPools.perVertex.rot,
         },
-        // For resetting qs to after frame values
+        // For resetting qs/ts
         qVarPool: qWasmVars,
         tVarPool: tWasmVars,
+        // For resetting shape vars
         shapePool0: Visualizer.makeShapeResetPool(
           wasmVarPools["shapePerFrame0"],
           this.shapeBaseVars,
