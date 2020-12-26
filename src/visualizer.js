@@ -542,6 +542,8 @@ export default class Visualizer {
       preset.frame_eqs = () => mod.exports.perFrame();
       preset.save_qs = () => presetFunctionsMod.exports.saveQs();
       preset.restore_qs = () => presetFunctionsMod.exports.restoreQs();
+      preset.save_ts = () => presetFunctionsMod.exports.saveTs();
+      preset.restore_ts = () => presetFunctionsMod.exports.restoreTs();
       if (preset.pixel_eqs_str !== "") {
         preset.pixel_eqs = () => mod.exports.perPixel();
         preset.pixel_eqs_save = () => presetFunctionsMod.exports.save();

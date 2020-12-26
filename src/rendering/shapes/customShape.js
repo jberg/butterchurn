@@ -376,12 +376,14 @@ export default class CustomShape {
           presetEquationRunner.preset.shapes[this.index].frame_eqs_eel === ""
         ) {
           presetEquationRunner.preset.restore_qs();
-          Utils.setWasm(
-            varPool,
-            presetEquationRunner.mdVSTShapeInits[this.index],
-            presetEquationRunner.ts
-          );
         }
+
+        Utils.setWasm(
+          varPool,
+          presetEquationRunner.mdVSTShapeInits[this.index],
+          presetEquationRunner.ts
+        );
+        presetEquationRunner.preset.save_ts();
 
         varPool.x.value = baseVals.x;
         varPool.y.value = baseVals.y;
@@ -419,6 +421,7 @@ export default class CustomShape {
             presetEquationRunner.preset.shapes[this.index].frame_eqs_eel !== ""
           ) {
             presetEquationRunner.preset.restore_qs();
+            presetEquationRunner.preset.restore_ts();
             presetEquationRunner.preset.shapes[this.index].frame_eqs();
           }
 
