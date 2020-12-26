@@ -373,7 +373,7 @@ export default class CustomShape {
 
         // If we aren't setting these every instance, set them initially
         if (
-          presetEquationRunner.preset.shapes[this.index].frame_eqs_eel === ""
+          presetEquationRunner.preset.shapes[this.index].frame_eqs_str === ""
         ) {
           presetEquationRunner.preset.restore_qs();
         }
@@ -414,7 +414,7 @@ export default class CustomShape {
 
           // this condition should check the JS equations because of comments
           if (
-            presetEquationRunner.preset.shapes[this.index].frame_eqs_eel !== ""
+            presetEquationRunner.preset.shapes[this.index].frame_eqs_str !== ""
           ) {
             presetEquationRunner.preset.shapes[this.index].frame_eqs_restore();
             presetEquationRunner.preset.restore_qs();
@@ -532,7 +532,7 @@ export default class CustomShape {
 
         // If we aren't setting these every instance, set them initially
         if (
-          presetEquationRunner.preset.shapes[this.index].frame_eqs_eel === ""
+          presetEquationRunner.preset.shapes[this.index].frame_eqs_str === ""
         ) {
           Utils.setWasm(
             varPool,
@@ -549,7 +549,7 @@ export default class CustomShape {
         const numInst = Math.clamp(baseVals.num_inst, 1, 1024);
         for (let j = 0; j < numInst; j++) {
           if (
-            presetEquationRunner.preset.shapes[this.index].frame_eqs_eel !== ""
+            presetEquationRunner.preset.shapes[this.index].frame_eqs_str !== ""
           ) {
             varPool.instance.value = j;
             varPool.x.value = baseVals.x;
