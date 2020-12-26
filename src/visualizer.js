@@ -1,8 +1,9 @@
 import { loadModule } from "eel-wasm";
+import ascLoader from "@assemblyscript/loader";
 import AudioProcessor from "./audio/audioProcessor";
 import Renderer from "./rendering/renderer";
 import Utils from "./utils";
-import loadPresetFunctionsMod from "./assemblyscript/presetFunctions.ts";
+import loadPresetFunctionsBuffer from "./assemblyscript/presetFunctions.ts";
 
 export default class Visualizer {
   constructor(audioContext, canvas, opts) {
@@ -395,6 +396,16 @@ export default class Visualizer {
     }, {});
   }
 
+  static base64ToArrayBuffer(base64) {
+    var binaryString = window.atob(base64);
+    var len = binaryString.length;
+    var bytes = new Uint8Array(len);
+    for (var i = 0; i < len; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    return bytes.buffer;
+  }
+
   async loadPreset(presetMap, blendTime = 0) {
     const preset = Object.assign({}, presetMap);
     preset.baseVals = Visualizer.overrideDefaultVars(
@@ -492,50 +503,61 @@ export default class Visualizer {
         functions: wasmFunctions,
       });
 
-      const presetFunctionsMod = await loadPresetFunctionsMod({
-        // For resetting pixel eq vars
-        pixelVarPool: {
-          warp: wasmVarPools.perVertex.warp,
-          zoom: wasmVarPools.perVertex.zoom,
-          zoomexp: wasmVarPools.perVertex.zoomexp,
-          cx: wasmVarPools.perVertex.cx,
-          cy: wasmVarPools.perVertex.cy,
-          sx: wasmVarPools.perVertex.sx,
-          sy: wasmVarPools.perVertex.sy,
-          dx: wasmVarPools.perVertex.dx,
-          dy: wasmVarPools.perVertex.dy,
-          rot: wasmVarPools.perVertex.rot,
-        },
-        // For resetting qs/ts
-        qVarPool: qWasmVars,
-        tVarPool: tWasmVars,
-        // For resetting shape vars
-        shapePool0: Visualizer.makeShapeResetPool(
-          wasmVarPools["shapePerFrame0"],
-          this.shapeBaseVars,
-          0
-        ),
-        shapePool1: Visualizer.makeShapeResetPool(
-          wasmVarPools["shapePerFrame1"],
-          this.shapeBaseVars,
-          1
-        ),
-        shapePool2: Visualizer.makeShapeResetPool(
-          wasmVarPools["shapePerFrame2"],
-          this.shapeBaseVars,
-          2
-        ),
-        shapePool3: Visualizer.makeShapeResetPool(
-          wasmVarPools["shapePerFrame3"],
-          this.shapeBaseVars,
-          3
-        ),
-        env: {
-          abort: () => {
-            // No idea why we need this.
+      const presetFunctionsMod = await ascLoader.instantiate(
+        Visualizer.base64ToArrayBuffer(loadPresetFunctionsBuffer()),
+        {
+          // For resetting pixel eq vars
+          pixelVarPool: {
+            warp: wasmVarPools.perVertex.warp,
+            zoom: wasmVarPools.perVertex.zoom,
+            zoomexp: wasmVarPools.perVertex.zoomexp,
+            cx: wasmVarPools.perVertex.cx,
+            cy: wasmVarPools.perVertex.cy,
+            sx: wasmVarPools.perVertex.sx,
+            sy: wasmVarPools.perVertex.sy,
+            dx: wasmVarPools.perVertex.dx,
+            dy: wasmVarPools.perVertex.dy,
+            rot: wasmVarPools.perVertex.rot,
           },
-        },
-      });
+          // For resetting qs/ts
+          qVarPool: qWasmVars,
+          tVarPool: tWasmVars,
+          // For resetting shape vars
+          shapePool0: Visualizer.makeShapeResetPool(
+            wasmVarPools["shapePerFrame0"],
+            this.shapeBaseVars,
+            0
+          ),
+          shapePool1: Visualizer.makeShapeResetPool(
+            wasmVarPools["shapePerFrame1"],
+            this.shapeBaseVars,
+            1
+          ),
+          shapePool2: Visualizer.makeShapeResetPool(
+            wasmVarPools["shapePerFrame2"],
+            this.shapeBaseVars,
+            2
+          ),
+          shapePool3: Visualizer.makeShapeResetPool(
+            wasmVarPools["shapePerFrame3"],
+            this.shapeBaseVars,
+            3
+          ),
+          console: {
+            logi: (value) => {
+              console.log("logi: " + value);
+            },
+            logf: (value) => {
+              console.log("logf: " + value);
+            },
+          },
+          env: {
+            abort: () => {
+              // No idea why we need this.
+            },
+          },
+        }
+      );
 
       preset.globalPools = wasmVarPools;
       preset.init_eqs = () => mod.exports.presetInit();

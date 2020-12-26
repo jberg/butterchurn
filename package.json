@@ -29,6 +29,7 @@
   "license": "MIT",
   "homepage": "https://butterchurnviz.com",
   "dependencies": {
+    "@assemblyscript/loader": "^0.17.11",
     "@babel/runtime": "^7.11.2",
     "ecma-proposal-math-extensions": "0.0.2",
     "eel-wasm": "^0.0.12"

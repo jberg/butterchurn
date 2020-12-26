@@ -1,3 +1,18 @@
+@external("console", "logf")
+declare function logf(val: f64): void;
+@external("console", "logi")
+declare function logi(val: i32): void;
+
+export function runPixelEquations(): Float64Array {
+  let arr: Float64Array = new Float64Array(5);
+  unchecked((arr[0] = 1.0));
+  unchecked((arr[1] = 2.0));
+  unchecked((arr[2] = 3.0));
+  unchecked((arr[3] = 4.0));
+  unchecked((arr[4] = 5.0));
+  return arr;
+}
+
 // Reset pixel eq vars
 
 @external("pixelVarPool", "warp")

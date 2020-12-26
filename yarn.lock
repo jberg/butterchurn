@@ -2,6 +2,11 @@
 # yarn lockfile v1
 
 
+"@assemblyscript/loader@^0.17.11":
+  version "0.17.11"
+  resolved "https://registry.yarnpkg.com/@assemblyscript/loader/-/loader-0.17.11.tgz#e5cdceec32a9b31bc87ee2423377691e0adde457"
+  integrity sha512-SIml2dwLCBE1OpaW6NtjTEeg6oZBmOhdkgJpC1YRW7n/4U2hIQZG8vAh1ETTc7clA/0TFTJQPTNLJNQq/PN7Ug==
+
 "@babel/code-frame@^7.0.0", "@babel/code-frame@^7.10.4":
   version "7.10.4"
   resolved "https://registry.yarnpkg.com/@babel/code-frame/-/code-frame-7.10.4.tgz#168da1a36e90da68ae8d49c0f1b48c7c6249213a"
