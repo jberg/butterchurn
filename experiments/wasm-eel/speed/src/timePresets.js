@@ -11,7 +11,8 @@ if (args.length < 1) {
 }
 
 const onlyPresetsWithPixelEqs = false;
-const presetList = JSON.parse(fs.readFileSync("presetList.json").toString());
+const presetList = JSON.parse(fs.readFileSync("presetList.json").toString())
+  .test;
 
 const audioAnalysis = JSON.parse(fs.readFileSync(args[0]).toString());
 let outputJSON = {};
@@ -283,9 +284,11 @@ function shuffleArray(array) {
       presetData.wasmTrials.length !== trials ||
       presetData.jsTrials.length !== trials
     ) {
-      console.error("Trial counts did not add up");
-      await browser.close();
-      process.exit(1);
+      console.error("Trial counts did not add up for ", presetName);
+      // just ignore this preset for now and keep going
+      continue;
+      // await browser.close();
+      // process.exit(1);
     }
 
     for (const [trialType, avgType] of [
