@@ -3,14 +3,8 @@ declare function logf(val: f64): void;
 @external("console", "logi")
 declare function logi(val: i32): void;
 
-export function runPixelEquations(): Float64Array {
-  let arr: Float64Array = new Float64Array(5);
-  unchecked((arr[0] = 1.0));
-  unchecked((arr[1] = 2.0));
-  unchecked((arr[2] = 3.0));
-  unchecked((arr[3] = 4.0));
-  unchecked((arr[4] = 5.0));
-  return arr;
+export function createFloat32Array(length: i32): Float32Array {
+  return new Float32Array(length);
 }
 
 // Reset pixel eq vars
@@ -27,7 +21,7 @@ declare let cx: f64;
 declare let cy: f64;
 @external("pixelVarPool", "sx")
 declare let sx: f64;
-@external("pixelVarPool", "cy")
+@external("pixelVarPool", "sy")
 declare let sy: f64;
 @external("pixelVarPool", "dx")
 declare let dx: f64;
@@ -71,6 +65,133 @@ export function restore(): void {
   dx = dx_save;
   dy = dy_save;
   rot = rot_save;
+}
+
+@external("pixelVarPool", "x")
+declare let x: f64;
+@external("pixelVarPool", "y")
+declare let y: f64;
+@external("pixelVarPool", "ang")
+declare let ang: f64;
+@external("pixelVarPool", "rad")
+declare let rad: f64;
+
+@external("pixelEqs", "perPixelEqs")
+declare function perPixelEqs(): void;
+
+function atan2(x: f64, y: f64): f64 {
+  let a: f64 = Math.atan2(x, y);
+  if (a < 0) {
+    a += 2.0 * Math.PI;
+  }
+  return a;
+}
+
+export function runPixelEquations(
+  arr: Float32Array,
+  runVertEQs: bool,
+  meshWidth: i32,
+  meshHeight: i32,
+  time: f64,
+  warpanimspeed: f64,
+  warpscale: f64,
+  aspectx: f64,
+  aspecty: f64
+): void {
+  const gridX: i32 = meshWidth;
+  const gridZ: i32 = meshHeight;
+
+  const gridX1: i32 = meshWidth + 1;
+  const gridZ1: i32 = meshHeight + 1;
+
+  const warpTimeV: f64 = time * warpanimspeed;
+  const warpScaleInv: f64 = 1.0 / warpscale;
+
+  const warpf0: f64 = 11.68 + 4.0 * Math.cos(warpTimeV * 1.413 + 10.0);
+  const warpf1: f64 = 8.77 + 3.0 * Math.cos(warpTimeV * 1.113 + 7.0);
+  const warpf2: f64 = 10.54 + 3.0 * Math.cos(warpTimeV * 1.233 + 3.0);
+  const warpf3: f64 = 11.49 + 4.0 * Math.cos(warpTimeV * 0.933 + 5.0);
+
+  let offset: i32 = 0;
+
+  save();
+
+  for (let iz: i32 = 0; iz < gridZ1; iz++) {
+    for (let ix: i32 = 0; ix < gridX1; ix++) {
+      const x2: f64 = (f64(ix) / f64(gridX)) * 2.0 - 1.0;
+      const y2: f64 = (f64(iz) / f64(gridZ)) * 2.0 - 1.0;
+      rad = Math.sqrt(
+        x2 * x2 * aspectx * aspectx + y2 * y2 * aspecty * aspecty
+      );
+
+      if (runVertEQs) {
+        if (iz === f64(gridZ) / 2.0 && ix === f64(gridX) / 2.0) {
+          ang = 0;
+        } else {
+          ang = atan2(y2 * aspecty, x2 * aspectx);
+        }
+
+        x = x2 * 0.5 * aspectx + 0.5;
+        y = y2 * -0.5 * aspecty + 0.5;
+
+        restore();
+        perPixelEqs();
+      }
+
+      const zoom2V: f64 = zoom ** (zoomexp ** (rad * 2.0 - 1.0));
+      const zoom2Inv: f64 = 1.0 / zoom2V;
+
+      let u: f64 = x2 * 0.5 * aspectx * zoom2Inv + 0.5;
+      let v: f64 = -y2 * 0.5 * aspecty * zoom2Inv + 0.5;
+
+      u = (u - cx) / sx + cx;
+      v = (v - cy) / sy + cy;
+
+      u +=
+        warp *
+        0.0035 *
+        Math.sin(
+          warpTimeV * 0.333 + warpScaleInv * (x2 * warpf0 - y2 * warpf3)
+        );
+      v +=
+        warp *
+        0.0035 *
+        Math.cos(
+          warpTimeV * 0.375 - warpScaleInv * (x2 * warpf2 + y2 * warpf1)
+        );
+      u +=
+        warp *
+        0.0035 *
+        Math.cos(
+          warpTimeV * 0.753 - warpScaleInv * (x2 * warpf1 - y2 * warpf2)
+        );
+      v +=
+        warp *
+        0.0035 *
+        Math.sin(
+          warpTimeV * 0.825 + warpScaleInv * (x2 * warpf0 + y2 * warpf3)
+        );
+
+      const u2: f64 = u - cx;
+      const v2: f64 = v - cy;
+
+      const cosRot: f64 = Math.cos(rot);
+      const sinRot: f64 = Math.sin(rot);
+      u = u2 * cosRot - v2 * sinRot + cx;
+      v = u2 * sinRot + v2 * cosRot + cy;
+
+      u -= dx;
+      v -= dy;
+
+      u = (u - 0.5) / aspectx + 0.5;
+      v = (v - 0.5) / aspecty + 0.5;
+
+      unchecked((arr[offset] = f32(u)));
+      unchecked((arr[offset + 1] = f32(v)));
+
+      offset += 2;
+    }
+  }
 }
 
 // Copy qs to after frame values

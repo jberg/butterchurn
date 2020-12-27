@@ -232,6 +232,12 @@ export default class Renderer {
         globalVars,
         params
       );
+      if (this.preset.pixel_eqs_initialize_array) {
+        this.preset.pixel_eqs_initialize_array(
+          this.mesh_width,
+          this.mesh_height
+        );
+      }
     } else {
       this.preset.baseVals.old_wave_mode = this.prevPreset.baseVals.wave_mode;
       this.presetEquationRunner = new PresetEquationRunner(
@@ -367,6 +373,10 @@ export default class Renderer {
     this.warpColor = new Float32Array(
       (this.mesh_width + 1) * (this.mesh_height + 1) * 4
     );
+
+    if (this.preset.pixel_eqs_initialize_array) {
+      this.preset.pixel_eqs_initialize_array(this.mesh_width, this.mesh_height);
+    }
   }
 
   calcTimeAndFPS(elapsedTime) {
@@ -573,6 +583,40 @@ export default class Renderer {
       }
 
       this.mdVSVertex = mdVSVertex;
+    } else if (presetEquationRunner.preset.useMoreWASM) {
+      const varPool = presetEquationRunner.preset.globalPools.perVertex;
+
+      Utils.setWasm(varPool, globalVars, presetEquationRunner.globalKeys);
+      Utils.setWasm(
+        varPool,
+        presetEquationRunner.mdVSQAfterFrame,
+        presetEquationRunner.qs
+      );
+
+      varPool.zoom.value = mdVSFrame.zoom;
+      varPool.zoomexp.value = mdVSFrame.zoomexp;
+      varPool.rot.value = mdVSFrame.rot;
+      varPool.warp.value = mdVSFrame.warp;
+      varPool.cx.value = mdVSFrame.cx;
+      varPool.cy.value = mdVSFrame.cy;
+      varPool.dx.value = mdVSFrame.dx;
+      varPool.dy.value = mdVSFrame.dy;
+      varPool.sx.value = mdVSFrame.sx;
+      varPool.sy.value = mdVSFrame.sy;
+
+      presetEquationRunner.preset.pixel_eqs_wasm(
+        presetEquationRunner.runVertEQs,
+        this.mesh_width,
+        this.mesh_height,
+        this.time,
+        mdVSFrame.warpanimspeed,
+        mdVSFrame.warpscale,
+        this.aspectx,
+        this.aspecty
+      );
+
+      this.warpUVs = presetEquationRunner.preset.pixel_eqs_get_array();
+      this.warpColor.fill(1);
     } else {
       const varPool = presetEquationRunner.preset.globalPools.perVertex;
 

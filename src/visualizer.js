@@ -506,6 +506,9 @@ export default class Visualizer {
       const presetFunctionsMod = await ascLoader.instantiate(
         Visualizer.base64ToArrayBuffer(loadPresetFunctionsBuffer()),
         {
+          pixelEqs: {
+            perPixelEqs: () => mod.exports.perPixel(),
+          },
           // For resetting pixel eq vars
           pixelVarPool: {
             warp: wasmVarPools.perVertex.warp,
@@ -518,6 +521,10 @@ export default class Visualizer {
             dx: wasmVarPools.perVertex.dx,
             dy: wasmVarPools.perVertex.dy,
             rot: wasmVarPools.perVertex.rot,
+            x: wasmVarPools.perVertex.x,
+            y: wasmVarPools.perVertex.y,
+            ang: wasmVarPools.perVertex.ang,
+            rad: wasmVarPools.perVertex.rad,
           },
           // For resetting qs/ts
           qVarPool: qWasmVars,
@@ -545,9 +552,11 @@ export default class Visualizer {
           ),
           console: {
             logi: (value) => {
+              // eslint-disable-next-line no-console
               console.log("logi: " + value);
             },
             logf: (value) => {
+              // eslint-disable-next-line no-console
               console.log("logf: " + value);
             },
           },
@@ -573,6 +582,22 @@ export default class Visualizer {
       } else {
         preset.pixel_eqs = "";
       }
+      preset.pixel_eqs_initialize_array = (meshWidth, meshHeight) => {
+        const arrPtr = presetFunctionsMod.exports.createFloat32Array(
+          (meshWidth + 1) * (meshHeight + 1) * 2
+        );
+        preset.pixel_eqs_array = arrPtr;
+      };
+      preset.pixel_eqs_get_array = () => {
+        return presetFunctionsMod.exports.__getFloat32ArrayView(
+          preset.pixel_eqs_array
+        );
+      };
+      preset.pixel_eqs_wasm = (...args) =>
+        presetFunctionsMod.exports.runPixelEquations(
+          preset.pixel_eqs_array,
+          ...args
+        );
 
       for (let i = 0; i < preset.shapes.length; i++) {
         if (preset.shapes[i].baseVals.enabled !== 0) {
