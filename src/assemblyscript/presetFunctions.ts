@@ -147,30 +147,32 @@ export function runPixelEquations(
       u = (u - cx) / sx + cx;
       v = (v - cy) / sy + cy;
 
-      u +=
-        warp *
-        0.0035 *
-        Math.sin(
-          warpTimeV * 0.333 + warpScaleInv * (x2 * warpf0 - y2 * warpf3)
-        );
-      v +=
-        warp *
-        0.0035 *
-        Math.cos(
-          warpTimeV * 0.375 - warpScaleInv * (x2 * warpf2 + y2 * warpf1)
-        );
-      u +=
-        warp *
-        0.0035 *
-        Math.cos(
-          warpTimeV * 0.753 - warpScaleInv * (x2 * warpf1 - y2 * warpf2)
-        );
-      v +=
-        warp *
-        0.0035 *
-        Math.sin(
-          warpTimeV * 0.825 + warpScaleInv * (x2 * warpf0 + y2 * warpf3)
-        );
+      if (warp !== 0) {
+        u +=
+          warp *
+          0.0035 *
+          Math.sin(
+            warpTimeV * 0.333 + warpScaleInv * (x2 * warpf0 - y2 * warpf3)
+          );
+        v +=
+          warp *
+          0.0035 *
+          Math.cos(
+            warpTimeV * 0.375 - warpScaleInv * (x2 * warpf2 + y2 * warpf1)
+          );
+        u +=
+          warp *
+          0.0035 *
+          Math.cos(
+            warpTimeV * 0.753 - warpScaleInv * (x2 * warpf1 - y2 * warpf2)
+          );
+        v +=
+          warp *
+          0.0035 *
+          Math.sin(
+            warpTimeV * 0.825 + warpScaleInv * (x2 * warpf0 + y2 * warpf3)
+          );
+      }
 
       const u2: f64 = u - cx;
       const v2: f64 = v - cy;
