@@ -373,59 +373,52 @@ export default class CustomShape {
 
         // If we aren't setting these every instance, set them initially
         if (
-          presetEquationRunner.preset.shapes[this.index].frame_eqs_eel === ""
+          presetEquationRunner.preset.shapes[this.index].frame_eqs_str === ""
         ) {
-          Utils.setWasm(
-            varPool,
-            presetEquationRunner.mdVSQAfterFrame,
-            presetEquationRunner.qs
-          );
-          Utils.setWasm(
-            varPool,
-            presetEquationRunner.mdVSTShapeInits[this.index],
-            presetEquationRunner.ts
-          );
+          presetEquationRunner.preset.restore_qs();
         }
+
+        Utils.setWasm(
+          varPool,
+          presetEquationRunner.mdVSTShapeInits[this.index],
+          presetEquationRunner.ts
+        );
+        presetEquationRunner.preset.save_ts();
+
+        varPool.x.value = baseVals.x;
+        varPool.y.value = baseVals.y;
+        varPool.rad.value = baseVals.rad;
+        varPool.ang.value = baseVals.ang;
+        varPool.r.value = baseVals.r;
+        varPool.g.value = baseVals.g;
+        varPool.b.value = baseVals.b;
+        varPool.a.value = baseVals.a;
+        varPool.r2.value = baseVals.r2;
+        varPool.g2.value = baseVals.g2;
+        varPool.b2.value = baseVals.b2;
+        varPool.a2.value = baseVals.a2;
+        varPool.border_r.value = baseVals.border_r;
+        varPool.border_g.value = baseVals.border_g;
+        varPool.border_b.value = baseVals.border_b;
+        varPool.border_a.value = baseVals.border_a;
+        varPool.thickoutline.value = baseVals.thickoutline;
+        varPool.textured.value = baseVals.textured;
+        varPool.tex_zoom.value = baseVals.tex_zoom;
+        varPool.tex_ang.value = baseVals.tex_ang;
+        varPool.additive.value = baseVals.additive;
+        presetEquationRunner.preset.shapes[this.index].frame_eqs_save();
 
         const numInst = Math.clamp(baseVals.num_inst, 1, 1024);
         for (let j = 0; j < numInst; j++) {
           varPool.instance.value = j;
-          varPool.x.value = baseVals.x;
-          varPool.y.value = baseVals.y;
-          varPool.rad.value = baseVals.rad;
-          varPool.ang.value = baseVals.ang;
-          varPool.r.value = baseVals.r;
-          varPool.g.value = baseVals.g;
-          varPool.b.value = baseVals.b;
-          varPool.a.value = baseVals.a;
-          varPool.r2.value = baseVals.r2;
-          varPool.g2.value = baseVals.g2;
-          varPool.b2.value = baseVals.b2;
-          varPool.a2.value = baseVals.a2;
-          varPool.border_r.value = baseVals.border_r;
-          varPool.border_g.value = baseVals.border_g;
-          varPool.border_b.value = baseVals.border_b;
-          varPool.border_a.value = baseVals.border_a;
-          varPool.thickoutline.value = baseVals.thickoutline;
-          varPool.textured.value = baseVals.textured;
-          varPool.tex_zoom.value = baseVals.tex_zoom;
-          varPool.tex_ang.value = baseVals.tex_ang;
-          varPool.additive.value = baseVals.additive;
 
+          // this condition should check the JS equations because of comments
           if (
-            presetEquationRunner.preset.shapes[this.index].frame_eqs_eel !== ""
+            presetEquationRunner.preset.shapes[this.index].frame_eqs_str !== ""
           ) {
-            Utils.setWasm(
-              varPool,
-              presetEquationRunner.mdVSQAfterFrame,
-              presetEquationRunner.qs
-            );
-            Utils.setWasm(
-              varPool,
-              presetEquationRunner.mdVSTShapeInits[this.index],
-              presetEquationRunner.ts
-            );
-
+            presetEquationRunner.preset.shapes[this.index].frame_eqs_restore();
+            presetEquationRunner.preset.restore_qs();
+            presetEquationRunner.preset.restore_ts();
             presetEquationRunner.preset.shapes[this.index].frame_eqs();
           }
 
