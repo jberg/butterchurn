@@ -10,9 +10,9 @@ if (args.length < 1) {
   process.exit(1);
 }
 
-const onlyPresetsWithPixelEqs = false;
+const onlyPresetsWithPixelEqs = true;
 const presetList = JSON.parse(fs.readFileSync("presetList.json").toString())
-  .test;
+  .full;
 
 const audioAnalysis = JSON.parse(fs.readFileSync(args[0]).toString());
 let outputJSON = {};
