@@ -577,8 +577,6 @@ export default class Visualizer {
       preset.restore_ts = () => presetFunctionsMod.exports.restoreTs();
       if (preset.pixel_eqs_str !== "") {
         preset.pixel_eqs = () => mod.exports.perPixel();
-        preset.pixel_eqs_save = () => presetFunctionsMod.exports.save();
-        preset.pixel_eqs_restore = () => presetFunctionsMod.exports.restore();
       } else {
         preset.pixel_eqs = "";
       }

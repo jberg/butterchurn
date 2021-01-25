@@ -41,7 +41,7 @@ let dx_save: f64;
 let dy_save: f64;
 let rot_save: f64;
 
-export function save(): void {
+function save(): void {
   warp_save = warp;
   zoom_save = zoom;
   zoomexp_save = zoomexp;
@@ -54,7 +54,7 @@ export function save(): void {
   rot_save = rot;
 }
 
-export function restore(): void {
+function restore(): void {
   warp = warp_save;
   zoom = zoom_save;
   zoomexp = zoomexp_save;
