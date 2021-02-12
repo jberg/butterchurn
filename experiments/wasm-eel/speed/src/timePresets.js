@@ -100,7 +100,7 @@ function shuffleArray(array) {
                 }
               </style>
 
-              <script type="text/javascript" src="http://localhost:8000/lib/butterchurn.min.js"></script>
+              <script type="text/javascript" src="http://localhost:8000/dist/butterchurn.min.js"></script>
 
               <script>
                 document.addEventListener("DOMContentLoaded", function(event) {

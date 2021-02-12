@@ -5,7 +5,7 @@ const env = require('yargs').argv.env;
 
 const srcRoot = path.join(__dirname, '..', 'src');
 const nodeRoot = path.join(__dirname, '..', 'node_modules');
-const outputPath = path.join(__dirname, '..', 'lib');
+const outputPath = path.join(__dirname, '..', 'dist');
 
 let outputFile = '[name]';
 
