@@ -372,9 +372,7 @@ export default class CustomShape {
         Utils.setWasm(varPool, globalVars, presetEquationRunner.globalKeys);
 
         // If we aren't setting these every instance, set them initially
-        if (
-          presetEquationRunner.preset.shapes[this.index].frame_eqs_str === ""
-        ) {
+        if (!presetEquationRunner.preset.shapes[this.index].frame_eqs) {
           presetEquationRunner.preset.restore_qs();
         }
 
@@ -413,9 +411,7 @@ export default class CustomShape {
           varPool.instance.value = j;
 
           // this condition should check the JS equations because of comments
-          if (
-            presetEquationRunner.preset.shapes[this.index].frame_eqs_str !== ""
-          ) {
+          if (presetEquationRunner.preset.shapes[this.index].frame_eqs) {
             presetEquationRunner.preset.shapes[this.index].frame_eqs_restore();
             presetEquationRunner.preset.restore_qs();
             presetEquationRunner.preset.restore_ts();

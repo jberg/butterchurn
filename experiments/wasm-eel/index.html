@@ -681,7 +681,7 @@
         loadPreset(presetIdx).then((preset) => {
           currPresetIdx = presetIdx;
           const clonedPreset = _.cloneDeep(preset);
-          clonedPreset.useWASM = $('#equationsMoreWASM').is(':checked') || $('#equationsWASM').is(':checked');
+          clonedPreset.useJS = !($('#equationsMoreWASM').is(':checked') || $('#equationsWASM').is(':checked'));
           clonedPreset.useMoreWASM = $('#equationsMoreWASM').is(':checked');
           // visualizer.loadPreset(preset, 3);
           visualizer.loadPreset(clonedPreset, 0);
