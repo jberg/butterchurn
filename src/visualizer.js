@@ -9,7 +9,7 @@ export default class Visualizer {
   constructor(audioContext, canvas, opts) {
     this.audio = new AudioProcessor(audioContext);
 
-    const gl = canvas.getContext("webgl2", {
+    this.gl = canvas.getContext("webgl2", {
       alpha: false,
       antialias: false,
       depth: false,
@@ -257,7 +257,11 @@ export default class Visualizer {
       "value2",
     ];
 
-    this.renderer = new Renderer(gl, this.audio, opts);
+    this.renderer = new Renderer(this.gl, this.audio, opts);
+  }
+
+  loseGLContext() {
+    this.gl.getExtension("WEBGL_lose_context").loseContext();
   }
 
   connectAudio(audioNode) {
