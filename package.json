@@ -7,7 +7,6 @@
   "files": [
     "dist/butterchurn.js",
     "dist/butterchurn.min.js",
-    "dist/butterchurnExtraImages.min.js",
     "dist/isSupported.min.js"
   ],
   "scripts": {

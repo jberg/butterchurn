@@ -16,7 +16,6 @@ if (env === 'prod') {
 const config = {
   entry: {
     butterchurn: srcRoot + '/index.js',
-    butterchurnExtraImages: srcRoot + '/image/extraImageTextures.js',
     isSupported: srcRoot + '/isSupported.js',
   },
   mode: 'development',
