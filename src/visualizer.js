@@ -7,6 +7,7 @@ import loadPresetFunctionsBuffer from "./assemblyscript/presetFunctions.ts";
 
 export default class Visualizer {
   constructor(audioContext, canvas, opts) {
+    this.opts = opts;
     this.audio = new AudioProcessor(audioContext);
 
     this.gl = canvas.getContext("webgl2", {
@@ -430,209 +431,245 @@ export default class Visualizer {
       );
     }
 
-    if (preset.useWASM) {
-      const qWasmVars = this.createQVars();
-      const tWasmVars = this.createTVars();
+    const forceJS = preset.useJS && !this.opts.onlyUseWASM;
 
-      const wasmVarPools = {
-        perFrame: { ...qWasmVars, ...this.createPerFramePool(preset.baseVals) },
-        perVertex: {
-          ...qWasmVars,
-          ...this.createPerPixelPool(preset.baseVals),
-        },
+    if (
+      Object.prototype.hasOwnProperty.call(preset, "init_eqs_eel") &&
+      !forceJS
+    ) {
+      preset.useWASM = true;
+      await this.loadWASMPreset(preset, blendTime);
+    } else if (!this.opts.onlyUseWASM) {
+      if (Object.prototype.hasOwnProperty.call(preset, "init_eqs_str")) {
+        this.loadJSPreset(preset, blendTime);
+      } else {
+        console.warn(
+          "Tried to load a JS preset that doesn't have converted strings"
+        );
+      }
+    } else {
+      console.warn(
+        "Tried to load a preset that doesn't support WASM with onlyUseWASM on"
+      );
+    }
+  }
+
+  async loadWASMPreset(preset, blendTime) {
+    const qWasmVars = this.createQVars();
+    const tWasmVars = this.createTVars();
+
+    const wasmVarPools = {
+      perFrame: { ...qWasmVars, ...this.createPerFramePool(preset.baseVals) },
+      perVertex: {
+        ...qWasmVars,
+        ...this.createPerPixelPool(preset.baseVals),
+      },
+    };
+
+    const wasmFunctions = {
+      presetInit: { pool: "perFrame", code: preset.init_eqs_eel },
+      perFrame: { pool: "perFrame", code: preset.frame_eqs_eel },
+    };
+
+    if (preset.pixel_eqs_eel !== "") {
+      wasmFunctions.perPixel = {
+        pool: "perVertex",
+        code: preset.pixel_eqs_eel,
+      };
+    }
+
+    for (let i = 0; i < preset.shapes.length; i++) {
+      wasmVarPools[`shapePerFrame${i}`] = {
+        ...qWasmVars,
+        ...tWasmVars,
+        ...this.createCustomShapePerFramePool(preset.shapes[i].baseVals),
       };
 
-      const wasmFunctions = {
-        presetInit: { pool: "perFrame", code: preset.init_eqs_eel },
-        perFrame: { pool: "perFrame", code: preset.frame_eqs_eel },
-      };
-
-      // Use pixel_eqs_str since that strips out comments and some presets have whole commented sections
-      if (preset.pixel_eqs_str !== "") {
-        wasmFunctions.perPixel = {
-          pool: "perVertex",
-          code: preset.pixel_eqs_eel,
+      if (preset.shapes[i].baseVals.enabled !== 0) {
+        wasmFunctions[`shapes_${i}_init_eqs`] = {
+          pool: `shapePerFrame${i}`,
+          code: preset.shapes[i].init_eqs_eel,
+        };
+        wasmFunctions[`shapes_${i}_frame_eqs`] = {
+          pool: `shapePerFrame${i}`,
+          code: preset.shapes[i].frame_eqs_eel,
         };
       }
+    }
 
-      for (let i = 0; i < preset.shapes.length; i++) {
-        wasmVarPools[`shapePerFrame${i}`] = {
+    for (let i = 0; i < preset.waves.length; i++) {
+      if (preset.waves[i].baseVals.enabled !== 0) {
+        wasmVarPools[`wavePerFrame${i}`] = {
           ...qWasmVars,
           ...tWasmVars,
-          ...this.createCustomShapePerFramePool(preset.shapes[i].baseVals),
+          ...this.createCustomWavePerFramePool(preset.waves[i].baseVals),
+        };
+        wasmFunctions[`waves_${i}_init_eqs`] = {
+          pool: `wavePerFrame${i}`,
+          code: preset.waves[i].init_eqs_eel,
+        };
+        wasmFunctions[`waves_${i}_frame_eqs`] = {
+          pool: `wavePerFrame${i}`,
+          code: preset.waves[i].frame_eqs_eel,
         };
 
-        if (preset.shapes[i].baseVals.enabled !== 0) {
-          wasmFunctions[`shapes_${i}_init_eqs`] = {
-            pool: `shapePerFrame${i}`,
-            code: preset.shapes[i].init_eqs_eel,
-          };
-          wasmFunctions[`shapes_${i}_frame_eqs`] = {
-            pool: `shapePerFrame${i}`,
-            code: preset.shapes[i].frame_eqs_eel,
+        if (
+          preset.waves[i].point_eqs_eel &&
+          preset.waves[i].point_eqs_eel !== ""
+        ) {
+          wasmFunctions[`waves_${i}_point_eqs`] = {
+            pool: `wavePerFrame${i}`,
+            code: preset.waves[i].point_eqs_eel,
           };
         }
       }
+    }
 
-      for (let i = 0; i < preset.waves.length; i++) {
-        if (preset.waves[i].baseVals.enabled !== 0) {
-          wasmVarPools[`wavePerFrame${i}`] = {
-            ...qWasmVars,
-            ...tWasmVars,
-            ...this.createCustomWavePerFramePool(preset.waves[i].baseVals),
-          };
-          wasmFunctions[`waves_${i}_init_eqs`] = {
-            pool: `wavePerFrame${i}`,
-            code: preset.waves[i].init_eqs_eel,
-          };
-          wasmFunctions[`waves_${i}_frame_eqs`] = {
-            pool: `wavePerFrame${i}`,
-            code: preset.waves[i].frame_eqs_eel,
-          };
+    const mod = await loadModule({
+      pools: wasmVarPools,
+      functions: wasmFunctions,
+      eelVersion: preset.version || 2,
+    });
 
-          if (
-            preset.waves[i].point_eqs_eel &&
-            preset.waves[i].point_eqs_eel !== ""
-          ) {
-            wasmFunctions[`waves_${i}_point_eqs`] = {
-              pool: `wavePerFrame${i}`,
-              code: preset.waves[i].point_eqs_eel,
-            };
-          }
-        }
+    // eel-wasm returns null if the function was empty
+    const handleEmptyFunction = (f) => {
+      return f ? f : () => {};
+    };
+
+    const presetFunctionsMod = await ascLoader.instantiate(
+      Visualizer.base64ToArrayBuffer(loadPresetFunctionsBuffer()),
+      {
+        pixelEqs: {
+          perPixelEqs: handleEmptyFunction(mod.exports.perPixel),
+        },
+        // For resetting pixel eq vars
+        pixelVarPool: {
+          warp: wasmVarPools.perVertex.warp,
+          zoom: wasmVarPools.perVertex.zoom,
+          zoomexp: wasmVarPools.perVertex.zoomexp,
+          cx: wasmVarPools.perVertex.cx,
+          cy: wasmVarPools.perVertex.cy,
+          sx: wasmVarPools.perVertex.sx,
+          sy: wasmVarPools.perVertex.sy,
+          dx: wasmVarPools.perVertex.dx,
+          dy: wasmVarPools.perVertex.dy,
+          rot: wasmVarPools.perVertex.rot,
+          x: wasmVarPools.perVertex.x,
+          y: wasmVarPools.perVertex.y,
+          ang: wasmVarPools.perVertex.ang,
+          rad: wasmVarPools.perVertex.rad,
+        },
+        // For resetting qs/ts
+        qVarPool: qWasmVars,
+        tVarPool: tWasmVars,
+        // For resetting shape vars
+        shapePool0: Visualizer.makeShapeResetPool(
+          wasmVarPools["shapePerFrame0"],
+          this.shapeBaseVars,
+          0
+        ),
+        shapePool1: Visualizer.makeShapeResetPool(
+          wasmVarPools["shapePerFrame1"],
+          this.shapeBaseVars,
+          1
+        ),
+        shapePool2: Visualizer.makeShapeResetPool(
+          wasmVarPools["shapePerFrame2"],
+          this.shapeBaseVars,
+          2
+        ),
+        shapePool3: Visualizer.makeShapeResetPool(
+          wasmVarPools["shapePerFrame3"],
+          this.shapeBaseVars,
+          3
+        ),
+        console: {
+          logi: (value) => {
+            // eslint-disable-next-line no-console
+            console.log("logi: " + value);
+          },
+          logf: (value) => {
+            // eslint-disable-next-line no-console
+            console.log("logf: " + value);
+          },
+        },
+        env: {
+          abort: () => {
+            // No idea why we need this.
+          },
+        },
       }
+    );
 
-      const mod = await loadModule({
-        pools: wasmVarPools,
-        functions: wasmFunctions,
-      });
-
-      const presetFunctionsMod = await ascLoader.instantiate(
-        Visualizer.base64ToArrayBuffer(loadPresetFunctionsBuffer()),
-        {
-          pixelEqs: {
-            perPixelEqs: () => mod.exports.perPixel(),
-          },
-          // For resetting pixel eq vars
-          pixelVarPool: {
-            warp: wasmVarPools.perVertex.warp,
-            zoom: wasmVarPools.perVertex.zoom,
-            zoomexp: wasmVarPools.perVertex.zoomexp,
-            cx: wasmVarPools.perVertex.cx,
-            cy: wasmVarPools.perVertex.cy,
-            sx: wasmVarPools.perVertex.sx,
-            sy: wasmVarPools.perVertex.sy,
-            dx: wasmVarPools.perVertex.dx,
-            dy: wasmVarPools.perVertex.dy,
-            rot: wasmVarPools.perVertex.rot,
-            x: wasmVarPools.perVertex.x,
-            y: wasmVarPools.perVertex.y,
-            ang: wasmVarPools.perVertex.ang,
-            rad: wasmVarPools.perVertex.rad,
-          },
-          // For resetting qs/ts
-          qVarPool: qWasmVars,
-          tVarPool: tWasmVars,
-          // For resetting shape vars
-          shapePool0: Visualizer.makeShapeResetPool(
-            wasmVarPools["shapePerFrame0"],
-            this.shapeBaseVars,
-            0
-          ),
-          shapePool1: Visualizer.makeShapeResetPool(
-            wasmVarPools["shapePerFrame1"],
-            this.shapeBaseVars,
-            1
-          ),
-          shapePool2: Visualizer.makeShapeResetPool(
-            wasmVarPools["shapePerFrame2"],
-            this.shapeBaseVars,
-            2
-          ),
-          shapePool3: Visualizer.makeShapeResetPool(
-            wasmVarPools["shapePerFrame3"],
-            this.shapeBaseVars,
-            3
-          ),
-          console: {
-            logi: (value) => {
-              // eslint-disable-next-line no-console
-              console.log("logi: " + value);
-            },
-            logf: (value) => {
-              // eslint-disable-next-line no-console
-              console.log("logf: " + value);
-            },
-          },
-          env: {
-            abort: () => {
-              // No idea why we need this.
-            },
-          },
-        }
+    preset.globalPools = wasmVarPools;
+    preset.init_eqs = handleEmptyFunction(mod.exports.presetInit);
+    preset.frame_eqs = handleEmptyFunction(mod.exports.perFrame);
+    preset.save_qs = presetFunctionsMod.exports.saveQs;
+    preset.restore_qs = presetFunctionsMod.exports.restoreQs;
+    preset.save_ts = presetFunctionsMod.exports.saveTs;
+    preset.restore_ts = presetFunctionsMod.exports.restoreTs;
+    if (mod.exports.perPixel) {
+      preset.pixel_eqs = mod.exports.perPixel;
+    }
+    preset.pixel_eqs_initialize_array = (meshWidth, meshHeight) => {
+      const arrPtr = presetFunctionsMod.exports.createFloat32Array(
+        (meshWidth + 1) * (meshHeight + 1) * 2
+      );
+      preset.pixel_eqs_array = arrPtr;
+    };
+    preset.pixel_eqs_get_array = () => {
+      return presetFunctionsMod.exports.__getFloat32ArrayView(
+        preset.pixel_eqs_array
+      );
+    };
+    preset.pixel_eqs_wasm = (...args) =>
+      presetFunctionsMod.exports.runPixelEquations(
+        preset.pixel_eqs_array,
+        ...args
       );
 
-      preset.globalPools = wasmVarPools;
-      preset.init_eqs = () => mod.exports.presetInit();
-      preset.frame_eqs = () => mod.exports.perFrame();
-      preset.save_qs = () => presetFunctionsMod.exports.saveQs();
-      preset.restore_qs = () => presetFunctionsMod.exports.restoreQs();
-      preset.save_ts = () => presetFunctionsMod.exports.saveTs();
-      preset.restore_ts = () => presetFunctionsMod.exports.restoreTs();
-      if (preset.pixel_eqs_str !== "") {
-        preset.pixel_eqs = () => mod.exports.perPixel();
-      } else {
-        preset.pixel_eqs = "";
+    for (let i = 0; i < preset.shapes.length; i++) {
+      if (preset.shapes[i].baseVals.enabled !== 0) {
+        preset.shapes[i].init_eqs = handleEmptyFunction(
+          mod.exports[`shapes_${i}_init_eqs`]
+        );
+        // Not wrapped because we check if null in customShapes
+        preset.shapes[i].frame_eqs = mod.exports[`shapes_${i}_frame_eqs`];
+
+        preset.shapes[i].frame_eqs_save = () =>
+          presetFunctionsMod.exports[`shape${i}_save`]();
+        preset.shapes[i].frame_eqs_restore = () =>
+          presetFunctionsMod.exports[`shape${i}_restore`]();
       }
-      preset.pixel_eqs_initialize_array = (meshWidth, meshHeight) => {
-        const arrPtr = presetFunctionsMod.exports.createFloat32Array(
-          (meshWidth + 1) * (meshHeight + 1) * 2
-        );
-        preset.pixel_eqs_array = arrPtr;
-      };
-      preset.pixel_eqs_get_array = () => {
-        return presetFunctionsMod.exports.__getFloat32ArrayView(
-          preset.pixel_eqs_array
-        );
-      };
-      preset.pixel_eqs_wasm = (...args) =>
-        presetFunctionsMod.exports.runPixelEquations(
-          preset.pixel_eqs_array,
-          ...args
-        );
+    }
 
-      for (let i = 0; i < preset.shapes.length; i++) {
-        if (preset.shapes[i].baseVals.enabled !== 0) {
-          preset.shapes[i].init_eqs = mod.exports[`shapes_${i}_init_eqs`];
-          preset.shapes[i].frame_eqs = mod.exports[`shapes_${i}_frame_eqs`];
+    for (let i = 0; i < preset.waves.length; i++) {
+      if (preset.waves[i].baseVals.enabled !== 0) {
+        const wave = {
+          init_eqs: handleEmptyFunction(mod.exports[`waves_${i}_init_eqs`]),
+          frame_eqs: handleEmptyFunction(mod.exports[`waves_${i}_frame_eqs`]),
+        };
 
-          preset.shapes[i].frame_eqs_save = () =>
-            presetFunctionsMod.exports[`shape${i}_save`]();
-          preset.shapes[i].frame_eqs_restore = () =>
-            presetFunctionsMod.exports[`shape${i}_restore`]();
+        if (
+          preset.waves[i].point_eqs_eel &&
+          preset.waves[i].point_eqs_eel !== ""
+        ) {
+          // Not wrapped because we check if null in customWaves
+          wave.point_eqs = mod.exports[`waves_${i}_point_eqs`];
+        } else {
+          wave.point_eqs = "";
         }
+
+        preset.waves[i] = Object.assign({}, preset.waves[i], wave);
       }
+    }
 
-      for (let i = 0; i < preset.waves.length; i++) {
-        if (preset.waves[i].baseVals.enabled !== 0) {
-          const wave = {
-            init_eqs: mod.exports[`waves_${i}_init_eqs`],
-            frame_eqs: mod.exports[`waves_${i}_frame_eqs`],
-          };
+    this.renderer.loadPreset(preset, blendTime);
+  }
 
-          if (
-            preset.waves[i].point_eqs_eel &&
-            preset.waves[i].point_eqs_eel !== ""
-          ) {
-            wave.point_eqs = mod.exports[`waves_${i}_point_eqs`];
-          } else {
-            wave.point_eqs = "";
-          }
-
-          preset.waves[i] = Object.assign({}, preset.waves[i], wave);
-        }
-      }
-    } else if (typeof preset.init_eqs !== "function") {
+  loadJSPreset(preset, blendTime) {
+    // If init_eqs is already a function, it means we've already prepared the preset to run
+    if (typeof preset.init_eqs !== "function") {
       /* eslint-disable no-param-reassign, no-new-func */
       preset.init_eqs = new Function("a", `${preset.init_eqs_str} return a;`);
       preset.frame_eqs = new Function("a", `${preset.frame_eqs_str} return a;`);

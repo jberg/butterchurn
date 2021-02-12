@@ -257,7 +257,7 @@ export default class CustomWaveform {
             varPool.b.value = frameB;
             varPool.a.value = frameA;
 
-            if (waveEqs.point_eqs !== "") {
+            if (waveEqs.point_eqs) {
               presetEquationRunner.preset.waves[this.index].point_eqs();
             }
 
