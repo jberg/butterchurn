@@ -1,6 +1,6 @@
 {
   "name": "butterchurn",
-  "version": "3.0.0-beta.2",
+  "version": "3.0.0-beta.3",
   "description": "Butterchurn is a WebGL implementation of the Milkdrop Visualizer",
   "main": "dist/butterchurn.js",
   "unpkg": "dist/butterchurn.js",
