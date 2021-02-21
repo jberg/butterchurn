@@ -412,7 +412,7 @@ export default class Visualizer {
   }
 
   async loadPreset(presetMap, blendTime = 0) {
-    const preset = Object.assign({}, presetMap);
+    const preset = JSON.parse(JSON.stringify(presetMap));
     preset.baseVals = Visualizer.overrideDefaultVars(
       this.baseValsDefaults,
       preset.baseVals
