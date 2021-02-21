@@ -615,8 +615,38 @@ export default class Renderer {
         this.aspecty
       );
 
-      this.warpUVs = presetEquationRunner.preset.pixel_eqs_get_array();
-      this.warpColor.fill(1);
+      if (!blending) {
+        this.warpUVs = presetEquationRunner.preset.pixel_eqs_get_array();
+        this.warpColor.fill(1);
+      } else {
+        const newWarpUVs = presetEquationRunner.preset.pixel_eqs_get_array();
+
+        let offset = 0;
+        let offsetColor = 0;
+        for (let iz = 0; iz < gridZ1; iz++) {
+          for (let ix = 0; ix < gridX1; ix++) {
+            const u = newWarpUVs[offset];
+            const v = newWarpUVs[offset + 1];
+
+            let mix2 =
+              this.blendPattern.vertInfoA[offset / 2] * this.blendProgress +
+              this.blendPattern.vertInfoC[offset / 2];
+            mix2 = Math.clamp(mix2, 0, 1);
+
+            this.warpUVs[offset] = this.warpUVs[offset] * mix2 + u * (1 - mix2);
+            this.warpUVs[offset + 1] =
+              this.warpUVs[offset + 1] * mix2 + v * (1 - mix2);
+
+            this.warpColor[offsetColor + 0] = 1;
+            this.warpColor[offsetColor + 1] = 1;
+            this.warpColor[offsetColor + 2] = 1;
+            this.warpColor[offsetColor + 3] = mix2;
+
+            offset += 2;
+            offsetColor += 4;
+          }
+        }
+      }
     }
   }
 
