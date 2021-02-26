@@ -10,7 +10,7 @@ if (args.length < 1) {
   process.exit(1);
 }
 
-const onlyPresetsWithPixelEqs = true;
+const onlyPresetsWithPixelEqs = false;
 const presetList = JSON.parse(fs.readFileSync("presetList.json").toString())
   .full;
 
@@ -48,7 +48,7 @@ function shuffleArray(array) {
 (async () => {
   const width = 800;
   const height = 600;
-  const frameCount = 300;
+  const frameCount = 480;
   const trials = 5;
   const browser = await puppeteer.launch({ headless: false });
 
@@ -76,13 +76,14 @@ function shuffleArray(array) {
     };
 
     for (let j = 0; j < trials; j++) {
-      const equationTypes = ["useMoreWASM", "useWASM", "JS"];
+      // const equationTypes = ["useMoreWASM", "useWASM", "JS"];
+      const equationTypes = ["useWASM", "JS"];
       shuffleArray(equationTypes);
       for (const equationType of equationTypes) {
         const useWASM = ["useMoreWASM", "useWASM"].includes(equationType);
         const useMoreWASM = equationType === "useMoreWASM";
         let preset = clonePreset(presetJSON);
-        preset.useWASM = useWASM;
+        preset.useJS = !useWASM;
         preset.useMoreWASM = useMoreWASM;
 
         const page = await browser.newPage();
