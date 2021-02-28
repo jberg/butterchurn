@@ -48,7 +48,7 @@ function shuffleArray(array) {
 (async () => {
   const width = 800;
   const height = 600;
-  const frameCount = 480;
+  const frameCount = 300;
   const trials = 5;
   const browser = await puppeteer.launch({ headless: false });
 
