@@ -47,5 +47,6 @@
     "webpack": "^4.44.2",
     "webpack-cli": "^3.3.12",
     "yargs": "^16.0.3"
-  }
+  },
+  "browserslist": "supports audio-api and supports webgl2 and last 3 years"
 }
