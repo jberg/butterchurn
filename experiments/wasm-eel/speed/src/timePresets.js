@@ -38,6 +38,17 @@ function average(arr) {
   return arr.reduce((p, c) => p + c, 0) / arr.length;
 }
 
+function median(arr) {
+  const sorted = arr.slice().sort((a, b) => a - b);
+  const middle = Math.floor(sorted.length / 2);
+
+  if (sorted.length % 2 === 0) {
+      return (sorted[middle - 1] + sorted[middle]) / 2;
+  }
+
+  return sorted[middle];
+}
+
 function shuffleArray(array) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -318,20 +329,20 @@ function shuffleArray(array) {
     ]) {
       const data = presetData[trialType];
       const averages = {
-        calcFPS: average(data.map((d) => d.calcFPS)),
-        updateAudioLevels: average(data.map((d) => d.updateAudioLevels)),
-        runFrameEquations: average(data.map((d) => d.runFrameEquations)),
-        runPixelEquations: average(data.map((d) => d.runPixelEquations)),
-        getBlurValues: average(data.map((d) => d.getBlurValues)),
-        warpShader: average(data.map((d) => d.warpShader)),
-        renderBlurTexture: average(data.map((d) => d.renderBlurTexture)),
-        drawMotionVectors: average(data.map((d) => d.drawMotionVectors)),
-        drawCustomShape: average(data.map((d) => d.drawCustomShape)),
-        drawCustomWaveform: average(data.map((d) => d.drawCustomWaveform)),
-        drawBasicWaveform: average(data.map((d) => d.drawBasicWaveform)),
-        drawBorderAndCenter: average(data.map((d) => d.drawBorderAndCenter)),
-        renderToScreen: average(data.map((d) => d.renderToScreen)),
-        time: average(data.map((d) => d.time)),
+        calcFPS: median(data.map((d) => d.calcFPS)),
+        updateAudioLevels: median(data.map((d) => d.updateAudioLevels)),
+        runFrameEquations: median(data.map((d) => d.runFrameEquations)),
+        runPixelEquations: median(data.map((d) => d.runPixelEquations)),
+        getBlurValues: median(data.map((d) => d.getBlurValues)),
+        warpShader: median(data.map((d) => d.warpShader)),
+        renderBlurTexture: median(data.map((d) => d.renderBlurTexture)),
+        drawMotionVectors: median(data.map((d) => d.drawMotionVectors)),
+        drawCustomShape: median(data.map((d) => d.drawCustomShape)),
+        drawCustomWaveform: median(data.map((d) => d.drawCustomWaveform)),
+        drawBasicWaveform: median(data.map((d) => d.drawBasicWaveform)),
+        drawBorderAndCenter: median(data.map((d) => d.drawBorderAndCenter)),
+        renderToScreen: median(data.map((d) => d.renderToScreen)),
+        time: median(data.map((d) => d.time)),
       };
 
       presetData[avgType] = averages;
