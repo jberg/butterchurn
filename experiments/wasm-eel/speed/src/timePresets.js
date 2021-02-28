@@ -67,24 +67,35 @@ function shuffleArray(array) {
 
     const presetData = {
       hasPixelEqs,
+      oldJsTrials: [],
       jsTrials: [],
       wasmTrials: [],
-      moreWasmTrials: [],
+      // moreWasmTrials: [],
+      oldJsAvg: null,
       jsAvg: null,
       wasmAvg: null,
-      moreWasmAvg: null,
+      // moreWasmAvg: null,
     };
 
     for (let j = 0; j < trials; j++) {
       // const equationTypes = ["useMoreWASM", "useWASM", "JS"];
-      const equationTypes = ["useWASM", "JS"];
+      const equationTypes = ["useWASM", "JS", "OldJS"];
+      // const equationTypes = ["useWASM", "JS"];
       shuffleArray(equationTypes);
       for (const equationType of equationTypes) {
         const useWASM = ["useMoreWASM", "useWASM"].includes(equationType);
         const useMoreWASM = equationType === "useMoreWASM";
+        const useOldJS = equationType === "OldJS";
         let preset = clonePreset(presetJSON);
         preset.useJS = !useWASM;
         preset.useMoreWASM = useMoreWASM;
+
+        let butterchurnJS;
+        if (useOldJS) {
+          butterchurnJS = "butterchurn.2.6.7";
+        } else {
+          butterchurnJS = "butterchurn.3.0.0-beta.3";
+        }
 
         const page = await browser.newPage();
         page.on("console", (msg) => console.log("PAGE LOG:", msg.text()));
@@ -101,7 +112,7 @@ function shuffleArray(array) {
                 }
               </style>
 
-              <script type="text/javascript" src="http://localhost:8000/dist/butterchurn.min.js"></script>
+              <script type="text/javascript" src="http://localhost:8000/experiments/wasm-eel/speed/build/${butterchurnJS}.min.js"></script>
 
               <script>
                 document.addEventListener("DOMContentLoaded", function(event) {
@@ -243,6 +254,10 @@ function shuffleArray(array) {
               stats.renderToScreen - stats.drawBorderAndCenter;
           }
 
+          for (const key of Object.keys(totalStats)) {
+            totalStats[key] = totalStats[key] / presetStats.length;
+          }
+
           let totalStatsTime = 0;
           totalStatsTime += totalStats.calcFPS;
           totalStatsTime += totalStats.updateAudioLevels;
@@ -264,6 +279,8 @@ function shuffleArray(array) {
             presetData.moreWasmTrials.push(totalStats);
           } else if (useWASM) {
             presetData.wasmTrials.push(totalStats);
+          }  else if (useOldJS) {
+            presetData.oldJsTrials.push(totalStats);
           } else {
             presetData.jsTrials.push(totalStats);
           }
@@ -281,7 +298,8 @@ function shuffleArray(array) {
     }
 
     if (
-      presetData.moreWasmTrials.length !== trials ||
+      // presetData.moreWasmTrials.length !== trials ||
+      presetData.oldJsTrials.length !== trials ||
       presetData.wasmTrials.length !== trials ||
       presetData.jsTrials.length !== trials
     ) {
@@ -293,7 +311,8 @@ function shuffleArray(array) {
     }
 
     for (const [trialType, avgType] of [
-      ["moreWasmTrials", "moreWasmAvg"],
+      // ["moreWasmTrials", "moreWasmAvg"],
+      ["oldJsTrials", "oldJsAvg"],
       ["wasmTrials", "wasmAvg"],
       ["jsTrials", "jsAvg"],
     ]) {

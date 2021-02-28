@@ -10,12 +10,26 @@ if (args.length < 1) {
 const presetDataAll = JSON.parse(fs.readFileSync(args[0]).toString());
 const presetList = Object.keys(presetDataAll);
 
+// let outputCSV = "presetName, hasPixelEqs";
+// outputCSV += ", totalJS, totalWASM, totalMoreWASM";
+// outputCSV += ", pixelJS, pixelWASM, pixelMoreWASM";
+// outputCSV += ", frameJS, frameWASM, frameMoreWASM";
+// outputCSV += ", shapeJS, shapeWASM, shapeMoreWASM";
+// outputCSV += ", waveJS, waveWASM, waveMoreWASM\n";
+
 let outputCSV = "presetName, hasPixelEqs";
-outputCSV += ", totalJS, totalWASM, totalMoreWASM";
-outputCSV += ", pixelJS, pixelWASM, pixelMoreWASM";
-outputCSV += ", frameJS, frameWASM, frameMoreWASM";
-outputCSV += ", shapeJS, shapeWASM, shapeMoreWASM";
-outputCSV += ", waveJS, waveWASM, waveMoreWASM\n";
+outputCSV += ", totalOldJS, totalJS, totalWASM";
+outputCSV += ", pixelOldJS, pixelJS, pixelWASM";
+outputCSV += ", frameOldJS, frameJS, frameWASM";
+outputCSV += ", shapeOldJS, shapeJS, shapeWASM";
+outputCSV += ", waveOldJS, waveJS, waveWASM\n";
+
+// let outputCSV = "presetName, hasPixelEqs";
+// outputCSV += ", totalJS, totalWASM";
+// outputCSV += ", pixelJS, pixelWASM";
+// outputCSV += ", frameJS, frameWASM";
+// outputCSV += ", shapeJS, shapeWASM";
+// outputCSV += ", waveJS, waveWASM\n";
 
 for (let i = 0; i < presetList.length; i++) {
   const presetName = presetList[i];
@@ -23,25 +37,30 @@ for (let i = 0; i < presetList.length; i++) {
 
   outputCSV += `${presetName.replace(/,/g, "")}, ${presetData.hasPixelEqs}`;
 
+  outputCSV += `, ${presetData.oldJsAvg.time.toFixed(2)}`;
   outputCSV += `, ${presetData.jsAvg.time.toFixed(2)}`;
   outputCSV += `, ${presetData.wasmAvg.time.toFixed(2)}`;
-  outputCSV += `, ${presetData.moreWasmAvg.time.toFixed(2)}`;
+  // outputCSV += `, ${presetData.moreWasmAvg.time.toFixed(2)}`;
 
+  outputCSV += `, ${presetData.oldJsAvg.runPixelEquations.toFixed(2)}`;
   outputCSV += `, ${presetData.jsAvg.runPixelEquations.toFixed(2)}`;
   outputCSV += `, ${presetData.wasmAvg.runPixelEquations.toFixed(2)}`;
-  outputCSV += `, ${presetData.moreWasmAvg.runPixelEquations.toFixed(2)}`;
+  // outputCSV += `, ${presetData.moreWasmAvg.runPixelEquations.toFixed(2)}`;
 
+  outputCSV += `, ${presetData.oldJsAvg.runFrameEquations.toFixed(2)}`;
   outputCSV += `, ${presetData.jsAvg.runFrameEquations.toFixed(2)}`;
   outputCSV += `, ${presetData.wasmAvg.runFrameEquations.toFixed(2)}`;
-  outputCSV += `, ${presetData.moreWasmAvg.runFrameEquations.toFixed(2)}`;
+  // outputCSV += `, ${presetData.moreWasmAvg.runFrameEquations.toFixed(2)}`;
 
+  outputCSV += `, ${presetData.oldJsAvg.drawCustomShape.toFixed(2)}`;
   outputCSV += `, ${presetData.jsAvg.drawCustomShape.toFixed(2)}`;
   outputCSV += `, ${presetData.wasmAvg.drawCustomShape.toFixed(2)}`;
-  outputCSV += `, ${presetData.moreWasmAvg.drawCustomShape.toFixed(2)}`;
+  // outputCSV += `, ${presetData.moreWasmAvg.drawCustomShape.toFixed(2)}`;
 
+  outputCSV += `, ${presetData.oldJsAvg.drawCustomWaveform.toFixed(2)}`;
   outputCSV += `, ${presetData.jsAvg.drawCustomWaveform.toFixed(2)}`;
   outputCSV += `, ${presetData.wasmAvg.drawCustomWaveform.toFixed(2)}`;
-  outputCSV += `, ${presetData.moreWasmAvg.drawCustomWaveform.toFixed(2)}`;
+  // outputCSV += `, ${presetData.moreWasmAvg.drawCustomWaveform.toFixed(2)}`;
 
   outputCSV += "\n";
 }
