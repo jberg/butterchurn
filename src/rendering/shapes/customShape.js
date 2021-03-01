@@ -136,12 +136,21 @@ export default class CustomShape {
     if (shapeEqs.baseVals.enabled !== 0) {
       this.setupShapeBuffers(presetEquationRunner.mdVSFrame);
 
-      const mdVSShape = Object.assign({},
-                                      presetEquationRunner.mdVSShapes[this.index],
-                                      presetEquationRunner.mdVSFrameMapShapes[this.index],
-                                      presetEquationRunner.mdVSQAfterFrame,
-                                      presetEquationRunner.mdVSTShapeInits[this.index],
-                                      globalVars);
+      let mdVSShape = Object.assign({},
+                                    presetEquationRunner.mdVSShapes[this.index],
+                                    presetEquationRunner.mdVSFrameMapShapes[this.index],
+                                    globalVars);
+
+      // If we aren't setting these every instance, set them initially
+      if (
+        presetEquationRunner.preset.shapes[this.index].frame_eqs_str === ''
+      ) {
+        mdVSShape = Object.assign(
+          mdVSShape,
+          presetEquationRunner.mdVSQAfterFrame,
+          presetEquationRunner.mdVSTShapeInits[this.index]
+        );
+      }
 
       const mdVSShapeBaseVals = Utils.cloneVars(mdVSShape);
 
@@ -170,7 +179,20 @@ export default class CustomShape {
         mdVSShape.tex_ang = mdVSShapeBaseVals.tex_ang;
         mdVSShape.additive = mdVSShapeBaseVals.additive;
 
-        const mdVSShapeFrame = shapeEqs.frame_eqs(mdVSShape);
+        let mdVSShapeFrame;
+        if (
+          presetEquationRunner.preset.shapes[this.index].frame_eqs_str !== ''
+        ) {
+          mdVSShape = Object.assign(
+            mdVSShape,
+            presetEquationRunner.mdVSQAfterFrame,
+            presetEquationRunner.mdVSTShapeInits[this.index]
+          );
+
+          mdVSShapeFrame = shapeEqs.frame_eqs(mdVSShape);
+        } else {
+          mdVSShapeFrame = mdVSShape;
+        }
 
         let sides = mdVSShapeFrame.sides;
         sides = Math.clamp(sides, 3, 100);
