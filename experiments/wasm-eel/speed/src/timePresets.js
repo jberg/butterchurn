@@ -12,7 +12,7 @@ if (args.length < 1) {
 
 const onlyPresetsWithPixelEqs = false;
 const presetList = JSON.parse(fs.readFileSync("presetList.json").toString())
-  .full;
+  .base;
 
 const audioAnalysis = JSON.parse(fs.readFileSync(args[0]).toString());
 let outputJSON = {};
