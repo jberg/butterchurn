@@ -10,13 +10,25 @@ export default class Visualizer {
     this.opts = opts;
     this.audio = new AudioProcessor(audioContext);
 
-    this.gl = canvas.getContext("webgl2", {
+    const vizWidth = opts.width || 1200;
+    const vizHeight = opts.height || 900;
+    if (window.OffscreenCanvas) {
+      this.internalCanvas = new OffscreenCanvas(vizWidth, vizHeight);
+    } else {
+      this.internalCanvas = document.createElement("canvas");
+      this.internalCanvas.width = vizWidth;
+      this.internalCanvas.height = vizHeight;
+    }
+
+    this.gl = this.internalCanvas.getContext("webgl2", {
       alpha: false,
       antialias: false,
       depth: false,
       stencil: false,
       premultipliedAlpha: false,
     });
+
+    this.outputGl = canvas.getContext('2d');
 
     this.baseValsDefaults = {
       decay: 0.98,
@@ -263,6 +275,7 @@ export default class Visualizer {
 
   loseGLContext() {
     this.gl.getExtension("WEBGL_lose_context").loseContext();
+    this.outputGl = null;
   }
 
   connectAudio(audioNode) {
@@ -735,6 +748,8 @@ export default class Visualizer {
   }
 
   setRendererSize(width, height, opts = {}) {
+    this.internalCanvas.width = width;
+    this.internalCanvas.height = height;
     this.renderer.setRendererSize(width, height, opts);
   }
 
@@ -746,8 +761,18 @@ export default class Visualizer {
     this.renderer.setOutputAA(useAA);
   }
 
+  setCanvas(canvas) {
+    this.outputGl = canvas.getContext('2d');
+  }
+
   render(opts) {
-    return this.renderer.render(opts);
+    const renderOutput = this.renderer.render(opts);
+
+    if (this.outputGl) {
+      this.outputGl.drawImage(this.internalCanvas, 0, 0);
+    }
+
+    return renderOutput;
   }
 
   launchSongTitleAnim(text) {
