@@ -1,6 +1,6 @@
 # Butterchurn
 
-Butterchurn is a WebGL implementation of the Milkdrop Visualizer
+Butterchurn is a WebGL implementation of the [Milkdrop Visualizer](http://www.geisswerks.com/about_milkdrop.html)
 
 
 ## [Try it out](https://butterchurnviz.com)
