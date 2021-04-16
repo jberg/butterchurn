@@ -74,6 +74,7 @@ if (isButterchurnSupported()) {
 * [ChromeAudioVisualizerExtension](https://chrome.google.com/webstore/detail/audiovisualizer/bojhikphaecldnbdekplmadjkflgbkfh), put on some music and turn your browsing session into a party! built by [afreakk](https://github.com/afreakk)
 * [Karaoke Forever](https://www.karaoke-forever.com), an open karaoke party system, built by [bhj](https://github.com/bhj)
 * [Syqel](https://syqel.com/), the World's Best AI Powered Music Visualizer
+* [deplayer](https://github.com/deplayer/deplayer), a PWA multi-provider music and video player, built by [gtrias](https://github.com/gtrias)
 
 
 ## Thanks
