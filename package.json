@@ -31,7 +31,7 @@
     "@assemblyscript/loader": "^0.17.11",
     "@babel/runtime": "^7.11.2",
     "ecma-proposal-math-extensions": "0.0.2",
-    "eel-wasm": "^0.0.13"
+    "eel-wasm": "^0.0.15"
   },
   "devDependencies": {
     "@babel/core": "^7.11.6",
