@@ -222,7 +222,7 @@ export default class TitleText {
     const gridY1 = gridY + 1;
 
     const uvs = [];
-    const vertClip = 0.75;
+    const vertClip = Math.min(1, this.texsizeY / this.texsizeX);
     for (let j = 0; j < gridY1; j++) {
       for (let i = 0; i < gridX1; i++) {
         const u = i / gridX;
