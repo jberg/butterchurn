@@ -1,17 +1,16 @@
-const asc = require("assemblyscript/cli/asc");
+import {compileString} from "assemblyscript/dist/asc.js";
 
-module.exports = async function (content, map, meta) {
+export default async function (content, map, meta) {
   var callback = this.async();
-  await asc.ready;
-  const { binary, stderr } = asc.compileString(content, {
+  const { binary, stderr } = await compileString(content, {
     optimize: true,
     optimizeLevel: 3,
-    runtime: "none",
+    runtime: "stub",
     pedantic: true,
     // noUnsafe: true,
   });
   if (stderr.toString()) {
-    callback(stderr.toString());
+    callback(new EvalError(stderr.toString()));
     return;
   }
 

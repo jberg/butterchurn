@@ -2,6 +2,7 @@
 
 const path = require('path');
 const env = require('yargs').argv.env;
+const ESLintPlugin = require('eslint-webpack-plugin');
 
 const srcRoot = path.join(__dirname, '..', 'src');
 const nodeRoot = path.join(__dirname, '..', 'node_modules');
@@ -42,17 +43,9 @@ const config = {
         }
       },
       {
-        test: /(\.js)$/,
-        exclude: /node_modules/,
-        use: {
-          loader: 'eslint-loader'
-        },
-        enforce: "pre",
-      },
-      {
         test: /\.ts?$/,
         use: {
-          loader: path.resolve("loaders/assemblyscript.js"),
+          loader: path.resolve("loaders/assemblyscript.mjs"),
         },
       },
     ]
@@ -61,7 +54,12 @@ const config = {
     modules: [srcRoot, nodeRoot],
     extensions: ['.js']
   },
-  plugins: []
+  plugins: [
+    new ESLintPlugin({
+      extensions: ['js'],
+      exclude: ['node_modules'],
+    })
+  ]
 };
 
 

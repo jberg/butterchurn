@@ -1,5 +1,8 @@
+// @ts-ignore
 @external("console", "logf")
 declare function logf(val: f64): void;
+
+// @ts-ignore
 @external("console", "logi")
 declare function logi(val: i32): void;
 
@@ -9,24 +12,43 @@ export function createFloat32Array(length: i32): Float32Array {
 
 // Reset pixel eq vars
 
+// @ts-ignore
 @external("pixelVarPool", "warp")
 declare let warp: f64;
+
+// @ts-ignore
 @external("pixelVarPool", "zoom")
 declare let zoom: f64;
+
+// @ts-ignore
 @external("pixelVarPool", "zoomexp")
 declare let zoomexp: f64;
+
+// @ts-ignore
 @external("pixelVarPool", "cx")
 declare let cx: f64;
+
+// @ts-ignore
 @external("pixelVarPool", "cy")
 declare let cy: f64;
+
+// @ts-ignore
 @external("pixelVarPool", "sx")
 declare let sx: f64;
+
+// @ts-ignore
 @external("pixelVarPool", "sy")
 declare let sy: f64;
+
+// @ts-ignore
 @external("pixelVarPool", "dx")
 declare let dx: f64;
+
+// @ts-ignore
 @external("pixelVarPool", "dy")
 declare let dy: f64;
+
+// @ts-ignore
 @external("pixelVarPool", "rot")
 declare let rot: f64;
 
@@ -67,15 +89,23 @@ function restore(): void {
   rot = rot_save;
 }
 
+// @ts-ignore
 @external("pixelVarPool", "x")
 declare let x: f64;
+
+// @ts-ignore
 @external("pixelVarPool", "y")
 declare let y: f64;
+
+// @ts-ignore
 @external("pixelVarPool", "ang")
 declare let ang: f64;
+
+// @ts-ignore
 @external("pixelVarPool", "rad")
 declare let rad: f64;
 
+// @ts-ignore
 @external("pixelEqs", "perPixelEqs")
 declare function perPixelEqs(): void;
 
@@ -198,68 +228,131 @@ export function runPixelEquations(
 
 // Copy qs to after frame values
 
+// @ts-ignore
 @external("qVarPool", "q1")
 declare let q1: f64;
+
+// @ts-ignore
 @external("qVarPool", "q2")
 declare let q2: f64;
+
+// @ts-ignore
 @external("qVarPool", "q3")
 declare let q3: f64;
+
+// @ts-ignore
 @external("qVarPool", "q4")
 declare let q4: f64;
+
+// @ts-ignore
 @external("qVarPool", "q5")
 declare let q5: f64;
+
+// @ts-ignore
 @external("qVarPool", "q6")
 declare let q6: f64;
+
+// @ts-ignore
 @external("qVarPool", "q7")
 declare let q7: f64;
+
+// @ts-ignore
 @external("qVarPool", "q8")
 declare let q8: f64;
+
+// @ts-ignore
 @external("qVarPool", "q9")
 declare let q9: f64;
+
+// @ts-ignore
 @external("qVarPool", "q10")
 declare let q10: f64;
+
+// @ts-ignore
 @external("qVarPool", "q11")
 declare let q11: f64;
+
+// @ts-ignore
 @external("qVarPool", "q12")
 declare let q12: f64;
+
+// @ts-ignore
 @external("qVarPool", "q13")
 declare let q13: f64;
+
+// @ts-ignore
 @external("qVarPool", "q14")
 declare let q14: f64;
+
+// @ts-ignore
 @external("qVarPool", "q15")
 declare let q15: f64;
+
+// @ts-ignore
 @external("qVarPool", "q16")
 declare let q16: f64;
+
+// @ts-ignore
 @external("qVarPool", "q17")
 declare let q17: f64;
+
+// @ts-ignore
 @external("qVarPool", "q18")
 declare let q18: f64;
+
+// @ts-ignore
 @external("qVarPool", "q19")
 declare let q19: f64;
+
+// @ts-ignore
 @external("qVarPool", "q20")
 declare let q20: f64;
+
+// @ts-ignore
 @external("qVarPool", "q21")
 declare let q21: f64;
+
+// @ts-ignore
 @external("qVarPool", "q22")
 declare let q22: f64;
+
+// @ts-ignore
 @external("qVarPool", "q23")
 declare let q23: f64;
+
+// @ts-ignore
 @external("qVarPool", "q24")
 declare let q24: f64;
+
+// @ts-ignore
 @external("qVarPool", "q25")
 declare let q25: f64;
+
+// @ts-ignore
 @external("qVarPool", "q26")
 declare let q26: f64;
+
+// @ts-ignore
 @external("qVarPool", "q27")
 declare let q27: f64;
+
+// @ts-ignore
 @external("qVarPool", "q28")
 declare let q28: f64;
+
+// @ts-ignore
 @external("qVarPool", "q29")
 declare let q29: f64;
+
+// @ts-ignore
 @external("qVarPool", "q30")
 declare let q30: f64;
+
+// @ts-ignore
 @external("qVarPool", "q31")
 declare let q31: f64;
+
+// @ts-ignore
 @external("qVarPool", "q32")
 declare let q32: f64;
 
@@ -367,20 +460,36 @@ export function restoreQs(): void {
 }
 
 // t vars
+
+// @ts-ignore
 @external("tVarPool", "t1")
 declare let t1: f64;
+
+// @ts-ignore
 @external("tVarPool", "t2")
 declare let t2: f64;
+
+// @ts-ignore
 @external("tVarPool", "t3")
 declare let t3: f64;
+
+// @ts-ignore
 @external("tVarPool", "t4")
 declare let t4: f64;
+
+// @ts-ignore
 @external("tVarPool", "t5")
 declare let t5: f64;
+
+// @ts-ignore
 @external("tVarPool", "t6")
 declare let t6: f64;
+
+// @ts-ignore
 @external("tVarPool", "t7")
 declare let t7: f64;
+
+// @ts-ignore
 @external("tVarPool", "t8")
 declare let t8: f64;
 
@@ -417,46 +526,87 @@ export function restoreTs(): void {
 
 // Reset shape vars
 
+// @ts-ignore
 @external("shapePool0", "x_0")
 declare let x_0: f64;
+
+// @ts-ignore
 @external("shapePool0", "y_0")
 declare let y_0: f64;
+
+// @ts-ignore
 @external("shapePool0", "rad_0")
 declare let rad_0: f64;
+
+// @ts-ignore
 @external("shapePool0", "ang_0")
 declare let ang_0: f64;
+
+// @ts-ignore
 @external("shapePool0", "r_0")
 declare let r_0: f64;
+
+// @ts-ignore
 @external("shapePool0", "g_0")
 declare let g_0: f64;
+
+// @ts-ignore
 @external("shapePool0", "b_0")
 declare let b_0: f64;
+
+// @ts-ignore
 @external("shapePool0", "a_0")
 declare let a_0: f64;
+
+// @ts-ignore
 @external("shapePool0", "r2_0")
 declare let r2_0: f64;
+
+// @ts-ignore
 @external("shapePool0", "g2_0")
 declare let g2_0: f64;
+
+// @ts-ignore
 @external("shapePool0", "b2_0")
 declare let b2_0: f64;
+
+// @ts-ignore
 @external("shapePool0", "a2_0")
 declare let a2_0: f64;
+
+// @ts-ignore
 @external("shapePool0", "border_r_0")
 declare let border_r_0: f64;
+
+// @ts-ignore
 @external("shapePool0", "border_g_0")
 declare let border_g_0: f64;
+
+// @ts-ignore
 @external("shapePool0", "border_b_0")
 declare let border_b_0: f64;
+
+// @ts-ignore
 @external("shapePool0", "border_a_0")
 declare let border_a_0: f64;
+
+// @ts-ignore
 @external("shapePool0", "thickoutline_0")
 declare let thickoutline_0: f64;
+
+// @ts-ignore
 @external("shapePool0", "textured_0")
 declare let textured_0: f64;
+
+// @ts-ignore
 @external("shapePool0", "tex_zoom_0")
 declare let tex_zoom_0: f64;
+
+// @ts-ignore
 @external("shapePool0", "tex_ang_0")
 declare let tex_ang_0: f64;
+
+// @ts-ignore
 @external("shapePool0", "additive_0")
 declare let additive_0: f64;
 
@@ -530,46 +680,87 @@ export function shape0_restore(): void {
   additive_0 = additive_0_save;
 }
 
+// @ts-ignore
 @external("shapePool1", "x_1")
 declare let x_1: f64;
+
+// @ts-ignore
 @external("shapePool1", "y_1")
 declare let y_1: f64;
+
+// @ts-ignore
 @external("shapePool1", "rad_1")
 declare let rad_1: f64;
+
+// @ts-ignore
 @external("shapePool1", "ang_1")
 declare let ang_1: f64;
+
+// @ts-ignore
 @external("shapePool1", "r_1")
 declare let r_1: f64;
+
+// @ts-ignore
 @external("shapePool1", "g_1")
 declare let g_1: f64;
+
+// @ts-ignore
 @external("shapePool1", "b_1")
 declare let b_1: f64;
+
+// @ts-ignore
 @external("shapePool1", "a_1")
 declare let a_1: f64;
+
+// @ts-ignore
 @external("shapePool1", "r2_1")
 declare let r2_1: f64;
+
+// @ts-ignore
 @external("shapePool1", "g2_1")
 declare let g2_1: f64;
+
+// @ts-ignore
 @external("shapePool1", "b2_1")
 declare let b2_1: f64;
+
+// @ts-ignore
 @external("shapePool1", "a2_1")
 declare let a2_1: f64;
+
+// @ts-ignore
 @external("shapePool1", "border_r_1")
 declare let border_r_1: f64;
+
+// @ts-ignore
 @external("shapePool1", "border_g_1")
 declare let border_g_1: f64;
+
+// @ts-ignore
 @external("shapePool1", "border_b_1")
 declare let border_b_1: f64;
+
+// @ts-ignore
 @external("shapePool1", "border_a_1")
 declare let border_a_1: f64;
+
+// @ts-ignore
 @external("shapePool1", "thickoutline_1")
 declare let thickoutline_1: f64;
+
+// @ts-ignore
 @external("shapePool1", "textured_1")
 declare let textured_1: f64;
+
+// @ts-ignore
 @external("shapePool1", "tex_zoom_1")
 declare let tex_zoom_1: f64;
+
+// @ts-ignore
 @external("shapePool1", "tex_ang_1")
 declare let tex_ang_1: f64;
+
+// @ts-ignore
 @external("shapePool1", "additive_1")
 declare let additive_1: f64;
 
@@ -643,46 +834,87 @@ export function shape1_restore(): void {
   additive_1 = additive_1_save;
 }
 
+// @ts-ignore
 @external("shapePool2", "x_2")
 declare let x_2: f64;
+
+// @ts-ignore
 @external("shapePool2", "y_2")
 declare let y_2: f64;
+
+// @ts-ignore
 @external("shapePool2", "rad_2")
 declare let rad_2: f64;
+
+// @ts-ignore
 @external("shapePool2", "ang_2")
 declare let ang_2: f64;
+
+// @ts-ignore
 @external("shapePool2", "r_2")
 declare let r_2: f64;
+
+// @ts-ignore
 @external("shapePool2", "g_2")
 declare let g_2: f64;
+
+// @ts-ignore
 @external("shapePool2", "b_2")
 declare let b_2: f64;
+
+// @ts-ignore
 @external("shapePool2", "a_2")
 declare let a_2: f64;
+
+// @ts-ignore
 @external("shapePool2", "r2_2")
 declare let r2_2: f64;
+
+// @ts-ignore
 @external("shapePool2", "g2_2")
 declare let g2_2: f64;
+
+// @ts-ignore
 @external("shapePool2", "b2_2")
 declare let b2_2: f64;
+
+// @ts-ignore
 @external("shapePool2", "a2_2")
 declare let a2_2: f64;
+
+// @ts-ignore
 @external("shapePool2", "border_r_2")
 declare let border_r_2: f64;
+
+// @ts-ignore
 @external("shapePool2", "border_g_2")
 declare let border_g_2: f64;
+
+// @ts-ignore
 @external("shapePool2", "border_b_2")
 declare let border_b_2: f64;
+
+// @ts-ignore
 @external("shapePool2", "border_a_2")
 declare let border_a_2: f64;
+
+// @ts-ignore
 @external("shapePool2", "thickoutline_2")
 declare let thickoutline_2: f64;
+
+// @ts-ignore
 @external("shapePool2", "textured_2")
 declare let textured_2: f64;
+
+// @ts-ignore
 @external("shapePool2", "tex_zoom_2")
 declare let tex_zoom_2: f64;
+
+// @ts-ignore
 @external("shapePool2", "tex_ang_2")
 declare let tex_ang_2: f64;
+
+// @ts-ignore
 @external("shapePool2", "additive_2")
 declare let additive_2: f64;
 
@@ -756,46 +988,87 @@ export function shape2_restore(): void {
   additive_2 = additive_2_save;
 }
 
+// @ts-ignore
 @external("shapePool3", "x_3")
 declare let x_3: f64;
+
+// @ts-ignore
 @external("shapePool3", "y_3")
 declare let y_3: f64;
+
+// @ts-ignore
 @external("shapePool3", "rad_3")
 declare let rad_3: f64;
+
+// @ts-ignore
 @external("shapePool3", "ang_3")
 declare let ang_3: f64;
+
+// @ts-ignore
 @external("shapePool3", "r_3")
 declare let r_3: f64;
+
+// @ts-ignore
 @external("shapePool3", "g_3")
 declare let g_3: f64;
+
+// @ts-ignore
 @external("shapePool3", "b_3")
 declare let b_3: f64;
+
+// @ts-ignore
 @external("shapePool3", "a_3")
 declare let a_3: f64;
+
+// @ts-ignore
 @external("shapePool3", "r2_3")
 declare let r2_3: f64;
+
+// @ts-ignore
 @external("shapePool3", "g2_3")
 declare let g2_3: f64;
+
+// @ts-ignore
 @external("shapePool3", "b2_3")
 declare let b2_3: f64;
+
+// @ts-ignore
 @external("shapePool3", "a2_3")
 declare let a2_3: f64;
+
+// @ts-ignore
 @external("shapePool3", "border_r_3")
 declare let border_r_3: f64;
+
+// @ts-ignore
 @external("shapePool3", "border_g_3")
 declare let border_g_3: f64;
+
+// @ts-ignore
 @external("shapePool3", "border_b_3")
 declare let border_b_3: f64;
+
+// @ts-ignore
 @external("shapePool3", "border_a_3")
 declare let border_a_3: f64;
+
+// @ts-ignore
 @external("shapePool3", "thickoutline_3")
 declare let thickoutline_3: f64;
+
+// @ts-ignore
 @external("shapePool3", "textured_3")
 declare let textured_3: f64;
+
+// @ts-ignore
 @external("shapePool3", "tex_zoom_3")
 declare let tex_zoom_3: f64;
+
+// @ts-ignore
 @external("shapePool3", "tex_ang_3")
 declare let tex_ang_3: f64;
+
+// @ts-ignore
 @external("shapePool3", "additive_3")
 declare let additive_3: f64;
 
