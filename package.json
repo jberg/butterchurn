@@ -3,6 +3,8 @@
   "version": "3.0.0-beta.3",
   "description": "Butterchurn is a WebGL implementation of the Milkdrop Visualizer",
   "main": "dist/butterchurn.js",
+  "module": "dist/butterchurn.js",
+  "type": "module",
   "unpkg": "dist/butterchurn.js",
   "files": [
     "dist/butterchurn.js",
@@ -10,9 +12,9 @@
     "dist/isSupported.min.js"
   ],
   "scripts": {
-    "build": "webpack --config config/webpack.config.js --env prod",
-    "dev": "webpack --config config/webpack.config.js --progress --colors --watch --env dev",
-    "dev-build": "webpack --config config/webpack.config.js --progress --colors --env dev"
+    "build": "NODE_ENV=production rollup -c",
+    "dev": "rollup -c -w",
+    "dev-build": "rollup -c"
   },
   "repository": {
     "type": "git",
@@ -29,24 +31,20 @@
   "homepage": "https://butterchurnviz.com",
   "dependencies": {
     "@assemblyscript/loader": "^0.17.11",
-    "@babel/runtime": "^7.11.2",
     "ecma-proposal-math-extensions": "0.0.2",
     "eel-wasm": "^0.0.15"
   },
   "devDependencies": {
-    "@babel/core": "^7.11.6",
-    "@babel/plugin-transform-runtime": "^7.11.5",
-    "@babel/preset-env": "^7.11.5",
+    "@rollup/plugin-commonjs": "^28.0.6",
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/pluginutils": "^5.2.0",
     "assemblyscript": "^0.17.11",
-    "babel-eslint": "^10.1.0",
-    "babel-loader": "^8.1.0",
     "eslint": "^7.9.0",
-    "eslint-loader": "^4.0.2",
     "eslint-plugin-prettier": "^3.1.4",
     "prettier": "^2.1.2",
-    "webpack": "^4.44.2",
-    "webpack-cli": "^3.3.12",
-    "yargs": "^16.0.3"
+    "rollup": "^4.44.2",
+    "rollup-plugin-copy": "^3.5.0"
   },
   "browserslist": "supports audio-api and supports webgl2 and last 3 years"
 }

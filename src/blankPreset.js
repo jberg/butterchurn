@@ -1,8 +1,5 @@
 /* eslint-disable */
-define([], function () {
-  "use strict;";
-
-  var pmap = {
+const pmap = {
     baseVals: {
       gammaadj: 1.25,
       wave_g: 0.5,
@@ -327,6 +324,5 @@ define([], function () {
       "shader_body {\nret = texture2D(sampler_main, uv).rgb;\nret *= hue_shader;\n}\n",
   };
 
-  return pmap;
-});
+export default pmap;
 /* eslint-enable */
