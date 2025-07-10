@@ -46,5 +46,10 @@
     "rollup": "^4.44.2",
     "rollup-plugin-copy": "^3.5.0"
   },
-  "browserslist": "supports audio-api and supports webgl2 and last 3 years"
+  "browserslist": "supports audio-api and supports webgl2 and last 3 years",
+  "pnpm": {
+    "patchedDependencies": {
+      "eel-wasm": "patches/eel-wasm.patch"
+    }
+  }
 }

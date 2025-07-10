@@ -4,6 +4,11 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  eel-wasm:
+    hash: rz4r37xzp6iyqywuldnopuddf4
+    path: patches/eel-wasm.patch
+
 importers:
 
   .:
@@ -16,7 +21,7 @@ importers:
         version: 0.0.2
       eel-wasm:
         specifier: ^0.0.15
-        version: 0.0.15
+        version: 0.0.15(patch_hash=rz4r37xzp6iyqywuldnopuddf4)
     devDependencies:
       '@rollup/plugin-commonjs':
         specifier: ^28.0.6
@@ -1232,7 +1237,7 @@ snapshots:
 
   ecma-proposal-math-extensions@0.0.2: {}
 
-  eel-wasm@0.0.15: {}
+  eel-wasm@0.0.15(patch_hash=rz4r37xzp6iyqywuldnopuddf4): {}
 
   emoji-regex@8.0.0: {}
 
