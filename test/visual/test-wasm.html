@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="data:,">
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+        background: black;
+      }
+      #canvas {
+        display: block;
+      }
+    </style>
+
+    <script type="text/javascript" src="/dist/butterchurn.js"></script>
+    <script type="text/javascript" src="/node_modules/butterchurn-presets/dist/base.min.js"></script>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+        window.consoleLogs = [];
+        const originalLog = console.log;
+        console.log = function(...args) {
+          window.consoleLogs.push(args.join(' '));
+          originalLog.apply(console, args);
+        };
+        
+        window.startVisualization = async function(params) {
+          const { width, height, presetName, audioData, frames, seed } = params;
+          console.log('WASM startVisualization called with seed:', seed);
+
+          const canvas = document.getElementById('canvas');
+          canvas.width = width;
+          canvas.height = height;
+
+          const visualizer = butterchurn.default.createVisualizer(null, canvas, {
+            width: width,
+            height: height,
+            deterministic: true,
+            seed: seed
+          });
+
+          const presets = base.default;
+
+          const preset = presets[presetName];
+          if (preset) {
+            await visualizer.loadPreset(preset, 0);
+          } else {
+            throw new Error('Preset not found: ' + presetName);
+          }
+
+          window.audioData = audioData;
+
+          let currentFrame = 0;
+          window.renderComplete = false;
+
+          function render() {
+            if (currentFrame >= frames) {
+              window.renderComplete = true;
+              return;
+            }
+
+            const audio = window.audioData[currentFrame];
+            const elapsedTime = currentFrame === 0
+              ? audio.time
+              : audio.time - window.audioData[currentFrame - 1].time;
+
+            visualizer.render({
+              elapsedTime,
+              audioLevels: {
+                timeByteArray: audio.timeByteArray,
+                timeByteArrayL: audio.timeByteArrayL,
+                timeByteArrayR: audio.timeByteArrayR,
+              }
+            });
+
+            currentFrame++;
+            requestAnimationFrame(render);
+          }
+
+          render();
+        };
+      });
+    </script>
+  </head>
+  <body>
+    <canvas id="canvas"></canvas>
+  </body>
+</html>

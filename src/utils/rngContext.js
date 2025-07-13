@@ -3,6 +3,7 @@ import { createRNGContext, createDefaultRNGContext } from './seededRandom';
 let globalRNG = null;
 let originalRand = null;
 let originalRandint = null;
+let originalMathRandom = null;
 
 export function initializeRNG(opts = {}) {
   if (opts.deterministic || opts.testMode) {
@@ -17,9 +18,14 @@ export function initializeRNG(opts = {}) {
       originalRandint = window.randint;
     }
 
+    if (!originalMathRandom) {
+      originalMathRandom = Math.random;
+    }
+
     // Override globals with our RNG
     window.rand = (x) => globalRNG.rand(x);
     window.randint = (x) => globalRNG.randint(x);
+    Math.random = () => globalRNG.random();
   }
 
   return globalRNG;
@@ -39,6 +45,11 @@ export function cleanup() {
     window.randint = originalRandint;
     originalRand = null;
     originalRandint = null;
+  }
+
+  if (originalMathRandom) {
+    Math.random = originalMathRandom;
+    originalMathRandom = null;
   }
 
   globalRNG = null;

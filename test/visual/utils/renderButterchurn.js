@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 
 
-async function renderButterchurn(page, serverUrl, width, height, presetName, audioData, frames, seed = 12345) {
+async function renderButterchurn(page, serverUrl, width, height, presetName, audioData, frames, seed = 12345, presetType = 'js') {
   const butterchurnPath = path.join(process.cwd(), 'dist/butterchurn.js');
   if (!fs.existsSync(butterchurnPath)) {
     throw new Error(
@@ -14,12 +14,12 @@ async function renderButterchurn(page, serverUrl, width, height, presetName, aud
 
   await page.setViewport({ width, height, deviceScaleFactor: 1 });
 
-  await page.goto(serverUrl, { waitUntil: 'domcontentloaded' });
+  await page.goto(`${serverUrl}/test-${presetType}.html`, { waitUntil: 'domcontentloaded' });
 
   const startTime = Date.now();
 
-  await page.evaluate((params) => {
-    window.startVisualization(params);
+  await page.evaluate(async (params) => {
+    await window.startVisualization(params);
   }, { width, height, presetName, audioData, frames, seed });
 
   try {
@@ -34,7 +34,7 @@ async function renderButterchurn(page, serverUrl, width, height, presetName, aud
 
   const renderTime = Date.now() - startTime;
   if (process.env.VERBOSE_TEST || process.env.CI) {
-    console.log(`Rendered ${presetName} in ${renderTime}ms`);
+    console.log(`Rendered ${presetName} (${presetType.toUpperCase()}) in ${renderTime}ms`);
   }
 
   const screenshot = await page.screenshot({

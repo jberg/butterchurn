@@ -15,11 +15,11 @@
     </style>
 
     <script type="text/javascript" src="/dist/butterchurn.js"></script>
-    <script type="text/javascript" src="/node_modules/butterchurn-presets/lib/butterchurnPresets.min.js"></script>
+    <script type="text/javascript" src="/node_modules/butterchurn-presets-js/lib/butterchurnPresets.min.js"></script>
 
     <script>
       document.addEventListener("DOMContentLoaded", function() {
-        window.startVisualization = function(params) {
+        window.startVisualization = async function(params) {
           const { width, height, presetName, audioData, frames, seed } = params;
 
           const canvas = document.getElementById('canvas');
@@ -37,7 +37,7 @@
 
           const preset = presets[presetName];
           if (preset) {
-            visualizer.loadPreset(preset, 0);
+            await visualizer.loadPreset(preset, 0);
           } else {
             throw new Error('Preset not found: ' + presetName);
           }

@@ -14,8 +14,10 @@ class TestServer {
     this.server = http.createServer((req, res) => {
       let filePath;
 
-      if (req.url === '/') {
-        filePath = path.join(process.cwd(), 'test/visual/test.html');
+      if (req.url === '/' || req.url === '/test-js.html') {
+        filePath = path.join(process.cwd(), 'test/visual/test-js.html');
+      } else if (req.url === '/test-wasm.html') {
+        filePath = path.join(process.cwd(), 'test/visual/test-wasm.html');
       } else if (req.url.startsWith('/')) {
         filePath = path.join(projectRoot, req.url);
       } else {
