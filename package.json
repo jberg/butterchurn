@@ -14,7 +14,13 @@
   "scripts": {
     "build": "NODE_ENV=production rollup -c",
     "dev": "rollup -c -w",
-    "dev-build": "rollup -c"
+    "dev-build": "rollup -c",
+    "test": "jest --config jest.config.mjs",
+    "test:visual": "jest --config jest.config.mjs test/visual/regression.test.js",
+    "test:visual:update": "jest --config jest.config.mjs test/visual/regression.test.js --updateSnapshot",
+    "test:visual:watch": "jest --config jest.config.mjs test/visual/regression.test.js --watch",
+    "test:visual:local": "yarn build && yarn test:visual",
+    "test:visual:view": "open test/visual/__image_snapshots__/__diff_output__"
   },
   "repository": {
     "type": "git",
@@ -39,10 +45,15 @@
     "@rollup/plugin-node-resolve": "^16.0.1",
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/pluginutils": "^5.2.0",
+    "@types/jest": "^30.0.0",
     "assemblyscript": "^0.17.11",
+    "butterchurn-presets": "^2.4.7",
     "eslint": "^7.9.0",
     "eslint-plugin-prettier": "^3.1.4",
+    "jest": "^30.0.4",
+    "jest-image-snapshot": "^6.5.1",
     "prettier": "^2.1.2",
+    "puppeteer": "^24.12.1",
     "rollup": "^4.44.2",
     "rollup-plugin-copy": "^3.5.0"
   },
