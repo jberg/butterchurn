@@ -1,7 +1,9 @@
 import Utils from "../utils";
+import { getRNG } from "../utils/rngContext";
 
 export default class PresetEquationRunnerWASM {
   constructor(preset, globalVars, opts) {
+    this.rng = getRNG();
     this.preset = preset;
 
     this.texsizeX = opts.texsizeX;
@@ -171,16 +173,16 @@ export default class PresetEquationRunnerWASM {
     );
 
     this.rand_start = new Float32Array([
-      Math.random(),
-      Math.random(),
-      Math.random(),
-      Math.random(),
+      this.rng.random(),
+      this.rng.random(),
+      this.rng.random(),
+      this.rng.random(),
     ]);
     this.rand_preset = new Float32Array([
-      Math.random(),
-      Math.random(),
-      Math.random(),
-      Math.random(),
+      this.rng.random(),
+      this.rng.random(),
+      this.rng.random(),
+      this.rng.random(),
     ]);
 
     this.preset.init_eqs();

@@ -1,10 +1,12 @@
 import ShaderUtils from "./shaderUtils";
+import { getRNG } from "../../utils/rngContext";
 
 export default class CompShader {
   constructor(gl, noise, image, opts = {}) {
     this.gl = gl;
     this.noise = noise;
     this.image = image;
+    this.rng = getRNG();
 
     this.mesh_width = opts.mesh_width;
     this.mesh_height = opts.mesh_height;
@@ -913,10 +915,10 @@ export default class CompShader {
     this.gl.uniform4fv(
       this.randFrameLoc,
       new Float32Array([
-        Math.random(),
-        Math.random(),
-        Math.random(),
-        Math.random(),
+        this.rng.random(),
+        this.rng.random(),
+        this.rng.random(),
+        this.rng.random(),
       ])
     );
     this.gl.uniform1f(this.fShaderLoc, mdVSFrame.fshader);

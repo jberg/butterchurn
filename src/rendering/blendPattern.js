@@ -1,5 +1,8 @@
+import { getRNG } from '../utils/rngContext';
+
 export default class BlendPattern {
   constructor(opts) {
+    this.rng = getRNG();
     this.mesh_width = opts.mesh_width;
     this.mesh_height = opts.mesh_height;
     this.aspectx = opts.aspectx;
@@ -89,18 +92,18 @@ export default class BlendPattern {
     if (y1 - y0 >= 2) {
       if (x0 === 0) {
         this.vertInfoC[midy * (this.mesh_width + 1) + x0] =
-          0.5 * (t00 + t10) + (Math.random() * 2 - 1) * dt * this.aspecty;
+          0.5 * (t00 + t10) + (this.rng.random() * 2 - 1) * dt * this.aspecty;
       }
       this.vertInfoC[midy * (this.mesh_width + 1) + x1] =
-        0.5 * (t01 + t11) + (Math.random() * 2 - 1) * dt * this.aspecty;
+        0.5 * (t01 + t11) + (this.rng.random() * 2 - 1) * dt * this.aspecty;
     }
     if (x1 - x0 >= 2) {
       if (y0 === 0) {
         this.vertInfoC[y0 * (this.mesh_width + 1) + midx] =
-          0.5 * (t00 + t01) + (Math.random() * 2 - 1) * dt * this.aspectx;
+          0.5 * (t00 + t01) + (this.rng.random() * 2 - 1) * dt * this.aspectx;
       }
       this.vertInfoC[y1 * (this.mesh_width + 1) + midx] =
-        0.5 * (t10 + t11) + (Math.random() * 2 - 1) * dt * this.aspectx;
+        0.5 * (t10 + t11) + (this.rng.random() * 2 - 1) * dt * this.aspectx;
     }
 
     if (y1 - y0 >= 2 && x1 - x0 >= 2) {
@@ -109,7 +112,7 @@ export default class BlendPattern {
       t10 = this.vertInfoC[y0 * (this.mesh_width + 1) + midx];
       t11 = this.vertInfoC[y1 * (this.mesh_width + 1) + midx];
       this.vertInfoC[midy * (this.mesh_width + 1) + midx] =
-        0.25 * (t10 + t11 + t00 + t01) + (Math.random() * 2 - 1) * dt;
+        0.25 * (t10 + t11 + t00 + t01) + (this.rng.random() * 2 - 1) * dt;
 
       this.genPlasma(x0, midx, y0, midy, dt * 0.5);
       this.genPlasma(midx, x1, y0, midy, dt * 0.5);
@@ -119,7 +122,7 @@ export default class BlendPattern {
   }
 
   createBlendPattern() {
-    const mixType = 1 + Math.floor(Math.random() * 3);
+    const mixType = 1 + Math.floor(this.rng.random() * 3);
     if (mixType === 0) {
       // not currently used
       let nVert = 0;
@@ -131,10 +134,10 @@ export default class BlendPattern {
         }
       }
     } else if (mixType === 1) {
-      const ang = Math.random() * 6.28;
+      const ang = this.rng.random() * 6.28;
       const vx = Math.cos(ang);
       const vy = Math.sin(ang);
-      const band = 0.1 + 0.2 * Math.random();
+      const band = 0.1 + 0.2 * this.rng.random();
       const invBand = 1.0 / band;
 
       let nVert = 0;
@@ -152,15 +155,15 @@ export default class BlendPattern {
         }
       }
     } else if (mixType === 2) {
-      const band = 0.12 + 0.13 * Math.random();
+      const band = 0.12 + 0.13 * this.rng.random();
       const invBand = 1.0 / band;
 
-      this.vertInfoC[0] = Math.random();
-      this.vertInfoC[this.mesh_width] = Math.random();
-      this.vertInfoC[this.mesh_height * (this.mesh_width + 1)] = Math.random();
+      this.vertInfoC[0] = this.rng.random();
+      this.vertInfoC[this.mesh_width] = this.rng.random();
+      this.vertInfoC[this.mesh_height * (this.mesh_width + 1)] = this.rng.random();
       this.vertInfoC[
         this.mesh_height * (this.mesh_width + 1) + this.mesh_width
-      ] = Math.random();
+      ] = this.rng.random();
       this.genPlasma(0, this.mesh_width, 0, this.mesh_height, 0.25);
 
       let minc = this.vertInfoC[0];
@@ -190,9 +193,9 @@ export default class BlendPattern {
         }
       }
     } else if (mixType === 3) {
-      const band = 0.02 + 0.14 * Math.random() + 0.34 * Math.random();
+      const band = 0.02 + 0.14 * this.rng.random() + 0.34 * this.rng.random();
       const invBand = 1.0 / band;
-      const dir = Math.floor(Math.random() * 2) * 2 - 1;
+      const dir = Math.floor(this.rng.random() * 2) * 2 - 1;
 
       let nVert = 0;
       for (let y = 0; y <= this.mesh_height; y++) {

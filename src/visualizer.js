@@ -4,10 +4,15 @@ import AudioProcessor from "./audio/audioProcessor";
 import Renderer from "./rendering/renderer";
 import Utils from "./utils";
 import loadPresetFunctionsBuffer from "./assemblyscript/presetFunctions.ts";
+import { initializeRNG } from "./utils/rngContext";
 
 export default class Visualizer {
   constructor(audioContext, canvas, opts) {
     this.opts = opts;
+
+    // Initialize RNG context
+    this.rng = initializeRNG(opts);
+    this.deterministicMode = opts.deterministic || opts.testMode;
     this.audio = new AudioProcessor(audioContext);
 
     const vizWidth = opts.width || 1200;

@@ -1,10 +1,12 @@
 import ShaderUtils from "./shaderUtils";
+import { getRNG } from "../../utils/rngContext";
 
 export default class WarpShader {
   constructor(gl, noise, image, opts = {}) {
     this.gl = gl;
     this.noise = noise;
     this.image = image;
+    this.rng = getRNG();
 
     this.texsizeX = opts.texsizeX;
     this.texsizeY = opts.texsizeY;
@@ -754,10 +756,10 @@ export default class WarpShader {
     this.gl.uniform4fv(
       this.randFrameLoc,
       new Float32Array([
-        Math.random(),
-        Math.random(),
-        Math.random(),
-        Math.random(),
+        this.rng.random(),
+        this.rng.random(),
+        this.rng.random(),
+        this.rng.random(),
       ])
     );
 

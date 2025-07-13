@@ -1,7 +1,9 @@
 import Utils from "../utils";
+import { getRNG } from "../utils/rngContext";
 
 export default class PresetEquationRunner {
   constructor(preset, globalVars, opts) {
+    this.rng = getRNG();
     this.preset = preset;
 
     this.texsizeX = opts.texsizeX;
@@ -69,16 +71,16 @@ export default class PresetEquationRunner {
 
     this.mdVS.megabuf = new Array(1048576).fill(0);
     this.mdVS.rand_start = new Float32Array([
-      Math.random(),
-      Math.random(),
-      Math.random(),
-      Math.random(),
+      this.rng.random(),
+      this.rng.random(),
+      this.rng.random(),
+      this.rng.random(),
     ]);
     this.mdVS.rand_preset = new Float32Array([
-      Math.random(),
-      Math.random(),
-      Math.random(),
-      Math.random(),
+      this.rng.random(),
+      this.rng.random(),
+      this.rng.random(),
+      this.rng.random(),
     ]);
 
     const nonUserKeys = this.qs.concat(this.regs, Object.keys(this.mdVS));

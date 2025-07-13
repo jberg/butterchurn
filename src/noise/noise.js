@@ -1,6 +1,9 @@
+import { getRNG } from '../utils/rngContext';
+
 export default class Noise {
   constructor(gl) {
     this.gl = gl;
+    this.randomFn = getRNG().random;
 
     this.anisoExt =
       this.gl.getExtension("EXT_texture_filter_anisotropic") ||
@@ -15,13 +18,13 @@ export default class Noise {
     this.noiseTexVolLQ = this.gl.createTexture();
     this.noiseTexVolHQ = this.gl.createTexture();
 
-    this.nTexArrLQ = Noise.createNoiseTex(256, 1);
-    this.nTexArrLQLite = Noise.createNoiseTex(32, 1);
-    this.nTexArrMQ = Noise.createNoiseTex(256, 4);
-    this.nTexArrHQ = Noise.createNoiseTex(256, 8);
+    this.nTexArrLQ = Noise.createNoiseTex(256, 1, this.randomFn);
+    this.nTexArrLQLite = Noise.createNoiseTex(32, 1, this.randomFn);
+    this.nTexArrMQ = Noise.createNoiseTex(256, 4, this.randomFn);
+    this.nTexArrHQ = Noise.createNoiseTex(256, 8, this.randomFn);
 
-    this.nTexArrVolLQ = Noise.createNoiseVolTex(32, 1);
-    this.nTexArrVolHQ = Noise.createNoiseVolTex(32, 4);
+    this.nTexArrVolLQ = Noise.createNoiseVolTex(32, 1, this.randomFn);
+    this.nTexArrVolHQ = Noise.createNoiseVolTex(32, 4, this.randomFn);
 
     this.bindTexture(this.noiseTexLQ, this.nTexArrLQ, 256, 256);
     this.bindTexture(this.noiseTexLQLite, this.nTexArrLQLite, 32, 32);
@@ -180,16 +183,16 @@ export default class Noise {
     return ret;
   }
 
-  static createNoiseVolTex(noiseSize, zoom) {
+  static createNoiseVolTex(noiseSize, zoom, randomFn) {
     const nsize = noiseSize * noiseSize * noiseSize;
     const texArr = new Uint8Array(nsize * 4);
     const texRange = zoom > 1 ? 216 : 256;
     const halfTexRange = texRange * 0.5;
     for (let i = 0; i < nsize; i++) {
-      texArr[i * 4 + 0] = Math.floor(Math.random() * texRange + halfTexRange);
-      texArr[i * 4 + 1] = Math.floor(Math.random() * texRange + halfTexRange);
-      texArr[i * 4 + 2] = Math.floor(Math.random() * texRange + halfTexRange);
-      texArr[i * 4 + 3] = Math.floor(Math.random() * texRange + halfTexRange);
+      texArr[i * 4 + 0] = Math.floor(randomFn() * texRange + halfTexRange);
+      texArr[i * 4 + 1] = Math.floor(randomFn() * texRange + halfTexRange);
+      texArr[i * 4 + 2] = Math.floor(randomFn() * texRange + halfTexRange);
+      texArr[i * 4 + 3] = Math.floor(randomFn() * texRange + halfTexRange);
     }
 
     const wordsPerSlice = noiseSize * noiseSize;
@@ -315,16 +318,16 @@ export default class Noise {
     return texArr;
   }
 
-  static createNoiseTex(noiseSize, zoom) {
+  static createNoiseTex(noiseSize, zoom, randomFn) {
     const nsize = noiseSize * noiseSize;
     const texArr = new Uint8Array(nsize * 4);
     const texRange = zoom > 1 ? 216 : 256;
     const halfTexRange = texRange * 0.5;
     for (let i = 0; i < nsize; i++) {
-      texArr[i * 4 + 0] = Math.floor(Math.random() * texRange + halfTexRange);
-      texArr[i * 4 + 1] = Math.floor(Math.random() * texRange + halfTexRange);
-      texArr[i * 4 + 2] = Math.floor(Math.random() * texRange + halfTexRange);
-      texArr[i * 4 + 3] = Math.floor(Math.random() * texRange + halfTexRange);
+      texArr[i * 4 + 0] = Math.floor(randomFn() * texRange + halfTexRange);
+      texArr[i * 4 + 1] = Math.floor(randomFn() * texRange + halfTexRange);
+      texArr[i * 4 + 2] = Math.floor(randomFn() * texRange + halfTexRange);
+      texArr[i * 4 + 3] = Math.floor(randomFn() * texRange + halfTexRange);
     }
 
     if (zoom > 1) {
