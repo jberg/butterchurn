@@ -33,7 +33,7 @@ export default class Visualizer {
       premultipliedAlpha: false,
     });
 
-    this.outputGl = canvas.getContext('2d');
+    this.outputGl = canvas.getContext('2d', { willReadFrequently: false });
 
     this.baseValsDefaults = {
       decay: 0.98,
@@ -767,7 +767,7 @@ export default class Visualizer {
   }
 
   setCanvas(canvas) {
-    this.outputGl = canvas.getContext('2d');
+    this.outputGl = canvas.getContext('2d', { willReadFrequently: false });
   }
 
   render(opts) {

@@ -1235,7 +1235,7 @@ export default class Renderer {
     canvas.width = this.texsizeX;
     canvas.height = this.texsizeY;
 
-    const context = canvas.getContext("2d");
+    const context = canvas.getContext("2d", { willReadFrequently: false });
     const imageData = context.createImageData(this.texsizeX, this.texsizeY);
     imageData.data.set(data);
     context.putImageData(imageData, 0, 0);
@@ -1264,7 +1264,7 @@ export default class Renderer {
     canvas.width = this.texsizeX;
     canvas.height = this.texsizeY;
 
-    const context = canvas.getContext("2d");
+    const context = canvas.getContext("2d", { willReadFrequently: false });
     const imageData = context.createImageData(this.texsizeX, this.texsizeY);
     imageData.data.set(data);
     context.putImageData(imageData, 0, 0);
