@@ -8,9 +8,8 @@
 
   <!-- <script type="text/javascript" src="../dist/butterchurn.js"></script> -->
   <script type="text/javascript" src="https://unpkg.com/lodash"></script>
-  <script type="text/javascript" src="https://unpkg.com/butterchurn"></script>
-  <script type="text/javascript" src="https://unpkg.com/butterchurn-presets"></script>
-  <script type="text/javascript" src="https://unpkg.com/butterchurn-presets/lib/butterchurnPresetsExtra.min.js"></script>
+  <script type="text/javascript" src="https://unpkg.com/butterchurn-presets@3.0.0-beta.4/dist/base.min.js"></script>
+  <script type="text/javascript" src="https://unpkg.com/butterchurn-presets@3.0.0-beta.4/dist/extra.min.js"></script>
   <script
     src="https://code.jquery.com/jquery-3.1.1.min.js"
     integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
@@ -44,7 +43,9 @@
   </style>
   <link rel="stylesheet" href="https://unpkg.com/normalize.css/normalize.css" />
 
-  <script>
+  <script type="module">
+    import butterchurn from 'https://unpkg.com/butterchurn@3.0.0-beta.5/dist/butterchurn.js';
+
     $(function() {
       var visualizer = null;
       var rendering = false;
@@ -229,11 +230,11 @@
         audioContext = new AudioContext();
 
         presets = {};
-        if (window.butterchurnPresets) {
-          Object.assign(presets, butterchurnPresets.getPresets());
+        if (window.base && window.base.default) {
+          Object.assign(presets, window.base.default);
         }
-        if (window.butterchurnPresetsExtra) {
-          Object.assign(presets, butterchurnPresetsExtra.getPresets());
+        if (window.extra && window.extra.default) {
+          Object.assign(presets, window.extra.default);
         }
         presets = _(presets).toPairs().sortBy(([k, v]) => k.toLowerCase()).fromPairs().value();
         presetKeys = _.keys(presets);
@@ -247,7 +248,7 @@
             presetSelect.appendChild(opt);
         }
 
-        visualizer = butterchurn.default.createVisualizer(audioContext, canvas , {
+        visualizer = butterchurn.createVisualizer(audioContext, canvas , {
           width: 800,
           height: 600,
           pixelRatio: window.devicePixelRatio || 1,
