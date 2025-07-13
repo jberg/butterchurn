@@ -14,10 +14,11 @@
       }
     </style>
 
-    <script type="text/javascript" src="/dist/butterchurn.js"></script>
     <script type="text/javascript" src="/node_modules/butterchurn-presets-js/lib/butterchurnPresets.min.js"></script>
 
-    <script>
+    <script type="module">
+      import butterchurn from '/dist/butterchurn.js';
+
       document.addEventListener("DOMContentLoaded", function() {
         window.startVisualization = async function(params) {
           const { width, height, presetName, audioData, frames, seed } = params;
@@ -26,7 +27,7 @@
           canvas.width = width;
           canvas.height = height;
 
-          const visualizer = butterchurn.default.createVisualizer(null, canvas, {
+          const visualizer = butterchurn.createVisualizer(null, canvas, {
             width: width,
             height: height,
             deterministic: true,

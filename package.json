@@ -15,10 +15,10 @@
     "build": "NODE_ENV=production rollup -c",
     "dev": "rollup -c -w",
     "dev-build": "rollup -c",
-    "test": "jest --config jest.config.mjs",
-    "test:visual": "jest --config jest.config.mjs test/visual/regression.test.js",
-    "test:visual:update": "jest --config jest.config.mjs test/visual/regression.test.js --updateSnapshot",
-    "test:visual:watch": "jest --config jest.config.mjs test/visual/regression.test.js --watch",
+    "test": "NODE_OPTIONS=\"--experimental-vm-modules\" jest --config jest.config.mjs",
+    "test:visual": "NODE_OPTIONS=\"--experimental-vm-modules\" jest --config jest.config.mjs test/visual/regression.test.js",
+    "test:visual:update": "NODE_OPTIONS=\"--experimental-vm-modules\" jest --config jest.config.mjs test/visual/regression.test.js --updateSnapshot",
+    "test:visual:watch": "NODE_OPTIONS=\"--experimental-vm-modules\" jest --config jest.config.mjs test/visual/regression.test.js --watch",
     "test:visual:local": "yarn build && yarn test:visual",
     "test:visual:view": "open test/visual/__image_snapshots__/__diff_output__"
   },
@@ -63,5 +63,6 @@
     "patchedDependencies": {
       "eel-wasm": "patches/eel-wasm.patch"
     }
-  }
+  },
+  "packageManager": "pnpm@10.6.5+sha1.da220e966c2db3275efb5928cf8f3592681b106b"
 }
