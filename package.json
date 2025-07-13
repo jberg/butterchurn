@@ -38,7 +38,7 @@
   "dependencies": {
     "@assemblyscript/loader": "^0.17.11",
     "ecma-proposal-math-extensions": "0.0.2",
-    "eel-wasm": "^0.0.15"
+    "eel-wasm": "^0.0.16"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^28.0.6",
@@ -59,10 +59,5 @@
     "rollup-plugin-copy": "^3.5.0"
   },
   "browserslist": "supports audio-api and supports webgl2 and last 3 years",
-  "pnpm": {
-    "patchedDependencies": {
-      "eel-wasm": "patches/eel-wasm.patch"
-    }
-  },
   "packageManager": "pnpm@10.6.5+sha1.da220e966c2db3275efb5928cf8f3592681b106b"
 }
