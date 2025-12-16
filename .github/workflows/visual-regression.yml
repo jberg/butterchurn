@@ -27,9 +27,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build Butterchurn
-        run: pnpm build
-        env:
-          NODE_ENV: production
+        run: pnpm dev-build
 
       - name: Run visual regression tests
         run: pnpm test:visual
