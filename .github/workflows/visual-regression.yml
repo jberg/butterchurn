@@ -28,6 +28,8 @@ jobs:
 
       - name: Build Butterchurn
         run: pnpm build
+        env:
+          NODE_ENV: production
 
       - name: Run visual regression tests
         run: pnpm test:visual
