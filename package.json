@@ -38,7 +38,7 @@
   "dependencies": {
     "@assemblyscript/loader": "^0.17.11",
     "ecma-proposal-math-extensions": "0.0.2",
-    "eel-wasm": "^0.0.16"
+    "eel-wasm": "^0.0.17"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^28.0.6",
