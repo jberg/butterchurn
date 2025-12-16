@@ -4,7 +4,10 @@
   publish = "./"
 
   # Default build command.
-  command = "yarn run dev-build"
+  command = "pnpm run dev-build"
+
+[build.environment]
+  NODE_VERSION = "18"
 
 # The following redirect is intended for use with most SPAs that handle
 # routing internally.
