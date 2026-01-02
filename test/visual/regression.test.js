@@ -138,5 +138,42 @@ describe('Butterchurn Visual Regression Tests', () => {
         await page.close();
       }
     });
+
+    // First frame tests to catch preset loading timing regressions
+    test(`${name} - first frame (JS)`, async () => {
+      const page = await createPage();
+
+      try {
+        const audioData = testAudioData.slice(0, 1);
+        const cleanName = name.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
+
+        const screenshot = await renderButterchurn(page, serverUrl, width, height, name, audioData, 1, SEED1, 'js');
+
+        expect(screenshot).toMatchImageSnapshot({
+          ...imageSnapshotConfig,
+          customSnapshotIdentifier: () => `${cleanName}-frame1`
+        });
+      } finally {
+        await page.close();
+      }
+    });
+
+    test(`${name} - first frame (WASM)`, async () => {
+      const page = await createPage();
+
+      try {
+        const audioData = testAudioData.slice(0, 1);
+        const cleanName = name.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
+
+        const screenshot = await renderButterchurn(page, serverUrl, width, height, name, audioData, 1, SEED1, 'wasm');
+
+        expect(screenshot).toMatchImageSnapshot({
+          ...imageSnapshotConfig,
+          customSnapshotIdentifier: () => `${cleanName}-frame1_wasm`
+        });
+      } finally {
+        await page.close();
+      }
+    });
   });
 });
