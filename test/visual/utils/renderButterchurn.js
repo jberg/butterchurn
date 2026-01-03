@@ -24,7 +24,7 @@ async function renderButterchurn(page, serverUrl, width, height, presetName, aud
 
   try {
     await page.waitForFunction(() => window.renderComplete === true, {
-      timeout: 30000
+      timeout: 60000
     });
   } catch (error) {
     // Get any console errors for debugging

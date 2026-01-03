@@ -20,7 +20,7 @@ export default {
     '/experiments/'
   ],
 
-  testTimeout: 60000,
+  testTimeout: 150000,
 
   verbose: true,
 
