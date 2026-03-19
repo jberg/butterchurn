@@ -75,6 +75,7 @@ if (isButterchurnSupported()) {
 * [ChromeAudioVisualizerExtension](https://chrome.google.com/webstore/detail/audiovisualizer/bojhikphaecldnbdekplmadjkflgbkfh), put on some music and turn your browsing session into a party! built by [afreakk](https://github.com/afreakk)
 * [Karaoke Forever](https://www.karaoke-forever.com), an open karaoke party system, built by [bhj](https://github.com/bhj)
 * [Syqel](https://syqel.com/), the World's Best AI Powered Music Visualizer
+* [MangoWave](https://mangowave.app), a free browser-based audio visualizer for system audio, local files, or microphone — no install, no signup, no ads, built by [Louis-Mascari](https://github.com/Louis-Mascari)
 
 
 ## Thanks
