@@ -1,0 +1,20 @@
+# syntax=docker/dockerfile:1
+# Mirrors the CI runner (ubuntu-latest, Node 24, linux/amd64) so Puppeteer's
+# headless Chromium renders visual-regression snapshots against the same
+# SwiftShader build GitHub Actions uses.
+FROM --platform=linux/amd64 node:24-bookworm-slim
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      ca-certificates \
+      libasound2 \
+      libgbm1 \
+      libgtk-3-0 \
+      libnss3 \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN corepack enable
+
+ENV PUPPETEER_CACHE_DIR=/root/.cache/puppeteer \
+    PNPM_HOME=/root/.local/share/pnpm \
+    npm_config_store_dir=/root/.local/share/pnpm/store
+WORKDIR /app

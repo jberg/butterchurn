@@ -1,0 +1,8 @@
+node_modules
+dist
+.git
+.github
+.netlify
+.pnpm-store
+test/visual/__image_snapshots__/__diff_output__
+test/visual/__image_snapshots__/__received_output__
