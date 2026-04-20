@@ -75,6 +75,7 @@ if (isButterchurnSupported()) {
 * [ChromeAudioVisualizerExtension](https://chrome.google.com/webstore/detail/audiovisualizer/bojhikphaecldnbdekplmadjkflgbkfh), put on some music and turn your browsing session into a party! built by [afreakk](https://github.com/afreakk)
 * [Karaoke Forever](https://www.karaoke-forever.com), an open karaoke party system, built by [bhj](https://github.com/bhj)
 * [Syqel](https://syqel.com/), the World's Best AI Powered Music Visualizer
+* [Energy Paddle](https://apps.apple.com/us/app/energy-paddle-mind-controlled/id6446401272), a mobile rhythm game (>= iOS 15.2)
 
 
 ## Thanks
