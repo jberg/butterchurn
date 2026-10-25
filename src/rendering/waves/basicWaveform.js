@@ -341,8 +341,8 @@ export default class BasicWaveform {
             wavePosX * Math.cos(ang + Math.PI * 0.5) + dx * 3.0,
           ];
           const edgey = [
-            wavePosX * Math.sin(ang + Math.PI * 0.5) - dy * 3.0,
-            wavePosX * Math.sin(ang + Math.PI * 0.5) + dy * 3.0,
+            wavePosY * Math.sin(ang + Math.PI * 0.5) - dy * 3.0,
+            wavePosY * Math.sin(ang + Math.PI * 0.5) + dy * 3.0,
           ];
 
           for (let i = 0; i < 2; i++) {
