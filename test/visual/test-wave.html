@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="data:,">
+    <style>
+      body { margin: 0; overflow: hidden; background: black; }
+      #canvas { display: block; }
+    </style>
+
+    <script type="text/javascript" src="/node_modules/butterchurn-presets-js/lib/butterchurnPresets.min.js"></script>
+
+    <script type="module">
+      import butterchurn from '/dist/butterchurn.js';
+
+      // Renders a synthetic preset that isolates the wave edge baseline for
+      // wave modes 6 and 7: wave_mode is pinned, every other visual stage is
+      // neutral, and decay is near zero so each screenshot shows only the
+      // current frame's line.
+      //
+      // wave_mystery MUST be pinned to 0. The baseline in basicWaveForm.js is
+      // wavePos * sin(ang + PI/2); with wave_mystery = -1 (this donor's value)
+      // ang = -PI/2 and sin(ang + PI/2) = 0, which zeroes the baseline term
+      // and makes any wave_x / wave_y effect undetectable.
+      document.addEventListener("DOMContentLoaded", function() {
+        const DONOR_NAME = '_Rovastar + Geiss - Hurricane Nightmare (Posterize Mix)';
+
+        window.startWaveVisualization = async function(params) {
+          const { width, height, waveMode, waveX, waveY, audioData, frames, seed } = params;
+          const donor = butterchurnPresets.getPresets()[DONOR_NAME];
+          if (!donor) throw new Error('donor preset not found: ' + DONOR_NAME);
+
+          const preset = {
+            ...donor,
+            shapes: [],
+            waves: [],
+            pixel_eqs_str: "",
+            init_eqs_str:
+              `wave_mode=${waveMode};wave_x=${waveX};wave_y=${waveY};` +
+              "wave_r=1;wave_g=0.85;wave_b=0.1;wave_a=1;",
+            frame_eqs_str: `wave_x=${waveX};wave_y=${waveY};`,
+            baseVals: {
+              ...donor.baseVals,
+              decay: 0.001,
+              wave_mode: waveMode,
+              wave_x: waveX,
+              wave_y: waveY,
+              wave_mystery: 0,
+              wave_a: 1.0,
+              wave_thick: 1,
+              wave_r: 1.0, wave_g: 0.85, wave_b: 0.1,
+              zoom: 1.0, zoomexp: 1.0, rot: 0.0, warp: 0.0, warpscale: 1.0,
+              cx: 0.5, cy: 0.5,
+              darken_center: 0, solarize: 0,
+              echo_zoom: 1.0, echo_alpha: 0, echo_orient: 0,
+              wrap: 0,
+              ob_size: 0, ob_a: 0, ib_size: 0, ib_a: 0,
+              mv_a: 0,
+              gammaadj: 1.0,
+            },
+          };
+
+          const canvas = document.getElementById('canvas');
+          canvas.width = width;
+          canvas.height = height;
+
+          const visualizer = butterchurn.createVisualizer(null, canvas, {
+            width,
+            height,
+            deterministic: true,
+            seed: seed,
+          });
+
+          await visualizer.loadPreset(preset, 0);
+
+          window.audioData = audioData;
+          let currentFrame = 0;
+          window.renderComplete = false;
+
+          function render() {
+            if (currentFrame >= frames) {
+              window.renderComplete = true;
+              return;
+            }
+
+            const audio = window.audioData[currentFrame];
+            const elapsedTime = currentFrame === 0
+              ? audio.time
+              : audio.time - window.audioData[currentFrame - 1].time;
+
+            visualizer.render({
+              elapsedTime,
+              audioLevels: {
+                timeByteArray: audio.timeByteArray,
+                timeByteArrayL: audio.timeByteArrayL,
+                timeByteArrayR: audio.timeByteArrayR,
+              },
+            });
+
+            currentFrame++;
+            requestAnimationFrame(render);
+          }
+
+          render();
+        };
+      });
+    </script>
+  </head>
+  <body>
+    <canvas id="canvas"></canvas>
+  </body>
+</html>

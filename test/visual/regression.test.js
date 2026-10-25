@@ -139,4 +139,60 @@ describe('Butterchurn Visual Regression Tests', () => {
       }
     });
   });
+
+  // Synthetic-preset regression tests for the wave edge baseline in wave
+  // modes 6 and 7 (see test/visual/test-wave.html). The baseline must come
+  // from wavePosY, not wavePosX. With wave_mystery pinned to 0 the baseline
+  // contributes to the rendered line, so its source is observable:
+  //   mode 6: the line height must follow wave_y
+  //   mode 7: the line height must not follow wave_x
+  describe('wave edge baseline (modes 6 and 7)', () => {
+    const hash = (buffer) => crypto.createHash('sha256').update(buffer).digest('hex');
+
+    const renderWaveVariant = async (page, waveMode, waveX, waveY) => {
+      await page.setViewport({ width, height, deviceScaleFactor: 1 });
+      await page.goto(`${serverUrl}/test/visual/test-wave.html`, { waitUntil: 'domcontentloaded' });
+      await page.evaluate(async (params) => {
+        window.renderComplete = false;
+        await window.startWaveVisualization(params);
+      }, { width, height, waveMode, waveX, waveY, audioData: testAudioData, frames: FRAMES_TO_RENDER, seed: SEED1 });
+      await page.waitForFunction(() => window.renderComplete === true, { timeout: 60000 });
+      return page.screenshot({ type: 'png', fullPage: false, omitBackground: true });
+    };
+
+    beforeAll(async () => {
+      // The first render in a fresh browser produces slightly different
+      // pixels than every subsequent render of the same input (observed with
+      // swiftshader; reproducible, not random). Burn one render so both
+      // measured renders below are post-warm-up and comparable.
+      const page = await createPage();
+      try {
+        await renderWaveVariant(page, 6, 0.5, 0.5);
+      } finally {
+        await page.close();
+      }
+    });
+
+    test('mode 6: line height follows wave_y', async () => {
+      const page = await createPage();
+      try {
+        const low = await renderWaveVariant(page, 6, 0.8, 0.2);
+        const high = await renderWaveVariant(page, 6, 0.8, 0.8);
+        expect(hash(high)).not.toEqual(hash(low));
+      } finally {
+        await page.close();
+      }
+    });
+
+    test('mode 7: line height ignores wave_x', async () => {
+      const page = await createPage();
+      try {
+        const left = await renderWaveVariant(page, 7, 0.2, 0.8);
+        const right = await renderWaveVariant(page, 7, 0.8, 0.8);
+        expect(hash(right)).toEqual(hash(left));
+      } finally {
+        await page.close();
+      }
+    });
+  });
 });
