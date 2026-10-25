@@ -500,7 +500,13 @@ export default class Renderer {
             rot = mdVSVertex.rot;
           }
 
-          const zoom2V = zoom ** (zoomExp ** (rad * 2.0 - 1.0));
+          const zoomSign = zoom < 0 ? -1 : 1;
+          const absZoom = Math.abs(zoom);
+          const boundedZoom = Math.max(0.0001, Math.min(50.0, absZoom));
+          const zoom2V =
+            zoomExp === 1.0
+              ? zoomSign * boundedZoom
+              : zoomSign * (boundedZoom ** (zoomExp ** (rad * 2.0 - 1.0)));
           const zoom2Inv = 1.0 / zoom2V;
 
           let u = x * 0.5 * aspectx * zoom2Inv + 0.5;
@@ -711,7 +717,7 @@ export default class Renderer {
     mixedFrame.darken =
       mix < snapPoint ? mdVSFramePrev.darken : mdVSFrame.darken;
     mixedFrame.solarize =
-      mix < snapPoint ? mdVSFramePrev.brighten : mdVSFrame.solarize;
+      mix < snapPoint ? mdVSFramePrev.solarize : mdVSFrame.solarize;
     mixedFrame.b1n = mix * mdVSFrame.b1n + mix2 * mdVSFramePrev.b1n;
     mixedFrame.b2n = mix * mdVSFrame.b2n + mix2 * mdVSFramePrev.b2n;
     mixedFrame.b3n = mix * mdVSFrame.b3n + mix2 * mdVSFramePrev.b3n;

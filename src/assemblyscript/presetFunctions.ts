@@ -138,7 +138,13 @@ export function runPixelEquations(
         perPixelEqs();
       }
 
-      const zoom2V: f64 = zoom ** (zoomexp ** (rad * 2.0 - 1.0));
+      const zoomSign: f64 = zoom < 0 ? -1.0 : 1.0;
+      const absZoom: f64 = Math.abs(zoom);
+      const boundedZoom: f64 = Math.max(0.0001, Math.min(50.0, absZoom));
+      const zoom2V: f64 =
+        zoomexp == 1.0
+          ? zoomSign * boundedZoom
+          : zoomSign * (boundedZoom ** (zoomexp ** (rad * 2.0 - 1.0)));
       const zoom2Inv: f64 = 1.0 / zoom2V;
 
       let u: f64 = x2 * 0.5 * aspectx * zoom2Inv + 0.5;
