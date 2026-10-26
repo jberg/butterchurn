@@ -42,6 +42,9 @@ importers:
       butterchurn-presets-js:
         specifier: npm:butterchurn-presets@^2.4.7
         version: butterchurn-presets@2.4.7
+      eel-conformance:
+        specifier: ^0.1.0
+        version: 0.1.0
       eslint:
         specifier: ^7.9.0
         version: 7.32.0
@@ -1056,6 +1059,11 @@ packages:
 
   ecma-proposal-math-extensions@0.0.2:
     resolution: {integrity: sha512-80BnDp2Fn7RxXlEr5HHZblniY4aQ97MOAicdWWpSo0vkQiISSE9wLR4SqxKsu4gCtXFBIPPzy8JMhay4NWRg/Q==}
+
+  eel-conformance@0.1.0:
+    resolution: {integrity: sha512-5gAOEwQr5Q7TV0WTC7A0BbmqWs80kVdVF0bxyNY5EeqKXaIvaF0/sM6OAtFG6YPg3s3SBqUPX+wRbrwkmeM5pw==}
+    engines: {node: '>=20'}
+    hasBin: true
 
   eel-wasm@0.0.16:
     resolution: {integrity: sha512-1tkId7I7E1Vs4fXTRsH83Sjn2S/AbzrVQKLBRGys6NLc3eVH4NBffJsdEeLHOWWUgQpVXBEP3CV/srUZNIuBnw==}
@@ -3296,6 +3304,8 @@ snapshots:
   eastasianwidth@0.2.0: {}
 
   ecma-proposal-math-extensions@0.0.2: {}
+
+  eel-conformance@0.1.0: {}
 
   eel-wasm@0.0.16: {}
 
